@@ -5,6 +5,7 @@ import React from "react";
 import { IS_DEV } from "../utils/variables";
 import * as snippet from "@segment/snippet";
 import { useEffect } from "react";
+import { Notifications } from "@mantine/notifications";
 
 const renderSegmentSnippet = () => {
   const opts = {
@@ -68,6 +69,7 @@ export default function App(props: AppProps) {
           ...theme,
         }}
       >
+        <Notifications />
         <Component {...pageProps} />
       </MantineProvider>
     </>

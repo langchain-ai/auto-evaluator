@@ -6,9 +6,13 @@ import {
   IconX,
   IconAlertCircle,
 } from "@tabler/icons-react";
-import { Dropzone, IMAGE_MIME_TYPE } from "@mantine/dropzone";
+import { Dropzone, MS_WORD_MIME_TYPE, PDF_MIME_TYPE } from "@mantine/dropzone";
+import { Form } from "../utils/types";
+import { notifications } from "@mantine/notifications";
 
-const Body = () => {
+const Body = ({ form }: { form: Form }) => {
+  const { register, setValue } = form;
+
   const theme = useMantineTheme();
 
   return (
@@ -18,15 +22,26 @@ const Body = () => {
         title="Instructions"
         color="teal"
       >
-        Provide your file here
+        Provide your PDFs and/or Docx files, evaluator will build the QA eval
+        data set. for you.
       </Alert>
       <br />
       <Dropzone
-        onDrop={(files) => console.log("accepted files", files)}
-        onReject={(files) => console.log("rejected files", files)}
+        onDrop={(files) => {
+          setValue("files", files);
+          console.log("accepted files", files);
+        }}
+        onReject={(files) =>
+          notifications.show({
+            title: "Error",
+            message: `File type(s) not supported ${files.map(
+              (file) => file.file.type
+            )}`,
+            color: "red",
+          })
+        }
         maxSize={3 * 1024 ** 2}
-        accept={IMAGE_MIME_TYPE}
-        // {...props}
+        accept={PDF_MIME_TYPE && MS_WORD_MIME_TYPE}
       >
         <Group
           position="center"

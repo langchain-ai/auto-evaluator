@@ -12,6 +12,7 @@
     "@mantine/dropzone": "^6.0.6",
     "@mantine/hooks": "^6.0.4",
     "@mantine/next": "^6.0.4",
+    "@mantine/notifications": "^6.0.6",
     "@segment/snippet": "^4.15.3",
     "@tabler/icons-react": "^2.11.0",
     "@types/lodash": "^4.14.191",
@@ -23,7 +24,7 @@
     "openai": "^3.2.1",
     "react": "18.2.0",
     "react-dom": "18.2.0",
-    "react-hook-form": "^7.43.8",
+    "react-hook-form": "^7.43.9",
     "react-spinners": "^0.13.8",
     "remark": "^14.0.2",
     "remark-html": "^15.0.1"
