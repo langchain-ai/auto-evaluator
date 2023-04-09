@@ -1,5 +1,0 @@
-type Position = 'top' | 'middle' | 'bottom';
-type Placement = 'start' | 'center' | 'end';
-export type IndicatorPosition = `${Position}-${Placement}`;
-export {};
-//# sourceMappingURL=Indicator.types.d.ts.map

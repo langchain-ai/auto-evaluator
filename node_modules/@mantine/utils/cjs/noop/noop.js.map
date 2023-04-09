@@ -1,1 +1,0 @@
-{"version":3,"file":"noop.js","sources":["../../src/noop/noop.ts"],"sourcesContent":["export const noop = () => {};\n"],"names":[],"mappings":";;;;AAAY,MAAC,IAAI,GAAG,MAAM;AAC1B;;;;"}

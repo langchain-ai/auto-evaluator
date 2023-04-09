@@ -1,1 +1,0 @@
-{"version":3,"sources":["../../src/lib/is-edge-runtime.ts"],"names":["SERVER_RUNTIME","isEdgeRuntime","value","experimentalEdge","edge"],"mappings":"AACA,SAASA,cAAc,QAAQ,aAAa,CAAA;AAE5C,OAAO,SAASC,aAAa,CAACC,KAAc,EAA0B;IACpE,OACEA,KAAK,KAAKF,cAAc,CAACG,gBAAgB,IAAID,KAAK,KAAKF,cAAc,CAACI,IAAI,CAC3E;CACF"}

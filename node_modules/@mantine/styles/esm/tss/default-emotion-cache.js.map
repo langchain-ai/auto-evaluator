@@ -1,1 +1,0 @@
-{"version":3,"file":"default-emotion-cache.js","sources":["../../src/tss/default-emotion-cache.ts"],"sourcesContent":["import createCache from '@emotion/cache';\n\nexport const defaultMantineEmotionCache = createCache({ key: 'mantine', prepend: true });\n"],"names":[],"mappings":";;AACY,MAAC,0BAA0B,GAAG,WAAW,CAAC,EAAE,GAAG,EAAE,SAAS,EAAE,OAAO,EAAE,IAAI,EAAE;;;;"}

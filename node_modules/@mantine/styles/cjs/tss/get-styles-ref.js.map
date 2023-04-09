@@ -1,1 +1,0 @@
-{"version":3,"file":"get-styles-ref.js","sources":["../../src/tss/get-styles-ref.ts"],"sourcesContent":["export function getStylesRef(refName: string) {\n  return `___ref-${refName || ''}`;\n}\n"],"names":[],"mappings":";;;;AAAO,SAAS,YAAY,CAAC,OAAO,EAAE;AACtC,EAAE,OAAO,CAAC,OAAO,EAAE,OAAO,IAAI,EAAE,CAAC,CAAC,CAAC;AACnC;;;;"}
