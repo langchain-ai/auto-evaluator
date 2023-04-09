@@ -1,0 +1,1 @@
+{"version":3,"file":"use-selection-state.d.ts","sourceRoot":"","sources":["../../../src/TransferList/use-selection-state/use-selection-state.ts"],"names":[],"mappings":"AAEA,MAAM,MAAM,SAAS,GAAG,CAAC,MAAM,EAAE,EAAE,MAAM,EAAE,CAAC,CAAC;AAE7C,wBAAgB,iBAAiB,CAAC,gBAAgB,GAAE,SAAoB;wBAGrC,CAAC,GAAG,CAAC,SAAS,MAAM;0BAkBlB,CAAC,GAAG,CAAC,UAAU,MAAM,EAAE;6BAOpB,CAAC,GAAG,CAAC;GAc5C"}

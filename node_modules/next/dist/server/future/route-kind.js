@@ -1,0 +1,25 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+exports.RouteKind = void 0;
+var RouteKind;
+exports.RouteKind = RouteKind;
+(function(RouteKind) {
+    RouteKind[/**
+   * `PAGES` represents all the React pages that are under `pages/`.
+   */ "PAGES"] = "PAGES";
+    RouteKind[/**
+   * `PAGES_API` represents all the API routes under `pages/api/`.
+   */ "PAGES_API"] = "PAGES_API";
+    RouteKind[/**
+   * `APP_PAGE` represents all the React pages that are under `app/` with the
+   * filename of `page.{j,t}s{,x}`.
+   */ "APP_PAGE"] = "APP_PAGE";
+    RouteKind[/**
+   * `APP_ROUTE` represents all the API routes and metadata routes that are under `app/` with the
+   * filename of `route.{j,t}s{,x}`.
+   */ "APP_ROUTE"] = "APP_ROUTE";
+})(RouteKind || (exports.RouteKind = RouteKind = {}));
+
+//# sourceMappingURL=route-kind.js.map

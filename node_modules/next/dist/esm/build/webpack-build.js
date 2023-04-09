@@ -1,0 +1,328 @@
+import chalk from "next/dist/compiled/chalk";
+import formatWebpackMessages from "../client/dev/error-overlay/format-webpack-messages";
+import { nonNullable } from "../lib/non-nullable";
+import { COMPILER_NAMES, CLIENT_STATIC_FILES_RUNTIME_MAIN_APP, APP_CLIENT_INTERNALS, PHASE_PRODUCTION_BUILD } from "../shared/lib/constants";
+import { runCompiler } from "./compiler";
+import * as Log from "./output/log";
+import getBaseWebpackConfig, { loadProjectInfo } from "./webpack-config";
+import { TelemetryPlugin } from "./webpack/plugins/telemetry-plugin";
+import { NextBuildContext, resumePluginState, getPluginState } from "./build-context";
+import { createEntrypoints } from "./entries";
+import loadConfig from "../server/config";
+import { trace } from "../trace";
+import { WEBPACK_LAYERS } from "../lib/constants";
+import { TraceEntryPointsPlugin } from "./webpack/plugins/next-trace-entrypoints-plugin";
+import * as pagesPluginModule from "./webpack/plugins/pages-manifest-plugin";
+import { Worker } from "next/dist/compiled/jest-worker";
+import origDebug from "next/dist/compiled/debug";
+const debug = origDebug("next:build:webpack-build");
+function isTelemetryPlugin(plugin) {
+    return plugin instanceof TelemetryPlugin;
+}
+function isTraceEntryPointsPlugin(plugin) {
+    return plugin instanceof TraceEntryPointsPlugin;
+}
+async function webpackBuildImpl(compilerName) {
+    var ref, ref1;
+    let result = {
+        warnings: [],
+        errors: [],
+        stats: []
+    };
+    let webpackBuildStart;
+    const nextBuildSpan = NextBuildContext.nextBuildSpan;
+    const dir = NextBuildContext.dir;
+    const config = NextBuildContext.config;
+    const runWebpackSpan = nextBuildSpan.traceChild("run-webpack-compiler");
+    const entrypoints = await nextBuildSpan.traceChild("create-entrypoints").traceAsyncFn(()=>createEntrypoints({
+            buildId: NextBuildContext.buildId,
+            config: config,
+            envFiles: NextBuildContext.loadedEnvFiles,
+            isDev: false,
+            rootDir: dir,
+            pageExtensions: config.pageExtensions,
+            pagesDir: NextBuildContext.pagesDir,
+            appDir: NextBuildContext.appDir,
+            pages: NextBuildContext.mappedPages,
+            appPaths: NextBuildContext.mappedAppPages,
+            previewMode: NextBuildContext.previewProps,
+            rootPaths: NextBuildContext.mappedRootPaths,
+            hasInstrumentationHook: NextBuildContext.hasInstrumentationHook
+        }));
+    const commonWebpackOptions = {
+        isServer: false,
+        buildId: NextBuildContext.buildId,
+        config: config,
+        target: config.target,
+        appDir: NextBuildContext.appDir,
+        pagesDir: NextBuildContext.pagesDir,
+        rewrites: NextBuildContext.rewrites,
+        originalRewrites: NextBuildContext.originalRewrites,
+        originalRedirects: NextBuildContext.originalRedirects,
+        reactProductionProfiling: NextBuildContext.reactProductionProfiling,
+        noMangling: NextBuildContext.noMangling,
+        clientRouterFilters: NextBuildContext.clientRouterFilters
+    };
+    const configs = await runWebpackSpan.traceChild("generate-webpack-config").traceAsyncFn(async ()=>{
+        const info = await loadProjectInfo({
+            dir,
+            config: commonWebpackOptions.config,
+            dev: false
+        });
+        return Promise.all([
+            getBaseWebpackConfig(dir, {
+                ...commonWebpackOptions,
+                middlewareMatchers: entrypoints.middlewareMatchers,
+                runWebpackSpan,
+                compilerType: COMPILER_NAMES.client,
+                entrypoints: entrypoints.client,
+                ...info
+            }),
+            getBaseWebpackConfig(dir, {
+                ...commonWebpackOptions,
+                runWebpackSpan,
+                middlewareMatchers: entrypoints.middlewareMatchers,
+                compilerType: COMPILER_NAMES.server,
+                entrypoints: entrypoints.server,
+                ...info
+            }),
+            getBaseWebpackConfig(dir, {
+                ...commonWebpackOptions,
+                runWebpackSpan,
+                middlewareMatchers: entrypoints.middlewareMatchers,
+                compilerType: COMPILER_NAMES.edgeServer,
+                entrypoints: entrypoints.edgeServer,
+                ...info
+            }), 
+        ]);
+    });
+    const clientConfig = configs[0];
+    const serverConfig = configs[1];
+    if (clientConfig.optimization && (clientConfig.optimization.minimize !== true || clientConfig.optimization.minimizer && clientConfig.optimization.minimizer.length === 0)) {
+        Log.warn(`Production code optimization has been disabled in your project. Read more: https://nextjs.org/docs/messages/minification-disabled`);
+    }
+    webpackBuildStart = process.hrtime();
+    debug(`starting compiler`, compilerName);
+    // We run client and server compilation separately to optimize for memory usage
+    await runWebpackSpan.traceAsyncFn(async ()=>{
+        // Run the server compilers first and then the client
+        // compiler to track the boundary of server/client components.
+        let clientResult = null;
+        // During the server compilations, entries of client components will be
+        // injected to this set and then will be consumed by the client compiler.
+        let serverResult = null;
+        let edgeServerResult = null;
+        if (!compilerName || compilerName === "server") {
+            serverResult = await runCompiler(serverConfig, {
+                runWebpackSpan
+            });
+            debug("server result", serverResult);
+        }
+        if (!compilerName || compilerName === "edge-server") {
+            edgeServerResult = configs[2] ? await runCompiler(configs[2], {
+                runWebpackSpan
+            }) : null;
+            debug("edge server result", edgeServerResult);
+        }
+        // Only continue if there were no errors
+        if (!(serverResult == null ? void 0 : serverResult.errors.length) && !(edgeServerResult == null ? void 0 : edgeServerResult.errors.length)) {
+            const pluginState = getPluginState();
+            for(const key in pluginState.injectedClientEntries){
+                const value = pluginState.injectedClientEntries[key];
+                const clientEntry = clientConfig.entry;
+                if (key === APP_CLIENT_INTERNALS) {
+                    clientEntry[CLIENT_STATIC_FILES_RUNTIME_MAIN_APP] = {
+                        import: [
+                            // TODO-APP: cast clientEntry[CLIENT_STATIC_FILES_RUNTIME_MAIN_APP] to type EntryDescription once it's available from webpack
+                            // @ts-expect-error clientEntry['main-app'] is type EntryDescription { import: ... }
+                            ...clientEntry[CLIENT_STATIC_FILES_RUNTIME_MAIN_APP].import,
+                            value, 
+                        ],
+                        layer: WEBPACK_LAYERS.appClient
+                    };
+                } else {
+                    clientEntry[key] = {
+                        dependOn: [
+                            CLIENT_STATIC_FILES_RUNTIME_MAIN_APP
+                        ],
+                        import: value,
+                        layer: WEBPACK_LAYERS.appClient
+                    };
+                }
+            }
+            if (!compilerName || compilerName === "client") {
+                clientResult = await runCompiler(clientConfig, {
+                    runWebpackSpan
+                });
+                debug("client result", clientResult);
+            }
+        }
+        result = {
+            warnings: [].concat(clientResult == null ? void 0 : clientResult.warnings, serverResult == null ? void 0 : serverResult.warnings, edgeServerResult == null ? void 0 : edgeServerResult.warnings).filter(nonNullable),
+            errors: [].concat(clientResult == null ? void 0 : clientResult.errors, serverResult == null ? void 0 : serverResult.errors, edgeServerResult == null ? void 0 : edgeServerResult.errors).filter(nonNullable),
+            stats: [
+                clientResult == null ? void 0 : clientResult.stats,
+                serverResult == null ? void 0 : serverResult.stats,
+                edgeServerResult == null ? void 0 : edgeServerResult.stats, 
+            ]
+        };
+    });
+    result = nextBuildSpan.traceChild("format-webpack-messages").traceFn(()=>formatWebpackMessages(result, true));
+    NextBuildContext.telemetryPlugin = (ref = clientConfig.plugins) == null ? void 0 : ref.find(isTelemetryPlugin);
+    const traceEntryPointsPlugin = (ref1 = serverConfig.plugins) == null ? void 0 : ref1.find(isTraceEntryPointsPlugin);
+    const webpackBuildEnd = process.hrtime(webpackBuildStart);
+    if (result.errors.length > 0) {
+        // Only keep the first few errors. Others are often indicative
+        // of the same problem, but confuse the reader with noise.
+        if (result.errors.length > 5) {
+            result.errors.length = 5;
+        }
+        let error = result.errors.filter(Boolean).join("\n\n");
+        console.error(chalk.red("Failed to compile.\n"));
+        if (error.indexOf("private-next-pages") > -1 && error.indexOf("does not contain a default export") > -1) {
+            const page_name_regex = /'private-next-pages\/(?<page_name>[^']*)'/;
+            const parsed = page_name_regex.exec(error);
+            const page_name = parsed && parsed.groups && parsed.groups.page_name;
+            throw new Error(`webpack build failed: found page without a React Component as default export in pages/${page_name}\n\nSee https://nextjs.org/docs/messages/page-without-valid-component for more info.`);
+        }
+        console.error(error);
+        console.error();
+        if (error.indexOf("private-next-pages") > -1 || error.indexOf("__next_polyfill__") > -1) {
+            const err = new Error("webpack config.resolve.alias was incorrectly overridden. https://nextjs.org/docs/messages/invalid-resolve-alias");
+            err.code = "INVALID_RESOLVE_ALIAS";
+            throw err;
+        }
+        const err = new Error("Build failed because of webpack errors");
+        err.code = "WEBPACK_ERRORS";
+        throw err;
+    } else {
+        if (result.warnings.length > 0) {
+            Log.warn("Compiled with warnings\n");
+            console.warn(result.warnings.filter(Boolean).join("\n\n"));
+            console.warn();
+        } else if (!compilerName) {
+            Log.info("Compiled successfully");
+        }
+        return {
+            duration: webpackBuildEnd[0],
+            turbotraceContext: traceEntryPointsPlugin == null ? void 0 : traceEntryPointsPlugin.turbotraceContext,
+            pluginState: getPluginState(),
+            serializedPagesManifestEntries: {
+                edgeServerPages: pagesPluginModule.edgeServerPages,
+                edgeServerAppPaths: pagesPluginModule.edgeServerAppPaths,
+                nodeServerPages: pagesPluginModule.nodeServerPages,
+                nodeServerAppPaths: pagesPluginModule.nodeServerAppPaths
+            }
+        };
+    }
+}
+// the main function when this file is run as a worker
+export async function workerMain(workerData) {
+    // setup new build context from the serialized data passed from the parent
+    Object.assign(NextBuildContext, workerData.buildContext);
+    // Resume plugin state
+    resumePluginState(NextBuildContext.pluginState);
+    // restore module scope maps for flight plugins
+    const { serializedPagesManifestEntries  } = NextBuildContext;
+    for (const key of Object.keys(serializedPagesManifestEntries || {})){
+        var ref;
+        Object.assign(pagesPluginModule[key], (ref = serializedPagesManifestEntries) == null ? void 0 : ref[key]);
+    }
+    /// load the config because it's not serializable
+    NextBuildContext.config = await loadConfig(PHASE_PRODUCTION_BUILD, NextBuildContext.dir, undefined, undefined, true);
+    NextBuildContext.nextBuildSpan = trace("next-build");
+    const result = await webpackBuildImpl(workerData.compilerName);
+    const { entriesTrace  } = result.turbotraceContext ?? {};
+    if (entriesTrace) {
+        const { entryNameMap , depModArray  } = entriesTrace;
+        if (depModArray) {
+            result.turbotraceContext.entriesTrace.depModArray = depModArray;
+        }
+        if (entryNameMap) {
+            const entryEntries = Array.from((entryNameMap == null ? void 0 : entryNameMap.entries()) ?? []);
+            // @ts-expect-error
+            result.turbotraceContext.entriesTrace.entryNameMap = entryEntries;
+        }
+    }
+    return result;
+}
+async function webpackBuildWithWorker() {
+    const { config , telemetryPlugin , buildSpinner , nextBuildSpan , ...prunedBuildContext } = NextBuildContext;
+    const getWorker = (compilerName)=>{
+        var ref;
+        const _worker = new Worker(__filename, {
+            exposedMethods: [
+                "workerMain"
+            ],
+            numWorkers: 1,
+            maxRetries: 0,
+            forkOptions: {
+                env: {
+                    ...process.env,
+                    NEXT_PRIVATE_BUILD_WORKER: "1"
+                }
+            }
+        });
+        _worker.getStderr().pipe(process.stderr);
+        _worker.getStdout().pipe(process.stdout);
+        for (const worker of ((ref = _worker._workerPool) == null ? void 0 : ref._workers) || []){
+            worker._child.on("exit", (code, signal)=>{
+                if (code || signal) {
+                    console.error(`Compiler ${compilerName} unexpectedly exited with code: ${code} and signal: ${signal}`);
+                }
+            });
+        }
+        return _worker;
+    };
+    const combinedResult = {
+        duration: 0,
+        turbotraceContext: {}
+    };
+    // order matters here
+    const ORDERED_COMPILER_NAMES = [
+        "server",
+        "edge-server",
+        "client", 
+    ];
+    for (const compilerName1 of ORDERED_COMPILER_NAMES){
+        var ref6, ref2, ref3, ref4, ref5;
+        const worker = getWorker(compilerName1);
+        const curResult = await worker.workerMain({
+            buildContext: prunedBuildContext,
+            compilerName: compilerName1
+        });
+        // destroy worker so it's not sticking around using memory
+        await worker.end();
+        // Update plugin state
+        prunedBuildContext.pluginState = curResult.pluginState;
+        prunedBuildContext.serializedPagesManifestEntries = {
+            edgeServerAppPaths: (ref6 = curResult.serializedPagesManifestEntries) == null ? void 0 : ref6.edgeServerAppPaths,
+            edgeServerPages: (ref2 = curResult.serializedPagesManifestEntries) == null ? void 0 : ref2.edgeServerPages,
+            nodeServerAppPaths: (ref3 = curResult.serializedPagesManifestEntries) == null ? void 0 : ref3.nodeServerAppPaths,
+            nodeServerPages: (ref4 = curResult.serializedPagesManifestEntries) == null ? void 0 : ref4.nodeServerPages
+        };
+        combinedResult.duration += curResult.duration;
+        if ((ref5 = curResult.turbotraceContext) == null ? void 0 : ref5.entriesTrace) {
+            combinedResult.turbotraceContext = curResult.turbotraceContext;
+            const { entryNameMap  } = combinedResult.turbotraceContext.entriesTrace;
+            if (entryNameMap) {
+                combinedResult.turbotraceContext.entriesTrace.entryNameMap = new Map(entryNameMap);
+            }
+        }
+    }
+    buildSpinner == null ? void 0 : buildSpinner.stopAndPersist();
+    Log.info("Compiled successfully");
+    return combinedResult;
+}
+export async function webpackBuild() {
+    const config = NextBuildContext.config;
+    if (config.experimental.webpackBuildWorker) {
+        debug("using separate compiler workers");
+        return await webpackBuildWithWorker();
+    } else {
+        debug("building all compilers in same process");
+        return await webpackBuildImpl();
+    }
+}
+
+//# sourceMappingURL=webpack-build.js.map

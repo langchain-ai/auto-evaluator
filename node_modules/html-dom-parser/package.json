@@ -1,0 +1,97 @@
+{
+  "name": "html-dom-parser",
+  "version": "1.2.0",
+  "description": "HTML to DOM parser.",
+  "author": "Mark <mark@remarkablemark.org>",
+  "main": "index.js",
+  "module": "index.mjs",
+  "exports": {
+    "import": "./index.mjs",
+    "require": "./index.js"
+  },
+  "scripts": {
+    "build": "rollup --config",
+    "clean": "rm -rf dist",
+    "lint": "eslint . --ignore-path .gitignore",
+    "lint:dts": "dtslint .",
+    "lint:fix": "npm run lint -- --fix",
+    "_postinstall": "husky install",
+    "postpublish": "pinst --enable",
+    "prepublishOnly": "pinst --disable && run-s lint lint:dts test:server clean build",
+    "size-limit": "size-limit",
+    "test": "run-s test:server test:client",
+    "test:client": "npm run test:client:watch -- --single-run",
+    "test:client:build": "webpack --config webpack.test.config.js",
+    "test:client:watch": "npm run test:client:build && karma start",
+    "test:module": "node --experimental-modules test/module/index.mjs",
+    "test:server": "nyc mocha test/server"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/remarkablemark/html-dom-parser"
+  },
+  "bugs": {
+    "url": "https://github.com/remarkablemark/html-dom-parser/issues"
+  },
+  "keywords": [
+    "html-dom-parser",
+    "html",
+    "dom",
+    "parser",
+    "htmlparser2",
+    "pojo"
+  ],
+  "dependencies": {
+    "domhandler": "4.3.1",
+    "htmlparser2": "7.2.0"
+  },
+  "devDependencies": {
+    "@commitlint/cli": "16.2.3",
+    "@commitlint/config-conventional": "16.2.1",
+    "@rollup/plugin-commonjs": "21.0.3",
+    "@rollup/plugin-node-resolve": "13.2.0",
+    "@size-limit/preset-big-lib": "7.0.8",
+    "@types/estree": "0.0.51",
+    "chai": "4.3.6",
+    "dtslint": "4.2.1",
+    "eslint": "8.13.0",
+    "eslint-plugin-prettier": "4.0.0",
+    "html-minifier": "4.0.0",
+    "husky": "7.0.4",
+    "jsdomify": "3.1.1",
+    "karma": "6.3.18",
+    "karma-chai": "0.1.0",
+    "karma-chrome-launcher": "3.1.1",
+    "karma-commonjs": "1.0.0",
+    "karma-mocha": "2.0.1",
+    "karma-mocha-reporter": "2.2.5",
+    "lint-staged": "12.3.7",
+    "mocha": "9.2.2",
+    "mock-require": "3.0.3",
+    "npm-run-all": "4.1.5",
+    "nyc": "15.1.0",
+    "pinst": "3.0.0",
+    "prettier": "2.6.2",
+    "rollup": "2.70.1",
+    "rollup-plugin-terser": "7.0.2",
+    "sinon": "13.0.1",
+    "size-limit": "7.0.8",
+    "typescript": "4.6.3",
+    "webpack": "5.70.0",
+    "webpack-cli": "4.9.2"
+  },
+  "files": [
+    "/dist",
+    "/index.d.ts",
+    "/index.js",
+    "/index.mjs",
+    "/lib"
+  ],
+  "browser": {
+    "./index.js": "./lib/client/html-to-dom.js"
+  },
+  "react-native": {
+    "./index.js": "./lib/server/html-to-dom.js"
+  },
+  "license": "MIT"
+}

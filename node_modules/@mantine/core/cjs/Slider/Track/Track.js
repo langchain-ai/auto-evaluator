@@ -1,0 +1,107 @@
+'use strict';
+
+Object.defineProperty(exports, '__esModule', { value: true });
+
+var React = require('react');
+var styles = require('@mantine/styles');
+var Marks = require('../Marks/Marks.js');
+var SliderRoot_styles = require('../SliderRoot/SliderRoot.styles.js');
+var Track_styles = require('./Track.styles.js');
+var Box = require('../../Box/Box.js');
+
+function _interopDefaultLegacy (e) { return e && typeof e === 'object' && 'default' in e ? e['default'] : e; }
+
+var React__default = /*#__PURE__*/_interopDefaultLegacy(React);
+
+var __defProp = Object.defineProperty;
+var __defProps = Object.defineProperties;
+var __getOwnPropDescs = Object.getOwnPropertyDescriptors;
+var __getOwnPropSymbols = Object.getOwnPropertySymbols;
+var __hasOwnProp = Object.prototype.hasOwnProperty;
+var __propIsEnum = Object.prototype.propertyIsEnumerable;
+var __defNormalProp = (obj, key, value) => key in obj ? __defProp(obj, key, { enumerable: true, configurable: true, writable: true, value }) : obj[key] = value;
+var __spreadValues = (a, b) => {
+  for (var prop in b || (b = {}))
+    if (__hasOwnProp.call(b, prop))
+      __defNormalProp(a, prop, b[prop]);
+  if (__getOwnPropSymbols)
+    for (var prop of __getOwnPropSymbols(b)) {
+      if (__propIsEnum.call(b, prop))
+        __defNormalProp(a, prop, b[prop]);
+    }
+  return a;
+};
+var __spreadProps = (a, b) => __defProps(a, __getOwnPropDescs(b));
+var __objRest = (source, exclude) => {
+  var target = {};
+  for (var prop in source)
+    if (__hasOwnProp.call(source, prop) && exclude.indexOf(prop) < 0)
+      target[prop] = source[prop];
+  if (source != null && __getOwnPropSymbols)
+    for (var prop of __getOwnPropSymbols(source)) {
+      if (exclude.indexOf(prop) < 0 && __propIsEnum.call(source, prop))
+        target[prop] = source[prop];
+    }
+  return target;
+};
+function Track(_a) {
+  var _b = _a, {
+    filled,
+    size,
+    color,
+    classNames,
+    styles: styles$1,
+    radius,
+    children,
+    offset,
+    onMouseLeave,
+    onMouseEnter,
+    disabled,
+    marksOffset,
+    unstyled,
+    inverted,
+    variant
+  } = _b, others = __objRest(_b, [
+    "filled",
+    "size",
+    "color",
+    "classNames",
+    "styles",
+    "radius",
+    "children",
+    "offset",
+    "onMouseLeave",
+    "onMouseEnter",
+    "disabled",
+    "marksOffset",
+    "unstyled",
+    "inverted",
+    "variant"
+  ]);
+  const { classes } = Track_styles['default']({ color, radius, disabled, inverted }, { name: "Slider", classNames, styles: styles$1, unstyled, variant, size });
+  return /* @__PURE__ */ React__default.createElement("div", {
+    className: classes.track,
+    onMouseLeave,
+    onMouseEnter
+  }, /* @__PURE__ */ React__default.createElement(Box.Box, {
+    className: classes.bar,
+    sx: {
+      left: `calc(${offset}% - ${styles.getSize({ size, sizes: SliderRoot_styles.sizes })})`,
+      width: `calc(${filled}% + ${styles.getSize({ size, sizes: SliderRoot_styles.sizes })})`
+    }
+  }), children, /* @__PURE__ */ React__default.createElement(Marks.Marks, __spreadProps(__spreadValues({}, others), {
+    size,
+    color,
+    offset: marksOffset,
+    classNames,
+    styles: styles$1,
+    disabled,
+    unstyled,
+    inverted,
+    variant
+  })));
+}
+Track.displayName = "@mantine/core/SliderTrack";
+
+exports.Track = Track;
+//# sourceMappingURL=Track.js.map

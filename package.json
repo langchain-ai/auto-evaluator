@@ -1,0 +1,36 @@
+{
+  "private": true,
+  "scripts": {
+    "dev": "doppler run -- next dev",
+    "build": "next build",
+    "start": "next start"
+  },
+  "dependencies": {
+    "@emotion/react": "false11.10.6",
+    "@emotion/server": "false11.10.0",
+    "@mantine/core": "false6.0.4",
+    "@mantine/dropzone": "false6.0.6",
+    "@mantine/hooks": "false6.0.4",
+    "@mantine/next": "false6.0.4",
+    "@segment/snippet": "false4.15.3",
+    "@tabler/icons-react": "false2.11.0",
+    "@types/lodash": "false4.14.191",
+    "date-fns": "^2.29.3",
+    "eslint-plugin-unused-imports": "false2.0.0",
+    "gray-matter": "^4.0.3",
+    "lodash": "false4.17.21",
+    "next": "false13.2.4",
+    "openai": "false3.2.1",
+    "react": "18.2.0",
+    "react-dom": "18.2.0",
+    "react-hook-form": "false7.43.8",
+    "react-spinners": "false0.13.8",
+    "remark": "^14.0.2",
+    "remark-html": "^15.0.1"
+  },
+  "devDependencies": {
+    "@types/node": "18.15.10",
+    "@types/react": "18.0.29",
+    "typescript": "5.0.2"
+  }
+}

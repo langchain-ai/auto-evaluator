@@ -1,0 +1,1 @@
+{"version":3,"sources":["../../../../src/server/future/route-handlers/pages-route-handler.ts"],"names":["PagesRouteHandler","handle","Error"],"mappings":"AAAA;;;;AAGO,MAAMA,iBAAiB;IAC5B,MAAaC,MAAM,GAAkB;QACnC,MAAM,IAAIC,KAAK,CAAC,yBAAyB,CAAC,CAAA;KAC3C;CACF;QAJYF,iBAAiB,GAAjBA,iBAAiB"}

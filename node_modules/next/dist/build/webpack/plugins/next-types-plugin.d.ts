@@ -1,0 +1,33 @@
+import type { Rewrite, Redirect } from '../../../lib/load-custom-routes';
+import { webpack } from 'next/dist/compiled/webpack/webpack';
+declare type Rewrites = {
+    fallback: Rewrite[];
+    afterFiles: Rewrite[];
+    beforeFiles: Rewrite[];
+};
+interface Options {
+    dir: string;
+    distDir: string;
+    appDir: string;
+    dev: boolean;
+    isEdgeServer: boolean;
+    pageExtensions: string[];
+    typedRoutes: boolean;
+    originalRewrites: Rewrites | undefined;
+    originalRedirects: Redirect[] | undefined;
+}
+export declare const devPageFiles: Set<string>;
+export declare class NextTypesPlugin {
+    dir: string;
+    distDir: string;
+    appDir: string;
+    dev: boolean;
+    isEdgeServer: boolean;
+    pageExtensions: string[];
+    pagesDir: string;
+    typedRoutes: boolean;
+    constructor(options: Options);
+    collectPage(filePath: string): void;
+    apply(compiler: webpack.Compiler): void;
+}
+export {};

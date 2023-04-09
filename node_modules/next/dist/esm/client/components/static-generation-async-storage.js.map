@@ -1,0 +1,1 @@
+{"version":3,"sources":["../../../src/client/components/static-generation-async-storage.ts"],"names":["createAsyncLocalStorage","staticGenerationAsyncStorage"],"mappings":"AACA,SAASA,uBAAuB,QAAQ,uBAAuB,CAAA;AAsB/D,OAAO,MAAMC,4BAA4B,GACvCD,uBAAuB,EAAE,CAAA"}
