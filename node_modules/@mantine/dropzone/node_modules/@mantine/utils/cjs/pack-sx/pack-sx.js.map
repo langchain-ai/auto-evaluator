@@ -1,1 +1,0 @@
-{"version":3,"file":"pack-sx.js","sources":["../../src/pack-sx/pack-sx.ts"],"sourcesContent":["export function packSx<T>(sx: T | T[]) {\n  return Array.isArray(sx) ? sx : [sx];\n}\n"],"names":[],"mappings":";;;;AAAO,SAAS,MAAM,CAAC,EAAE,EAAE;AAC3B,EAAE,OAAO,KAAK,CAAC,OAAO,CAAC,EAAE,CAAC,GAAG,EAAE,GAAG,CAAC,EAAE,CAAC,CAAC;AACvC;;;;"}

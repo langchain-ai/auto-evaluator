@@ -25,14 +25,19 @@ const HomePage = () => {
           hidden={!opened}
           width={{ sm: 200, lg: 300 }}
         >
+          <Text fz="xl">Inputs Pane</Text>
+          <Text fz="md">Number of eval questions</Text>
           <Slider
-            label="Number of eval questions"
-            marks={[{ value: 10 }, { value: 40 }, { value: 100 }]}
-            // marks={[
-            //   { value: 5, label: "30%" },
-            //   { value: 10, label: "60%" },
-            //   { value: 15, label: "100%" },
-            // ]}
+            // label="Number of eval questions"
+            labelTransition="skew-down"
+            marks={[
+              { value: 5, label: "5" },
+              { value: 10, label: "10" },
+              { value: 15, label: "15" },
+            ]}
+            max={15}
+            min={5}
+            step={1}
           />
         </Navbar>
       }

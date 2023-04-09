@@ -1,1 +1,0 @@
-{"version":3,"sources":["../../src/build/is-client-reference.ts"],"names":["isClientReference","reference","$$typeof","Symbol","for"],"mappings":"AAAA;;;;QAAgBA,iBAAiB,GAAjBA,iBAAiB;AAA1B,SAASA,iBAAiB,CAACC,SAAc,EAAW;IACzD,OAAOA,CAAAA,SAAS,QAAU,GAAnBA,KAAAA,CAAmB,GAAnBA,SAAS,CAAEC,QAAQ,CAAA,KAAKC,MAAM,CAACC,GAAG,CAAC,wBAAwB,CAAC,CAAA;CACpE"}
