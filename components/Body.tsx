@@ -30,7 +30,25 @@ const Body = ({ form }: { form: Form }) => {
 
     // const url = "http://evaluator-production.up.railway.app:7137/files/";
     const url = "http://127.0.0.1:8000/files";
-    const response = await axios.post(url, data);
+    const response = await axios.post(
+      url,
+      {
+        files: data.files,
+        num_eval_questions: data.evalQuestionsCount,
+        chunk_chars: data.chunkSize,
+        overlap: data.overlap,
+        split_method: data.splitMethod,
+        retriver_type: data.retriever,
+        embeddings: data.embeddingAlgorithm,
+        model: data.model,
+      },
+      {
+        headers: {
+          "x-device-id": "stuff",
+          "Content-Type": "multipart/form-data",
+        },
+      }
+    );
     console.log(response);
   });
 

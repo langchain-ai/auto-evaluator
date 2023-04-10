@@ -85,7 +85,7 @@ const Sidebar = ({ form }: { form: Form }) => {
               <SegmentedControl
                 {...field}
                 data={[
-                  { label: "GPT 3.5 Turbo", value: "gpt3" },
+                  { label: "GPT 3.5 Turbo", value: "gpt-3.5-turbo" },
                   { label: "GPT 4", value: "gpt4" },
                 ]}
               />
@@ -103,11 +103,11 @@ const Sidebar = ({ form }: { form: Form }) => {
                 data={[
                   {
                     label: "CharacterTextSplitter",
-                    value: "characterTextSplitter",
+                    value: "CharacterTextSplitter",
                   },
                   {
                     label: "RecursiveTextSplitter",
-                    value: "recursiveTextSplitter",
+                    value: "RecursiveTextSplitter",
                   },
                 ]}
               />
@@ -124,11 +124,11 @@ const Sidebar = ({ form }: { form: Form }) => {
                 data={[
                   {
                     label: "OpenAI",
-                    value: "openAI",
+                    value: "OpenAI",
                   },
                   {
                     label: "HuggingFace",
-                    value: "huggingFace",
+                    value: "HuggingFace",
                   },
                 ]}
               />
@@ -149,7 +149,7 @@ const Sidebar = ({ form }: { form: Form }) => {
                   },
                   {
                     label: "Vector Store",
-                    value: "vectorStore",
+                    value: "vectorstore",
                   },
                 ]}
               />
