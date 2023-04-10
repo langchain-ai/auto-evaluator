@@ -17,15 +17,21 @@ import {
 import { Dropzone, MS_WORD_MIME_TYPE, PDF_MIME_TYPE } from "@mantine/dropzone";
 import { Form } from "../utils/types";
 import { notifications } from "@mantine/notifications";
+import axios from "axios";
 
 const Body = ({ form }: { form: Form }) => {
   const { register, setValue, watch, getValues, handleSubmit } = form;
   const watchFiles = watch("files");
   const theme = useMantineTheme();
 
-  const submit = handleSubmit((data) => {
+  const submit = handleSubmit(async (data) => {
     console.log("submitting");
     console.log(data);
+
+    // const url = "http://evaluator-production.up.railway.app:7137/files/";
+    const url = "http://127.0.0.1:8000/files";
+    const response = await axios.post(url, data);
+    console.log(response);
   });
 
   return (
