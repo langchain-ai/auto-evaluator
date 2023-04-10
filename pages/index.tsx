@@ -6,7 +6,7 @@ import {
   Navbar,
   Text,
 } from "@mantine/core";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useMediaQuery } from "@mantine/hooks";
 import React from "react";
 import Body from "../components/Body";
@@ -17,7 +17,18 @@ import { FormValues } from "../utils/types";
 const HomePage = () => {
   const [opened, setOpened] = useState(false);
   const mobileWidth = useMediaQuery("(max-width: 390px)");
-  const form = useForm<FormValues>();
+  const form = useForm<FormValues>({
+    defaultValues: {
+      evalQuestionsCount: 5,
+      chunkSize: 1000,
+      overlap: 0,
+      splitMethod: "characterTextSplitter",
+      embeddingAlgorithm: "openAI",
+      model: "gpt3",
+      retriever: "vectorStore",
+      files: [],
+    },
+  });
 
   return (
     <AppShell
@@ -30,6 +41,7 @@ const HomePage = () => {
           width={{ sm: 200, lg: 400 }}
         >
           <Sidebar form={form} />
+          <br />
         </Navbar>
       }
       header={

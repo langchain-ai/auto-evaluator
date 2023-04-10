@@ -1,5 +1,13 @@
-import React from "react";
-import { Group, Text, useMantineTheme, rem, Alert } from "@mantine/core";
+import React, { useMemo } from "react";
+import {
+  Group,
+  Text,
+  useMantineTheme,
+  rem,
+  Alert,
+  Table,
+  Button,
+} from "@mantine/core";
 import {
   IconUpload,
   IconPhoto,
@@ -11,9 +19,14 @@ import { Form } from "../utils/types";
 import { notifications } from "@mantine/notifications";
 
 const Body = ({ form }: { form: Form }) => {
-  const { register, setValue } = form;
-
+  const { register, setValue, watch, getValues, handleSubmit } = form;
+  const watchFiles = watch("files");
   const theme = useMantineTheme();
+
+  const submit = handleSubmit((data) => {
+    console.log("submitting");
+    console.log(data);
+  });
 
   return (
     <>
@@ -23,13 +36,12 @@ const Body = ({ form }: { form: Form }) => {
         color="teal"
       >
         Provide your PDFs and/or Docx files, evaluator will build the QA eval
-        data set. for you.
+        data set for you.
       </Alert>
       <br />
       <Dropzone
         onDrop={(files) => {
-          setValue("files", files);
-          console.log("accepted files", files);
+          setValue("files", [...(getValues("files") ?? []), ...files]);
         }}
         onReject={(files) =>
           notifications.show({
@@ -41,12 +53,12 @@ const Body = ({ form }: { form: Form }) => {
           })
         }
         maxSize={3 * 1024 ** 2}
-        accept={PDF_MIME_TYPE && MS_WORD_MIME_TYPE}
+        accept={PDF_MIME_TYPE || MS_WORD_MIME_TYPE}
       >
         <Group
           position="center"
           spacing="xl"
-          style={{ minHeight: rem(220), pointerEvents: "none" }}
+          style={{ minHeight: rem(125), pointerEvents: "none" }}
         >
           <Dropzone.Accept>
             <IconUpload
@@ -80,6 +92,29 @@ const Body = ({ form }: { form: Form }) => {
           </div>
         </Group>
       </Dropzone>
+      <Table>
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Size</th>
+          </tr>
+        </thead>
+        <tbody>
+          {watchFiles?.map((file, id) => (
+            <tr key={id}>
+              <td>{file.name}</td>
+              <td>{file.size}</td>
+            </tr>
+          ))}
+        </tbody>
+      </Table>
+      <Button
+        type="submit"
+        onClick={submit}
+        style={{ position: "absolute", bottom: 25 }}
+      >
+        Submit
+      </Button>
     </>
   );
 };
