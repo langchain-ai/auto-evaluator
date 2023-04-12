@@ -25,7 +25,7 @@ const HomePage = () => {
       splitMethod: "RecursiveTextSplitter",
       embeddingAlgorithm: "OpenAI",
       model: "gpt-3.5-turbo",
-      retriever: "vectorstore",
+      retriever: "similarity-search",
       files: [],
     },
   });

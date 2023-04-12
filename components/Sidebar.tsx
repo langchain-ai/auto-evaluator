@@ -144,8 +144,8 @@ const Sidebar = ({ form }: { form: Form }) => {
               <SegmentedControl
                 data={[
                   {
-                    label: "TF-IDF",
-                    value: "tfIdf",
+                    label: "Similarity Search",
+                    value: "similarity-search",
                   },
                   {
                     label: "Vector Store",

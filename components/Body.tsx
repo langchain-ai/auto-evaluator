@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import React, { useMemo, useState } from "react";
 import {
   Group,
   Text,
@@ -18,39 +18,33 @@ import { Dropzone, MS_WORD_MIME_TYPE, PDF_MIME_TYPE } from "@mantine/dropzone";
 import { Form } from "../utils/types";
 import { notifications } from "@mantine/notifications";
 import axios from "axios";
+import { API_URL, TEXT_PLAIN } from "../utils/variables";
 
 const Body = ({ form }: { form: Form }) => {
   const { setValue, watch, getValues, handleSubmit } = form;
   const watchFiles = watch("files");
   const theme = useMantineTheme();
-
+  const [output, setOutput] = useState(null);
   const submit = handleSubmit(async (data) => {
-    console.log("submitting");
-    console.log(data);
+    const formData = new FormData();
+    data.files.forEach((file) => {
+      formData.append("files", file);
+    });
+    formData.append("num_eval_questions", data.evalQuestionsCount.toString());
+    formData.append("chunk_chars", data.chunkSize.toString());
+    formData.append("overlap", data.overlap.toString());
+    formData.append("split_method", data.splitMethod);
+    formData.append("retriver_type", data.retriever);
+    formData.append("embeddings", data.embeddingAlgorithm);
+    formData.append("model", data.model);
 
-    // const url = "http://evaluator-production.up.railway.app:7137/files/";
-    const url = "http://127.0.0.1:8000/files";
-
-    const response = await axios.post(url, {
-      data: {
-        files: data.files.map((file) => {
-          console.log(file);
-          return file.path;
-        }),
-        // files: data.files,
-        num_eval_questions: data.evalQuestionsCount,
-        chunk_chars: data.chunkSize,
-        overlap: data.overlap,
-        split_method: data.splitMethod,
-        retriver_type: data.retriever,
-        embeddings: data.embeddingAlgorithm,
-        model: data.model,
-      },
+    const response = await axios.post(API_URL, formData, {
       headers: {
         "Content-Type": "multipart/form-data",
       },
     });
     console.log(response);
+    setOutput(response.data["output dataframe"]);
   });
 
   return (
@@ -78,7 +72,7 @@ const Body = ({ form }: { form: Form }) => {
           })
         }
         maxSize={3 * 1024 ** 2}
-        accept={PDF_MIME_TYPE || MS_WORD_MIME_TYPE}
+        accept={TEXT_PLAIN && PDF_MIME_TYPE && MS_WORD_MIME_TYPE}
       >
         <Group
           position="center"
@@ -133,6 +127,7 @@ const Body = ({ form }: { form: Form }) => {
           ))}
         </tbody>
       </Table>
+      <Text>{JSON.stringify(output)}</Text>
       <Button
         type="submit"
         onClick={submit}
