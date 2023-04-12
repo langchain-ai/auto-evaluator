@@ -4,7 +4,7 @@ import { Form } from "../utils/types";
 import { Controller } from "react-hook-form";
 
 const Sidebar = ({ form }: { form: Form }) => {
-  const { setValue, getValues, control } = form;
+  const { control } = form;
 
   return (
     <>

@@ -20,7 +20,7 @@ import { notifications } from "@mantine/notifications";
 import axios from "axios";
 
 const Body = ({ form }: { form: Form }) => {
-  const { register, setValue, watch, getValues, handleSubmit } = form;
+  const { setValue, watch, getValues, handleSubmit } = form;
   const watchFiles = watch("files");
   const theme = useMantineTheme();
 
@@ -30,10 +30,14 @@ const Body = ({ form }: { form: Form }) => {
 
     // const url = "http://evaluator-production.up.railway.app:7137/files/";
     const url = "http://127.0.0.1:8000/files";
-    const response = await axios.post(
-      url,
-      {
-        files: data.files,
+
+    const response = await axios.post(url, {
+      data: {
+        files: data.files.map((file) => {
+          console.log(file);
+          return file.path;
+        }),
+        // files: data.files,
         num_eval_questions: data.evalQuestionsCount,
         chunk_chars: data.chunkSize,
         overlap: data.overlap,
@@ -42,13 +46,10 @@ const Body = ({ form }: { form: Form }) => {
         embeddings: data.embeddingAlgorithm,
         model: data.model,
       },
-      {
-        headers: {
-          "x-device-id": "stuff",
-          "Content-Type": "multipart/form-data",
-        },
-      }
-    );
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
     console.log(response);
   });
 

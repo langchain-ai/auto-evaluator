@@ -56,3 +56,4 @@ schema.graphql
 /playwright/.cache/
 
 tsconfig.tsbuildinfo
+.next
