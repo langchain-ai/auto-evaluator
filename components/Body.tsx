@@ -2,6 +2,7 @@ import React, { useMemo, useState } from "react";
 import {
   Group,
   Text,
+  Loader,
   useMantineTheme,
   rem,
   Alert,
@@ -25,6 +26,7 @@ const Body = ({ form }: { form: Form }) => {
   const watchFiles = watch("files");
   const theme = useMantineTheme();
   const [output, setOutput] = useState(null);
+  const [loading, setLoading] = useState(false);
   const submit = handleSubmit(async (data) => {
     const formData = new FormData();
     data.files.forEach((file) => {
@@ -42,9 +44,19 @@ const Body = ({ form }: { form: Form }) => {
       headers: {
         "Content-Type": "multipart/form-data",
       },
+      responseType: "json",
     });
     console.log(response);
-    setOutput(response.data["output dataframe"]);
+    if (response?.status === 200 && response?.data) {
+      setOutput(JSON.parse(response.data["output dataframe"])?.tableA);
+    } else {
+      notifications.show({
+        title: "Error",
+        message: "Error with request",
+        color: "red",
+      });
+    }
+    setLoading(false);
   });
 
   return (
@@ -111,30 +123,62 @@ const Body = ({ form }: { form: Form }) => {
           </div>
         </Group>
       </Dropzone>
-      <Table>
-        <thead>
-          <tr>
-            <th>Name</th>
-            <th>Size</th>
-          </tr>
-        </thead>
-        <tbody>
-          {watchFiles?.map((file, id) => (
-            <tr key={id}>
-              <td>{file.name}</td>
-              <td>{file.size}</td>
+      {!!watchFiles?.length && (
+        <>
+          <Table>
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Size</th>
+              </tr>
+            </thead>
+            <tbody>
+              {watchFiles?.map((file, id) => (
+                <tr key={id}>
+                  <td>{file.name}</td>
+                  <td>{file.size}</td>
+                </tr>
+              ))}
+            </tbody>
+          </Table>
+          <Button
+            type="submit"
+            onClick={() => {
+              setLoading(true);
+              submit();
+            }}
+            disabled={loading}
+          >
+            {loading ? <Loader size="sm" /> : "Submit"}
+          </Button>
+          <br />
+          <br />
+        </>
+      )}
+      {!!output?.length && (
+        <Table>
+          <thead>
+            <tr>
+              <th>Question</th>
+              <th>Answer</th>
+              <th>Result</th>
+              <th>Score</th>
+              <th>Latency</th>
             </tr>
-          ))}
-        </tbody>
-      </Table>
-      <Text>{JSON.stringify(output)}</Text>
-      <Button
-        type="submit"
-        onClick={submit}
-        style={{ position: "absolute", bottom: 25 }}
-      >
-        Submit
-      </Button>
+          </thead>
+          <tbody>
+            {output?.map((response, index) => (
+              <tr key={index}>
+                <td>{response.question}</td>
+                <td>{response.answer}</td>
+                <td>{response.result}</td>
+                <td>{response.score}</td>
+                <td>{response.latency}</td>
+              </tr>
+            ))}
+          </tbody>
+        </Table>
+      )}
     </>
   );
 };
