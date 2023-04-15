@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useState } from "react";
 import {
   Group,
   Text,
@@ -47,12 +47,12 @@ const Body = ({ form }: { form: Form }) => {
       responseType: "json",
     });
     console.log(response);
-    if (response?.status === 200 && response?.data) {
-      setOutput(JSON.parse(response.data["output dataframe"])?.tableA);
+    if (response?.status === 200) {
+      setOutput(response?.data?.output);
     } else {
       notifications.show({
         title: "Error",
-        message: "Error with request",
+        message: `Error with request: ${response?.statusText}`,
         color: "red",
       });
     }
