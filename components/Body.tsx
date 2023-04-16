@@ -53,57 +53,31 @@ const Body = ({ form }: { form: Form }) => {
     formData.append("embeddings", data.embeddingAlgorithm);
     formData.append("model", data.model);
 
-    // try {
-    // const response = await fetch(API_URL + "/evaluator-stream", {
-    //   method: "POST",
-    //   body: formData,
-    // });
-
-    fetchEventSource(API_URL + "/evaluator-stream", {
+    await fetchEventSource(API_URL + "/evaluator-stream", {
       method: "POST",
       body: formData,
       headers: {
         Accept: "text/event-stream",
       },
       onmessage(ev) {
-        console.log(ev.data, "HELLO");
-        console.log(JSON.parse(ev.data), "GOODBYE");
-        setOutput(ev.data);
+        console.log("raw input", ev.data);
+        let parsedData;
+        try {
+          parsedData = JSON.parse(ev.data);
+          setOutput(parsedData.data);
+        } catch (e) {
+          console.warn("Error parsing data", e);
+        }
       },
       onclose() {
-        console.log("CLOSED");
+        console.log("Connection closed by the server");
+        setLoading(false);
+      },
+      onerror(err) {
+        console.log("There was an error from server", err);
+        throw new Error(err);
       },
     });
-    //   const reader = response.body.getReader();
-
-    //   let done, value;
-    //   while (!done) {
-    //     ({ value, done } = await reader.read());
-    //     const decoder = new TextDecoder();
-    //     if (done) {
-    //       break;
-    //     }
-    //     try {
-    //       console.log(decoder.decode(value));
-    //       setOutput(JSON.parse(decoder.decode(value)));
-    //     } catch (e) {
-    //       notifications.show({
-    //         title: "Error",
-    //         message: "Error parsing API response",
-    //         color: "red",
-    //       });
-    //       break;
-    //     }
-    //   }
-    // } catch (e) {
-    //   notifications.show({
-    //     title: "Error",
-    //     message: "API Error",
-    //     color: "red",
-    //   });
-    // } finally {
-    //   setLoading(false);
-    // }
   });
 
   return (
