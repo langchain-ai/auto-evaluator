@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useState } from "react";
 import {
   Group,
   Text,
@@ -21,19 +21,18 @@ import { Form } from "../utils/types";
 import { notifications } from "@mantine/notifications";
 import { API_URL, TEXT_PLAIN } from "../utils/variables";
 import { fetchEventSource } from "@microsoft/fetch-event-source";
-import { isEmpty, isNil } from "lodash";
+import { isEmpty } from "lodash";
 
-enum ResponseStatus {
-  WIP = "WIP",
-  DONE = "DONE",
+enum LoadingState {
+  Initialized = "Initialized",
+  FilesAccepted = "Files accepted",
+  SplittingTexts = "Splitting texts",
+  MakingRetriever = "Making retriever",
+  GradingModel = "Grading model",
+  Done = "Done",
 }
 
-enum ResponseType {
-  Message = "message",
-  Table = "table",
-}
-
-type TableA = {
+type QATableEntry = {
   question: string;
   answer: string;
   result: string;
@@ -41,26 +40,41 @@ type TableA = {
   latency: string;
 };
 
+type QATable = QATableEntry[];
+
 type Response = {
-  type: ResponseType;
-  status: ResponseStatus;
-  data: string | TableA[];
+  loadingState: LoadingState;
+  data: { qaTable: QATable } | undefined;
 };
 
 const Body = ({ form }: { form: Form }) => {
   const { setValue, watch, getValues, handleSubmit } = form;
   const watchFiles = watch("files");
   const theme = useMantineTheme();
-  const [output, setOutput] = useState([] as Response[]);
+  const [output, setOutput] = useState<Response>(null);
   const [isSuccess, setIsSuccess] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  const tableAData = useMemo(
-    () =>
-      !isEmpty(output) &&
-      (output.filter((item) => item.type === "table")?.[0]?.data as TableA[]),
-    [output]
-  );
+  const getTimelineIndexFromLoadingState = (loadingState: LoadingState) => {
+    switch (loadingState) {
+      case LoadingState.FilesAccepted:
+        return 0;
+      case LoadingState.SplittingTexts:
+        return 1;
+      case LoadingState.MakingRetriever:
+        return 2;
+      case LoadingState.GradingModel:
+        return 3;
+      case LoadingState.Done:
+        return 4;
+      default:
+        return -1;
+    }
+  };
+
+  const timelineIndex = getTimelineIndexFromLoadingState(output?.loadingState);
+
+  const qaTable = output?.data?.qaTable;
 
   const submit = handleSubmit(async (data) => {
     setLoading(true);
@@ -75,20 +89,23 @@ const Body = ({ form }: { form: Form }) => {
     formData.append("retriver_type", data.retriever);
     formData.append("embeddings", data.embeddingAlgorithm);
     formData.append("model", data.model);
-
+    const controller = new AbortController();
     await fetchEventSource(API_URL + "/evaluator-stream", {
       method: "POST",
       body: formData,
       headers: {
         Accept: "text/event-stream",
-        Origin: "https://evaluator-ui.vercel.app",
       },
+      signal: controller.signal,
       onmessage(ev) {
         console.log("raw input", ev.data);
         let parsedData;
         try {
           parsedData = JSON.parse(ev.data);
-          setOutput((state) => [...(state ?? []), parsedData.data]);
+          setOutput(parsedData.data);
+          if (parsedData?.data?.loadingState === LoadingState.Done) {
+            controller.abort();
+          }
         } catch (e) {
           console.warn("Error parsing data", e);
         }
@@ -200,34 +217,31 @@ const Body = ({ form }: { form: Form }) => {
           )}
         </>
       )}
-      {!isEmpty(output) && (
+      {timelineIndex !== -1 && (
         <>
           <br />
           <Timeline
             color="dark"
             bulletSize={18}
             lineWidth={2}
-            active={output?.length - 1 ?? 0}
+            active={timelineIndex}
           >
+            <Timeline.Item active={timelineIndex >= 0} title="Files Accepted" />
             <Timeline.Item
-              active={!isNil(output?.[0])}
-              title="Files Accepted"
-            />
-            <Timeline.Item
-              active={!isNil(output?.[1])}
+              active={timelineIndex >= 1}
               title="Splitting Texts"
             />
             <Timeline.Item
-              active={!isNil(output?.[2])}
+              active={timelineIndex >= 2}
               title="Making retriever"
             />
-            <Timeline.Item active={!isNil(output?.[3])} title="Grading model" />
+            <Timeline.Item active={timelineIndex >= 3} title="Grading model" />
             <Timeline.Item
-              active={!isNil(output?.[4])}
+              active={timelineIndex >= 4}
               title="Generating Results"
             />
           </Timeline>
-          {!isEmpty(tableAData) && (
+          {!isEmpty(qaTable) && (
             <>
               <br />
               <Title order={3}>Results</Title>
@@ -242,7 +256,7 @@ const Body = ({ form }: { form: Form }) => {
                   </tr>
                 </thead>
                 <tbody>
-                  {tableAData?.map((response, index) => (
+                  {qaTable?.map((response, index) => (
                     <tr key={index}>
                       <td>{response.question}</td>
                       <td>{response.answer}</td>
