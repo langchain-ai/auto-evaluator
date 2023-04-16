@@ -51,33 +51,40 @@ const Body = ({ form }: { form: Form }) => {
     formData.append("embeddings", data.embeddingAlgorithm);
     formData.append("model", data.model);
 
-    const response = await fetch(API_URL + "/evaluator-stream", {
-      method: "POST",
-      body: formData,
-    });
+    try {
+      const response = await fetch(API_URL + "/evaluator-stream", {
+        method: "POST",
+        body: formData,
+      });
+      const reader = response.body.getReader();
 
-    const reader = response.body.getReader();
-
-    let done, value;
-    while (!done) {
-      ({ value, done } = await reader.read());
-      const decoder = new TextDecoder();
-      if (done) {
-        break;
+      let done, value;
+      while (!done) {
+        ({ value, done } = await reader.read());
+        const decoder = new TextDecoder();
+        if (done) {
+          break;
+        }
+        try {
+          setOutput(JSON.parse(decoder.decode(value)));
+        } catch (e) {
+          notifications.show({
+            title: "Error",
+            message: "Error parsing API response",
+            color: "red",
+          });
+          break;
+        }
       }
-      try {
-        setOutput(JSON.parse(decoder.decode(value)));
-      } catch (e) {
-        notifications.show({
-          title: "Error",
-          message: "Error parsing API response",
-          color: "red",
-        });
-        break;
-      }
+    } catch (e) {
+      notifications.show({
+        title: "Error",
+        message: "API Error",
+        color: "red",
+      });
+    } finally {
+      setLoading(false);
     }
-
-    setLoading(false);
   });
 
   return (
