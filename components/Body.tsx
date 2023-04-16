@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Group,
   Text,
@@ -18,8 +18,17 @@ import {
 import { Dropzone, MS_WORD_MIME_TYPE, PDF_MIME_TYPE } from "@mantine/dropzone";
 import { Form } from "../utils/types";
 import { notifications } from "@mantine/notifications";
-import axios from "axios";
 import { API_URL, TEXT_PLAIN } from "../utils/variables";
+
+enum ResponseStatus {
+  WIP = "WIP",
+  DONE = "DONE",
+}
+
+enum ResponseType {
+  Message = "message",
+  Table = "table",
+}
 
 const Body = ({ form }: { form: Form }) => {
   const { setValue, watch, getValues, handleSubmit } = form;
@@ -28,6 +37,8 @@ const Body = ({ form }: { form: Form }) => {
   const [output, setOutput] = useState(null);
   const [loading, setLoading] = useState(false);
   const submit = handleSubmit(async (data) => {
+    setLoading(true);
+    setOutput(null);
     const formData = new FormData();
     data.files.forEach((file) => {
       formData.append("files", file);
@@ -40,22 +51,32 @@ const Body = ({ form }: { form: Form }) => {
     formData.append("embeddings", data.embeddingAlgorithm);
     formData.append("model", data.model);
 
-    const response = await axios.post(API_URL, formData, {
-      headers: {
-        "Content-Type": "multipart/form-data",
-      },
-      responseType: "json",
+    const response = await fetch(API_URL + "/evaluator-stream", {
+      method: "POST",
+      body: formData,
     });
-    console.log(response);
-    if (response?.status === 200) {
-      setOutput(response?.data?.output);
-    } else {
-      notifications.show({
-        title: "Error",
-        message: `Error with request: ${response?.statusText}`,
-        color: "red",
-      });
+
+    const reader = response.body.getReader();
+
+    let done, value;
+    while (!done) {
+      ({ value, done } = await reader.read());
+      const decoder = new TextDecoder();
+      if (done) {
+        break;
+      }
+      try {
+        setOutput(JSON.parse(decoder.decode(value)));
+      } catch (e) {
+        notifications.show({
+          title: "Error",
+          message: "Error parsing API response",
+          color: "red",
+        });
+        break;
+      }
     }
+
     setLoading(false);
   });
 
@@ -141,21 +162,17 @@ const Body = ({ form }: { form: Form }) => {
               ))}
             </tbody>
           </Table>
-          <Button
-            type="submit"
-            onClick={() => {
-              setLoading(true);
-              submit();
-            }}
-            disabled={loading}
-          >
+          <Button type="submit" onClick={submit} disabled={loading}>
             {loading ? <Loader size="sm" /> : "Submit"}
           </Button>
           <br />
           <br />
         </>
       )}
-      {!!output?.length && (
+      {output?.type === ResponseType.Message && (
+        <Text>{output?.data + "..."}</Text>
+      )}
+      {output?.status === ResponseStatus.DONE && (
         <Table>
           <thead>
             <tr>
@@ -167,7 +184,7 @@ const Body = ({ form }: { form: Form }) => {
             </tr>
           </thead>
           <tbody>
-            {output?.map((response, index) => (
+            {output?.data?.map((response, index) => (
               <tr key={index}>
                 <td>{response.question}</td>
                 <td>{response.answer}</td>
