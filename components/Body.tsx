@@ -66,9 +66,11 @@ const Body = ({ form }: { form: Form }) => {
           break;
         }
         try {
-          console.log(decoder.decode(value));
+          console.log("decoder.decode(value)", decoder.decode(value));
           setOutput(JSON.parse(decoder.decode(value)));
         } catch (e) {
+          console.log("decoder.decode(value)", decoder.decode(value));
+          console.log(e);
           notifications.show({
             title: "Error",
             message: "Error parsing API response",
