@@ -52,7 +52,6 @@ const Body = ({ form }: { form: Form }) => {
   const watchFiles = watch("files");
   const theme = useMantineTheme();
   const [output, setOutput] = useState<Response>(null);
-  const [isSuccess, setIsSuccess] = useState(false);
   const [loading, setLoading] = useState(false);
 
   const getTimelineIndexFromLoadingState = (loadingState: LoadingState) => {
@@ -135,10 +134,9 @@ const Body = ({ form }: { form: Form }) => {
       <br />
       <Dropzone
         loading={loading}
-        onDrop={(files) => {
-          setIsSuccess(false);
-          setValue("files", [...(getValues("files") ?? []), ...files]);
-        }}
+        onDrop={(files) =>
+          setValue("files", [...(getValues("files") ?? []), ...files])
+        }
         onReject={(files) =>
           notifications.show({
             title: "Error",
@@ -206,7 +204,7 @@ const Body = ({ form }: { form: Form }) => {
               ))}
             </tbody>
           </Table>
-          {(isSuccess || !loading) && (
+          {!loading && (
             <Button
               style={{ marginBottom: "18px" }}
               type="submit"
