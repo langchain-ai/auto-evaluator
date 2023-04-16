@@ -53,6 +53,7 @@ const Body = ({ form }: { form: Form }) => {
   const [output, setOutput] = useState([] as Response[]);
   const [isSuccess, setIsSuccess] = useState(false);
   const [loading, setLoading] = useState(false);
+  console.log(output);
 
   const tableAData = useMemo(
     () =>
@@ -126,7 +127,9 @@ const Body = ({ form }: { form: Form }) => {
         title="Instructions"
         color="teal"
       >
-        Provide your PDFs, TXT, Docx files.
+        Provide your PDFs, TXT, Docx files alongside the input parameters and
+        evaluator will generate the test dataset with a QA chain and will
+        provide you with test results.
       </Alert>
       <br />
       <Dropzone
@@ -220,7 +223,7 @@ const Body = ({ form }: { form: Form }) => {
             color="dark"
             bulletSize={18}
             lineWidth={2}
-            active={output?.length ?? 0}
+            active={output?.length - 1 ?? 0}
           >
             <Timeline.Item
               active={!isNil(output?.[0])}
