@@ -20,6 +20,7 @@ import { Dropzone, MS_WORD_MIME_TYPE, PDF_MIME_TYPE } from "@mantine/dropzone";
 import { Form } from "../utils/types";
 import { notifications } from "@mantine/notifications";
 import { API_URL, TEXT_PLAIN } from "../utils/variables";
+import { fetchEventSource } from "@microsoft/fetch-event-source";
 import { isEmpty, isNil } from "lodash";
 
 enum ResponseStatus {
@@ -53,7 +54,6 @@ const Body = ({ form }: { form: Form }) => {
   const [output, setOutput] = useState([] as Response[]);
   const [isSuccess, setIsSuccess] = useState(false);
   const [loading, setLoading] = useState(false);
-  console.log(output);
 
   const tableAData = useMemo(
     () =>
@@ -64,7 +64,6 @@ const Body = ({ form }: { form: Form }) => {
 
   const submit = handleSubmit(async (data) => {
     setLoading(true);
-    setOutput(null);
     const formData = new FormData();
     data.files.forEach((file) => {
       formData.append("files", file);
@@ -77,47 +76,31 @@ const Body = ({ form }: { form: Form }) => {
     formData.append("embeddings", data.embeddingAlgorithm);
     formData.append("model", data.model);
 
-    try {
-      const response = await fetch(API_URL + "/evaluator-stream", {
-        method: "POST",
-        body: formData,
-      });
-      const reader = response.body.getReader();
-
-      let done, value;
-      while (!done) {
-        ({ value, done } = await reader.read());
-        const decoder = new TextDecoder();
-        if (done) {
-          setIsSuccess(true);
-          break;
-        }
+    await fetchEventSource(API_URL + "/evaluator-stream", {
+      method: "POST",
+      body: formData,
+      headers: {
+        Accept: "text/event-stream",
+      },
+      onmessage(ev) {
+        console.log("raw input", ev.data);
+        let parsedData;
         try {
-          console.log("decoder.decode(value)", decoder.decode(value));
-          setOutput((state) => [
-            ...(state ?? []),
-            JSON.parse(decoder.decode(value)),
-          ]);
+          parsedData = JSON.parse(ev.data);
+          setOutput((state) => [...(state ?? []), parsedData.data]);
         } catch (e) {
-          console.log("decoder.decode(value)", decoder.decode(value));
-          console.log(e);
-          notifications.show({
-            title: "Error",
-            message: "Error parsing API response",
-            color: "red",
-          });
-          break;
+          console.warn("Error parsing data", e);
         }
-      }
-    } catch (e) {
-      notifications.show({
-        title: "Error",
-        message: "API Error",
-        color: "red",
-      });
-    } finally {
-      setLoading(false);
-    }
+      },
+      onclose() {
+        console.log("Connection closed by the server");
+        setLoading(false);
+      },
+      onerror(err) {
+        console.log("There was an error from server", err);
+        throw new Error(err);
+      },
+    });
   });
 
   return (
@@ -227,23 +210,19 @@ const Body = ({ form }: { form: Form }) => {
           >
             <Timeline.Item
               active={!isNil(output?.[0])}
-              title="Initializing evaluator"
-            />
-            <Timeline.Item
-              active={!isNil(output?.[1])}
               title="Files Accepted"
             />
             <Timeline.Item
-              active={!isNil(output?.[2])}
+              active={!isNil(output?.[1])}
               title="Splitting Texts"
             />
             <Timeline.Item
-              active={!isNil(output?.[3])}
+              active={!isNil(output?.[2])}
               title="Making retriever"
             />
-            <Timeline.Item active={!isNil(output?.[4])} title="Grading Model" />
+            <Timeline.Item active={!isNil(output?.[3])} title="Grading model" />
             <Timeline.Item
-              active={!isNil(output?.[5])}
+              active={!isNil(output?.[4])}
               title="Generating Results"
             />
           </Timeline>
