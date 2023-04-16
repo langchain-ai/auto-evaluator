@@ -19,6 +19,7 @@ import { Dropzone, MS_WORD_MIME_TYPE, PDF_MIME_TYPE } from "@mantine/dropzone";
 import { Form } from "../utils/types";
 import { notifications } from "@mantine/notifications";
 import { API_URL, TEXT_PLAIN } from "../utils/variables";
+import { fetchEventSource } from "@microsoft/fetch-event-source";
 
 enum ResponseStatus {
   WIP = "WIP",
@@ -36,6 +37,7 @@ const Body = ({ form }: { form: Form }) => {
   const theme = useMantineTheme();
   const [output, setOutput] = useState(null);
   const [loading, setLoading] = useState(false);
+
   const submit = handleSubmit(async (data) => {
     setLoading(true);
     setOutput(null);
@@ -51,41 +53,57 @@ const Body = ({ form }: { form: Form }) => {
     formData.append("embeddings", data.embeddingAlgorithm);
     formData.append("model", data.model);
 
-    try {
-      const response = await fetch(API_URL + "/evaluator-stream", {
-        method: "POST",
-        body: formData,
-      });
-      const reader = response.body.getReader();
+    // try {
+    // const response = await fetch(API_URL + "/evaluator-stream", {
+    //   method: "POST",
+    //   body: formData,
+    // });
 
-      let done, value;
-      while (!done) {
-        ({ value, done } = await reader.read());
-        const decoder = new TextDecoder();
-        if (done) {
-          break;
-        }
-        try {
-          console.log(decoder.decode(value));
-          setOutput(JSON.parse(decoder.decode(value)));
-        } catch (e) {
-          notifications.show({
-            title: "Error",
-            message: "Error parsing API response",
-            color: "red",
-          });
-          break;
-        }
-      }
-    } catch (e) {
-      notifications.show({
-        title: "Error",
-        message: "API Error",
-        color: "red",
-      });
-    } finally {
-      setLoading(false);
-    }
+    fetchEventSource(API_URL + "/evaluator-stream", {
+      method: "POST",
+      body: formData,
+      headers: {
+        Accept: "text/event-stream",
+      },
+      onmessage(ev) {
+        console.log(ev.data, "HELLO");
+        console.log(JSON.parse(ev.data), "GOODBYE");
+        setOutput(ev.data);
+      },
+      onclose() {
+        console.log("CLOSED");
+      },
+    });
+    //   const reader = response.body.getReader();
+
+    //   let done, value;
+    //   while (!done) {
+    //     ({ value, done } = await reader.read());
+    //     const decoder = new TextDecoder();
+    //     if (done) {
+    //       break;
+    //     }
+    //     try {
+    //       console.log(decoder.decode(value));
+    //       setOutput(JSON.parse(decoder.decode(value)));
+    //     } catch (e) {
+    //       notifications.show({
+    //         title: "Error",
+    //         message: "Error parsing API response",
+    //         color: "red",
+    //       });
+    //       break;
+    //     }
+    //   }
+    // } catch (e) {
+    //   notifications.show({
+    //     title: "Error",
+    //     message: "API Error",
+    //     color: "red",
+    //   });
+    // } finally {
+    //   setLoading(false);
+    // }
   });
 
   return (
