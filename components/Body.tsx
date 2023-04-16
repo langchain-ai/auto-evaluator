@@ -9,6 +9,7 @@ import {
   Button,
   Timeline,
   Title,
+  Loader,
 } from "@mantine/core";
 import {
   IconUpload,
@@ -118,6 +119,7 @@ const Body = ({ form }: { form: Form }) => {
         throw new Error(err);
       },
     });
+    setLoading(false);
   });
 
   return (
@@ -133,7 +135,6 @@ const Body = ({ form }: { form: Form }) => {
       </Alert>
       <br />
       <Dropzone
-        loading={loading}
         onDrop={(files) =>
           setValue("files", [...(getValues("files") ?? []), ...files])
         }
@@ -204,15 +205,13 @@ const Body = ({ form }: { form: Form }) => {
               ))}
             </tbody>
           </Table>
-          {!loading && (
-            <Button
-              style={{ marginBottom: "18px" }}
-              type="submit"
-              onClick={submit}
-            >
-              Submit
-            </Button>
-          )}
+          <Button
+            style={{ marginBottom: "18px" }}
+            type="submit"
+            onClick={submit}
+          >
+            {loading ? <Loader color="white" size="sm" /> : "Submit"}
+          </Button>
         </>
       )}
       {timelineIndex !== -1 && (
