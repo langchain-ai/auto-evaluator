@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useCallback, useState } from "react";
 import {
   Group,
   Text,
@@ -23,6 +23,7 @@ import { notifications } from "@mantine/notifications";
 import { API_URL, TEXT_PLAIN } from "../utils/variables";
 import { fetchEventSource } from "@microsoft/fetch-event-source";
 import { isEmpty } from "lodash";
+import { Parser } from "@json2csv/plainjs";
 
 enum LoadingState {
   Initialized = "Initialized",
@@ -121,6 +122,22 @@ const Body = ({ form }: { form: Form }) => {
     });
     setLoading(false);
   });
+
+  const download = useCallback(() => {
+    if (!isEmpty(qaTable)) {
+      const parser = new Parser();
+      const csv = parser.parse(qaTable);
+      const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.setAttribute("href", url);
+      link.setAttribute("download", "mydata.csv");
+      link.style.visibility = "hidden";
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+  }, [qaTable]);
 
   return (
     <>
@@ -240,6 +257,14 @@ const Body = ({ form }: { form: Form }) => {
           </Timeline>
           {!isEmpty(qaTable) && (
             <>
+              <br />
+              <Button
+                style={{ marginBottom: "18px" }}
+                type="button"
+                onClick={download}
+              >
+                Download CSV
+              </Button>
               <br />
               <Title order={3}>Results</Title>
               <Table>

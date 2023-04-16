@@ -177,6 +177,20 @@
     aria-hidden "^1.1.3"
     tabbable "^6.0.1"
 
+"@json2csv/formatters@^6.1.3":
+  version "6.1.3"
+  resolved "https://registry.yarnpkg.com/@json2csv/formatters/-/formatters-6.1.3.tgz#a6ef3661f339a0c28f43256abba68faf9e9a60cb"
+  integrity sha512-Yhs6eXTMhSrNFLTuVnhwjgJem2x+z0YZc0YxdCavoDf/tfz6LBVPVVoJPl9tXaCIfPZY9ybRB6sqPQqZTzkNuw==
+
+"@json2csv/plainjs@^6.1.3":
+  version "6.1.3"
+  resolved "https://registry.yarnpkg.com/@json2csv/plainjs/-/plainjs-6.1.3.tgz#b990ac54e8a1d2a6cedcfe9ab1e961a1f9013806"
+  integrity sha512-8cH/yVAPt1edDq/2Krr4elS2uJFWAdMQDH+ocuepjyh7lmBHEHv5kU0bqbYpd5ZpKTizshotsKk7KYA3nx4CCw==
+  dependencies:
+    "@json2csv/formatters" "^6.1.3"
+    "@streamparser/json" "^0.0.12"
+    lodash.get "^4.4.2"
+
 "@mantine/core@^6.0.4":
   version "6.0.6"
   resolved "https://registry.yarnpkg.com/@mantine/core/-/core-6.0.6.tgz#e09086c798ee546f02e2da07ad617d8249791029"
@@ -409,6 +423,11 @@
   integrity sha512-75kVTYaQGYMkwVjJvCLLOlzxV8jCDxvKG68U88joo/rBx95SIXETcjUmIXF6A7SFRCgz83B+zrZbo+JYsmHkig==
   dependencies:
     "@ndhoule/map" "^2.0.1"
+
+"@streamparser/json@^0.0.12":
+  version "0.0.12"
+  resolved "https://registry.yarnpkg.com/@streamparser/json/-/json-0.0.12.tgz#c11ae41e8ec926c0939a8866c2db4a7d64808435"
+  integrity sha512-+kmRpd+EeTFd3qNt1AoKphJqbAN26ZDsbiwqjBFeoAmdCyiUO19xMXPtYi9vovAj9a7OAJnvWtiHkwwjU2Fx4Q==
 
 "@swc/helpers@0.4.14":
   version "0.4.14"
@@ -1109,6 +1128,11 @@ lines-and-columns@^1.1.6:
   version "1.2.4"
   resolved "https://registry.yarnpkg.com/lines-and-columns/-/lines-and-columns-1.2.4.tgz#eca284f75d2965079309dc0ad9255abb2ebc1632"
   integrity sha512-7ylylesZQ/PV29jhEDl3Ufjo6ZX7gCqJr5F7PKrqc93v7fzSymt1BpwEU8nAUXs8qzzvqhbjhK5QZg6Mt/HkBg==
+
+lodash.get@^4.4.2:
+  version "4.4.2"
+  resolved "https://registry.yarnpkg.com/lodash.get/-/lodash.get-4.4.2.tgz#2d177f652fa31e939b4438d5341499dfa3825e99"
+  integrity sha512-z+Uw/vLuy6gQe8cfaFWD7p0wVv8fJl3mbzXh33RS+0oW2wvUqiRXiQ69gLWSLpgB5/6sU+r6BlQR0MBILadqTQ==
 
 lodash@^4.17.21:
   version "4.17.21"
