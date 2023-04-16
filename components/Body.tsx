@@ -79,6 +79,7 @@ const Body = ({ form }: { form: Form }) => {
 
   const submit = handleSubmit(async (data) => {
     setLoading(true);
+    setOutput(null);
     const formData = new FormData();
     data.files.forEach((file) => {
       formData.append("files", file);
