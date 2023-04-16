@@ -64,7 +64,6 @@ const Body = ({ form }: { form: Form }) => {
 
   const submit = handleSubmit(async (data) => {
     setLoading(true);
-    setOutput(null);
     const formData = new FormData();
     data.files.forEach((file) => {
       formData.append("files", file);
@@ -88,7 +87,7 @@ const Body = ({ form }: { form: Form }) => {
         let parsedData;
         try {
           parsedData = JSON.parse(ev.data);
-          setOutput(parsedData.data);
+          setOutput((state) => [...(state ?? []), parsedData.data]);
         } catch (e) {
           console.warn("Error parsing data", e);
         }
@@ -211,23 +210,19 @@ const Body = ({ form }: { form: Form }) => {
           >
             <Timeline.Item
               active={!isNil(output?.[0])}
-              title="Initializing evaluator"
-            />
-            <Timeline.Item
-              active={!isNil(output?.[1])}
               title="Files Accepted"
             />
             <Timeline.Item
-              active={!isNil(output?.[2])}
+              active={!isNil(output?.[1])}
               title="Splitting Texts"
             />
             <Timeline.Item
-              active={!isNil(output?.[3])}
+              active={!isNil(output?.[2])}
               title="Making retriever"
             />
-            <Timeline.Item active={!isNil(output?.[4])} title="Grading Model" />
+            <Timeline.Item active={!isNil(output?.[3])} title="Grading model" />
             <Timeline.Item
-              active={!isNil(output?.[5])}
+              active={!isNil(output?.[4])}
               title="Generating Results"
             />
           </Timeline>
