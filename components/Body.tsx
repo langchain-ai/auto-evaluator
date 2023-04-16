@@ -81,6 +81,7 @@ const Body = ({ form }: { form: Form }) => {
       body: formData,
       headers: {
         Accept: "text/event-stream",
+        Origin: "https://evaluator-ui.vercel.app",
       },
       onmessage(ev) {
         console.log("raw input", ev.data);
