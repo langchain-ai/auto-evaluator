@@ -1,13 +1,14 @@
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import {
   Group,
   Text,
-  Loader,
   useMantineTheme,
   rem,
   Alert,
   Table,
   Button,
+  Timeline,
+  Title,
 } from "@mantine/core";
 import {
   IconUpload,
@@ -20,6 +21,7 @@ import { Form } from "../utils/types";
 import { notifications } from "@mantine/notifications";
 import { API_URL, TEXT_PLAIN } from "../utils/variables";
 import { fetchEventSource } from "@microsoft/fetch-event-source";
+import { isEmpty, isNil } from "lodash";
 
 enum ResponseStatus {
   WIP = "WIP",
@@ -31,12 +33,34 @@ enum ResponseType {
   Table = "table",
 }
 
+type TableA = {
+  question: string;
+  answer: string;
+  result: string;
+  score: string;
+  latency: string;
+};
+
+type Response = {
+  type: ResponseType;
+  status: ResponseStatus;
+  data: string | TableA[];
+};
+
 const Body = ({ form }: { form: Form }) => {
   const { setValue, watch, getValues, handleSubmit } = form;
   const watchFiles = watch("files");
   const theme = useMantineTheme();
-  const [output, setOutput] = useState(null);
+  const [output, setOutput] = useState([] as Response[]);
+  const [isSuccess, setIsSuccess] = useState(false);
   const [loading, setLoading] = useState(false);
+
+  const tableAData = useMemo(
+    () =>
+      !isEmpty(output) &&
+      (output.filter((item) => item.type === "table")?.[0]?.data as TableA[]),
+    [output]
+  );
 
   const submit = handleSubmit(async (data) => {
     setLoading(true);
@@ -87,12 +111,15 @@ const Body = ({ form }: { form: Form }) => {
         title="Instructions"
         color="teal"
       >
-        Provide your PDFs and/or Docx files, evaluator will build the QA eval
-        data set for you.
+        Provide your PDFs, TXT, Docx files alongside the input parameters and
+        evaluator will generate the test dataset with a QA chain and will
+        provide you with test results.
       </Alert>
       <br />
       <Dropzone
+        loading={loading}
         onDrop={(files) => {
+          setIsSuccess(false);
           setValue("files", [...(getValues("files") ?? []), ...files]);
         }}
         onReject={(files) =>
@@ -136,7 +163,7 @@ const Body = ({ form }: { form: Form }) => {
 
           <div>
             <Text size="xl" inline>
-              Drag and Drop PDFs, Docx.
+              Drag and Drop PDFs, Docx, TXT
             </Text>
             <Text size="sm" color="dimmed" inline mt={7}>
               Attach as many files as you like, each file should not exceed 5mb
@@ -162,39 +189,77 @@ const Body = ({ form }: { form: Form }) => {
               ))}
             </tbody>
           </Table>
-          <Button type="submit" onClick={submit} disabled={loading}>
-            {loading ? <Loader size="sm" /> : "Submit"}
-          </Button>
-          <br />
-          <br />
+          {(isSuccess || !loading) && (
+            <Button
+              style={{ marginBottom: "18px" }}
+              type="submit"
+              onClick={submit}
+            >
+              Submit
+            </Button>
+          )}
         </>
       )}
-      {output?.type === ResponseType.Message && (
-        <Text>{output?.data + "..."}</Text>
-      )}
-      {output?.status === ResponseStatus.DONE && (
-        <Table>
-          <thead>
-            <tr>
-              <th>Question</th>
-              <th>Answer</th>
-              <th>Result</th>
-              <th>Score</th>
-              <th>Latency</th>
-            </tr>
-          </thead>
-          <tbody>
-            {output?.data?.map((response, index) => (
-              <tr key={index}>
-                <td>{response.question}</td>
-                <td>{response.answer}</td>
-                <td>{response.result}</td>
-                <td>{response.score}</td>
-                <td>{response.latency}</td>
-              </tr>
-            ))}
-          </tbody>
-        </Table>
+      {!isEmpty(output) && (
+        <>
+          <br />
+          <Timeline
+            color="dark"
+            bulletSize={18}
+            lineWidth={2}
+            active={output?.length - 1 ?? 0}
+          >
+            <Timeline.Item
+              active={!isNil(output?.[0])}
+              title="Initializing evaluator"
+            />
+            <Timeline.Item
+              active={!isNil(output?.[1])}
+              title="Files Accepted"
+            />
+            <Timeline.Item
+              active={!isNil(output?.[2])}
+              title="Splitting Texts"
+            />
+            <Timeline.Item
+              active={!isNil(output?.[3])}
+              title="Making retriever"
+            />
+            <Timeline.Item active={!isNil(output?.[4])} title="Grading Model" />
+            <Timeline.Item
+              active={!isNil(output?.[5])}
+              title="Generating Results"
+            />
+          </Timeline>
+          {!isEmpty(tableAData) && (
+            <>
+              <br />
+              <Title order={3}>Results</Title>
+              <Table>
+                <thead>
+                  <tr>
+                    <th>Question</th>
+                    <th>Answer</th>
+                    <th>Result</th>
+                    <th>Score</th>
+                    <th>Latency</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {tableAData?.map((response, index) => (
+                    <tr key={index}>
+                      <td>{response.question}</td>
+                      <td>{response.answer}</td>
+                      <td>{response.result}</td>
+                      <td>{response.score}</td>
+                      <td>{response.latency}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </Table>
+            </>
+          )}
+        </>
       )}
     </>
   );

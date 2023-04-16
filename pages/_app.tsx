@@ -21,7 +21,7 @@ export default function App(props: AppProps) {
   const theme: MantineThemeOverride = {
     primaryColor: "dark",
     fontFamily:
-      "Inter,-apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Helvetica Neue,Arial, Noto Sans",
+      "Greycliff CF, Inter,-apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Helvetica Neue,Arial, Noto Sans",
   };
   const pageName = "Evaluator AI";
   useEffect(() => {

@@ -8,7 +8,7 @@ const Sidebar = ({ form }: { form: Form }) => {
 
   return (
     <>
-      <Text fz="xl">Inputs Pane</Text>
+      <Text fz="xl">Parameters</Text>
       <br />
       <Stack spacing={"30px"}>
         <div>
