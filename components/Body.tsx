@@ -17,10 +17,10 @@ import {
   IconX,
   IconAlertCircle,
 } from "@tabler/icons-react";
-import { Dropzone, MS_WORD_MIME_TYPE, PDF_MIME_TYPE } from "@mantine/dropzone";
+import { Dropzone, MIME_TYPES } from "@mantine/dropzone";
 import { Form } from "../utils/types";
 import { notifications } from "@mantine/notifications";
-import { API_URL, TEXT_PLAIN } from "../utils/variables";
+import { API_URL } from "../utils/variables";
 import { fetchEventSource } from "@microsoft/fetch-event-source";
 import { isEmpty } from "lodash";
 import { Parser } from "@json2csv/plainjs";
@@ -156,6 +156,7 @@ const Body = ({ form }: { form: Form }) => {
         onDrop={(files) =>
           setValue("files", [...(getValues("files") ?? []), ...files])
         }
+        accept={[MIME_TYPES.pdf, MIME_TYPES.docx, MIME_TYPES.doc, "text/plain"]}
         onReject={(files) =>
           notifications.show({
             title: "Error",
@@ -166,7 +167,6 @@ const Body = ({ form }: { form: Form }) => {
           })
         }
         maxSize={3 * 1024 ** 2}
-        accept={TEXT_PLAIN && PDF_MIME_TYPE && MS_WORD_MIME_TYPE}
       >
         <Group
           position="center"
