@@ -7,9 +7,10 @@ import {
   Alert,
   Table,
   Button,
-  Timeline,
   Title,
   Loader,
+  Flex,
+  Stack,
 } from "@mantine/core";
 import {
   IconUpload,
@@ -22,69 +23,36 @@ import { Form } from "../utils/types";
 import { notifications } from "@mantine/notifications";
 import { API_URL } from "../utils/variables";
 import { fetchEventSource } from "@microsoft/fetch-event-source";
-import { isEmpty } from "lodash";
 import { Parser } from "@json2csv/plainjs";
-
-enum LoadingState {
-  Initialized = "Initialized",
-  FilesAccepted = "Files accepted",
-  SplittingTexts = "Splitting texts",
-  MakingRetriever = "Making retriever",
-  GradingModel = "Grading model",
-  Done = "Done",
-}
 
 type QATableEntry = {
   question: string;
   answer: string;
   result: string;
-  score: string;
+  retrievalScore: true;
+  answerScore: string;
   latency: string;
 };
 
 type QATable = QATableEntry[];
 
-type Response = {
-  loadingState: LoadingState;
-  data: { qaTable: QATable } | undefined;
-};
-
 const Body = ({ form }: { form: Form }) => {
   const { setValue, watch, getValues, handleSubmit } = form;
   const watchFiles = watch("files");
   const theme = useMantineTheme();
-  const [output, setOutput] = useState<Response>(null);
   const [loading, setLoading] = useState(false);
-
-  const getTimelineIndexFromLoadingState = (loadingState: LoadingState) => {
-    switch (loadingState) {
-      case LoadingState.FilesAccepted:
-        return 0;
-      case LoadingState.SplittingTexts:
-        return 1;
-      case LoadingState.MakingRetriever:
-        return 2;
-      case LoadingState.GradingModel:
-        return 3;
-      case LoadingState.Done:
-        return 4;
-      default:
-        return -1;
-    }
-  };
-
-  const timelineIndex = getTimelineIndexFromLoadingState(output?.loadingState);
-
-  const qaTable = output?.data?.qaTable;
+  const [qaTable, setQATable] = useState<QATable>([]);
+  const [evalQuestionsCount, setEvalQuestionsCount] = useState(-1);
 
   const submit = handleSubmit(async (data) => {
     setLoading(true);
-    setOutput(null);
+    setQATable([]);
     const formData = new FormData();
     data.files.forEach((file) => {
       formData.append("files", file);
     });
     formData.append("num_eval_questions", data.evalQuestionsCount.toString());
+    setEvalQuestionsCount(data.evalQuestionsCount);
     formData.append("chunk_chars", data.chunkSize.toString());
     formData.append("overlap", data.overlap.toString());
     formData.append("split_method", data.splitMethod);
@@ -92,6 +60,7 @@ const Body = ({ form }: { form: Form }) => {
     formData.append("embeddings", data.embeddingAlgorithm);
     formData.append("model", data.model);
     const controller = new AbortController();
+    console.log(qaTable, "qaTable");
     await fetchEventSource(API_URL + "/evaluator-stream", {
       method: "POST",
       body: formData,
@@ -102,10 +71,12 @@ const Body = ({ form }: { form: Form }) => {
       onmessage(ev) {
         console.log("raw input", ev.data);
         let parsedData;
+        let rowCount = 0;
         try {
           parsedData = JSON.parse(ev.data);
-          setOutput(parsedData.data);
-          if (parsedData?.data?.loadingState === LoadingState.Done) {
+          setQATable((qaTable) => [...qaTable, parsedData?.data?.qaTable]);
+          rowCount += 1;
+          if (rowCount === evalQuestionsCount) {
             controller.abort();
           }
         } catch (e) {
@@ -121,27 +92,24 @@ const Body = ({ form }: { form: Form }) => {
         throw new Error(err);
       },
     });
-    setLoading(false);
   });
 
   const download = useCallback(() => {
-    if (!isEmpty(qaTable)) {
-      const parser = new Parser();
-      const csv = parser.parse(qaTable);
-      const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement("a");
-      link.setAttribute("href", url);
-      link.setAttribute("download", "mydata.csv");
-      link.style.visibility = "hidden";
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-    }
+    const parser = new Parser();
+    const csv = parser.parse(qaTable);
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.setAttribute("href", url);
+    link.setAttribute("download", "qa_evaluation.csv");
+    link.style.visibility = "hidden";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   }, [qaTable]);
 
   return (
-    <>
+    <Stack>
       <Alert
         icon={<IconAlertCircle size="1rem" />}
         title="Instructions"
@@ -151,7 +119,6 @@ const Body = ({ form }: { form: Form }) => {
         evaluator will generate the test dataset with a QA chain and will
         provide you with test results.
       </Alert>
-      <br />
       <Dropzone
         onDrop={(files) =>
           setValue("files", [...(getValues("files") ?? []), ...files])
@@ -194,7 +161,6 @@ const Body = ({ form }: { form: Form }) => {
           <Dropzone.Idle>
             <IconPhoto size="3.2rem" stroke={1.5} />
           </Dropzone.Idle>
-
           <div>
             <Text size="xl" inline>
               Drag and Drop PDFs, Docx, TXT
@@ -223,42 +189,16 @@ const Body = ({ form }: { form: Form }) => {
               ))}
             </tbody>
           </Table>
-          <Button
-            style={{ marginBottom: "18px" }}
-            type="submit"
-            onClick={submit}
-          >
-            {loading ? <Loader color="white" size="sm" /> : "Submit"}
-          </Button>
-        </>
-      )}
-      {timelineIndex !== -1 && (
-        <>
-          <br />
-          <Timeline
-            color="dark"
-            bulletSize={18}
-            lineWidth={2}
-            active={timelineIndex}
-          >
-            <Timeline.Item active={timelineIndex >= 0} title="Files Accepted" />
-            <Timeline.Item
-              active={timelineIndex >= 1}
-              title="Splitting Texts"
-            />
-            <Timeline.Item
-              active={timelineIndex >= 2}
-              title="Making retriever"
-            />
-            <Timeline.Item active={timelineIndex >= 3} title="Grading model" />
-            <Timeline.Item
-              active={timelineIndex >= 4}
-              title="Generating Results"
-            />
-          </Timeline>
-          {!isEmpty(qaTable) && (
-            <>
-              <br />
+          <Flex direction="row" gap="md">
+            <Button
+              style={{ marginBottom: "18px" }}
+              type="submit"
+              onClick={submit}
+              disabled={loading}
+            >
+              {loading ? <Loader size="sm" /> : "Submit"}
+            </Button>
+            {evalQuestionsCount === qaTable.length && (
               <Button
                 style={{ marginBottom: "18px" }}
                 type="button"
@@ -266,35 +206,40 @@ const Body = ({ form }: { form: Form }) => {
               >
                 Download CSV
               </Button>
-              <br />
-              <Title order={3}>Results</Title>
-              <Table>
-                <thead>
-                  <tr>
-                    <th>Question</th>
-                    <th>Answer</th>
-                    <th>Result</th>
-                    <th>Score</th>
-                    <th>Latency</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {qaTable?.map((response, index) => (
-                    <tr key={index}>
-                      <td>{response.question}</td>
-                      <td>{response.answer}</td>
-                      <td>{response.result}</td>
-                      <td>{response.score}</td>
-                      <td>{response.latency}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </Table>
-            </>
-          )}
+            )}
+          </Flex>
         </>
       )}
-    </>
+      {evalQuestionsCount !== -1 && (
+        <>
+          <Title order={3}>Results</Title>
+          <Table>
+            <thead>
+              <tr>
+                <th>Question</th>
+                <th>Expected Answer</th>
+                <th>Observed Answer</th>
+                <th>Retrieval Relevancy Score</th>
+                <th>Answer Similarity Score</th>
+                <th>Latency (s)</th>
+              </tr>
+            </thead>
+            <tbody>
+              {qaTable?.map((response: QATableEntry, index: number) => (
+                <tr key={index}>
+                  <td>{response.question}</td>
+                  <td>{response.answer}</td>
+                  <td>{response.result}</td>
+                  <td>{response.retrievalScore}</td>
+                  <td>{response.answerScore}</td>
+                  <td>{parseFloat(response.latency).toFixed(3)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </Table>
+        </>
+      )}
+    </Stack>
   );
 };
 export default Body;
