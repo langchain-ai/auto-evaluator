@@ -183,8 +183,8 @@ const Body = ({ form }: { form: Form }) => {
             <tbody>
               {watchFiles?.map((file, id) => (
                 <tr key={id}>
-                  <td>{file.name}</td>
-                  <td>{file.size}</td>
+                  <td>{file?.name}</td>
+                  <td>{file?.size}</td>
                 </tr>
               ))}
             </tbody>
@@ -227,12 +227,12 @@ const Body = ({ form }: { form: Form }) => {
             <tbody>
               {qaTable?.map((response: QATableEntry, index: number) => (
                 <tr key={index}>
-                  <td>{response.question}</td>
-                  <td>{response.answer}</td>
-                  <td>{response.result}</td>
-                  <td>{response.retrievalScore}</td>
-                  <td>{response.answerScore}</td>
-                  <td>{parseFloat(response.latency).toFixed(3)}</td>
+                  <td>{response?.question}</td>
+                  <td>{response?.answer}</td>
+                  <td>{response?.result}</td>
+                  <td>{response?.retrievalScore}</td>
+                  <td>{response?.answerScore}</td>
+                  <td>{parseFloat(response?.latency)?.toFixed(3)}</td>
                 </tr>
               ))}
             </tbody>
