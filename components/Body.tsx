@@ -177,14 +177,14 @@ const Body = ({ form }: { form: Form }) => {
             <thead>
               <tr>
                 <th>Name</th>
-                <th>Size</th>
+                <th>Size (MB)</th>
               </tr>
             </thead>
             <tbody>
               {watchFiles?.map((file, id) => (
                 <tr key={id}>
                   <td>{file?.name}</td>
-                  <td>{file?.size}</td>
+                  <td>{(file?.size / 1000).toFixed(1)}</td>
                 </tr>
               ))}
             </tbody>
