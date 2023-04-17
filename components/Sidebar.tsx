@@ -16,8 +16,9 @@ const Sidebar = ({ form }: { form: Form }) => {
           <Controller
             name="evalQuestionsCount"
             control={control}
-            render={() => (
+            render={({ field }) => (
               <Slider
+                {...field}
                 labelTransition="skew-down"
                 marks={[
                   { value: 1, label: "1" },
@@ -37,8 +38,9 @@ const Sidebar = ({ form }: { form: Form }) => {
           <Controller
             name="chunkSize"
             control={control}
-            render={() => (
+            render={({ field }) => (
               <Slider
+                {...field}
                 labelTransition="skew-down"
                 marks={[
                   { value: 500, label: "500" },
@@ -58,8 +60,9 @@ const Sidebar = ({ form }: { form: Form }) => {
           <Controller
             name="overlap"
             control={control}
-            render={() => (
+            render={({ field }) => (
               <Slider
+                {...field}
                 labelTransition="skew-down"
                 marks={[
                   { value: 0, label: "0" },
@@ -79,9 +82,9 @@ const Sidebar = ({ form }: { form: Form }) => {
           <Controller
             name="model"
             control={control}
-            render={() => (
+            render={({ field }) => (
               <Select
-                defaultValue="gpt-3.5-turbo"
+                {...field}
                 data={[
                   { label: "GPT 3.5 Turbo", value: "gpt-3.5-turbo" },
                   { label: "GPT 4", value: "gpt4" },
@@ -96,8 +99,9 @@ const Sidebar = ({ form }: { form: Form }) => {
           <Controller
             name="splitMethod"
             control={control}
-            render={() => (
+            render={({ field }) => (
               <SegmentedControl
+                {...field}
                 data={[
                   {
                     label: "CharacterTextSplitter",
@@ -117,8 +121,9 @@ const Sidebar = ({ form }: { form: Form }) => {
           <Controller
             name="embeddingAlgorithm"
             control={control}
-            render={() => (
+            render={({ field }) => (
               <SegmentedControl
+                {...field}
                 data={[
                   {
                     label: "OpenAI",
@@ -138,9 +143,9 @@ const Sidebar = ({ form }: { form: Form }) => {
           <Controller
             name="retriever"
             control={control}
-            render={() => (
+            render={({ field }) => (
               <Select
-                defaultValue="similarity-search"
+                {...field}
                 data={[
                   {
                     label: "Similarity Search",
@@ -162,8 +167,9 @@ const Sidebar = ({ form }: { form: Form }) => {
           <Controller
             name="numNeighbors"
             control={control}
-            render={() => (
+            render={({ field }) => (
               <Slider
+                {...field}
                 labelTransition="skew-down"
                 marks={[
                   { value: 3, label: "3" },
@@ -182,8 +188,9 @@ const Sidebar = ({ form }: { form: Form }) => {
           <Controller
             name="gradingPrompt"
             control={control}
-            render={() => (
+            render={({ field }) => (
               <SegmentedControl
+                {...field}
                 data={[
                   {
                     label: "Fast",
