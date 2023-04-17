@@ -8,6 +8,8 @@ export type FormValues = {
   embeddingAlgorithm: string;
   model: string;
   retriever: string;
+  gradingPrompt: string;
+  numNeighbors: number;
   files: any[];
 };
 

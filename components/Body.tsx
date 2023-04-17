@@ -52,15 +52,19 @@ const Body = ({ form }: { form: Form }) => {
       formData.append("files", file);
     });
     formData.append("num_eval_questions", data.evalQuestionsCount.toString());
-    setEvalQuestionsCount(data.evalQuestionsCount);
     formData.append("chunk_chars", data.chunkSize.toString());
     formData.append("overlap", data.overlap.toString());
     formData.append("split_method", data.splitMethod);
-    formData.append("retriver_type", data.retriever);
+    formData.append("retriever_type", data.retriever);
     formData.append("embeddings", data.embeddingAlgorithm);
-    formData.append("model", data.model);
+    formData.append("model_version", data.model);
+    formData.append("grade_prompt", data.gradingPrompt);
+    formData.append("num_neighbors", data.numNeighbors.toString());
+
+    setEvalQuestionsCount(data.evalQuestionsCount);
+
     const controller = new AbortController();
-    console.log(qaTable, "qaTable");
+
     await fetchEventSource(API_URL + "/evaluator-stream", {
       method: "POST",
       body: formData,

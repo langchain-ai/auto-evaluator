@@ -1,4 +1,4 @@
-import { SegmentedControl, Slider, Stack, Text } from "@mantine/core";
+import { SegmentedControl, Select, Slider, Stack, Text } from "@mantine/core";
 import React from "react";
 import { Form } from "../utils/types";
 import { Controller } from "react-hook-form";
@@ -10,36 +10,35 @@ const Sidebar = ({ form }: { form: Form }) => {
     <>
       <Text fz="xl">Parameters</Text>
       <br />
-      <Stack spacing={"30px"}>
+      <Stack spacing="30px">
         <div>
           <Text fz="md">Number of eval questions</Text>
           <Controller
             name="evalQuestionsCount"
             control={control}
-            render={({ field }) => (
+            render={() => (
               <Slider
-                {...field}
                 labelTransition="skew-down"
                 marks={[
+                  { value: 1, label: "1" },
                   { value: 5, label: "5" },
                   { value: 10, label: "10" },
                   { value: 15, label: "15" },
                 ]}
                 max={15}
-                min={5}
+                min={1}
                 step={1}
               />
             )}
           />
         </div>
         <div>
-          <Text fz="md">Chunk Size</Text>
+          <Text fz="md">Chunk size</Text>
           <Controller
             name="chunkSize"
             control={control}
-            render={({ field }) => (
+            render={() => (
               <Slider
-                {...field}
                 labelTransition="skew-down"
                 marks={[
                   { value: 500, label: "500" },
@@ -49,19 +48,18 @@ const Sidebar = ({ form }: { form: Form }) => {
                 ]}
                 max={2000}
                 min={500}
-                step={500}
+                step={100}
               />
             )}
           />
         </div>
         <div>
-          <Text fz="md">Overlap</Text>
+          <Text fz="md">Chunk overlap</Text>
           <Controller
             name="overlap"
             control={control}
-            render={({ field }) => (
+            render={() => (
               <Slider
-                {...field}
                 labelTransition="skew-down"
                 marks={[
                   { value: 0, label: "0" },
@@ -71,7 +69,7 @@ const Sidebar = ({ form }: { form: Form }) => {
                 ]}
                 max={150}
                 min={0}
-                step={50}
+                step={10}
               />
             )}
           />
@@ -81,25 +79,25 @@ const Sidebar = ({ form }: { form: Form }) => {
           <Controller
             name="model"
             control={control}
-            render={({ field }) => (
-              <SegmentedControl
-                {...field}
+            render={() => (
+              <Select
+                defaultValue="gpt-3.5-turbo"
                 data={[
                   { label: "GPT 3.5 Turbo", value: "gpt-3.5-turbo" },
                   { label: "GPT 4", value: "gpt4" },
+                  { label: "Anthropic", value: "anthropic" },
                 ]}
               />
             )}
           />
         </div>
         <div>
-          <Text fz="md">Split Method</Text>
+          <Text fz="md">Split method</Text>
           <Controller
             name="splitMethod"
             control={control}
-            render={({ field }) => (
+            render={() => (
               <SegmentedControl
-                {...field}
                 data={[
                   {
                     label: "CharacterTextSplitter",
@@ -115,11 +113,11 @@ const Sidebar = ({ form }: { form: Form }) => {
           />
         </div>
         <div>
-          <Text fz="md">Embedding Algorithm</Text>
+          <Text fz="md">Embedding algorithm</Text>
           <Controller
             name="embeddingAlgorithm"
             control={control}
-            render={({ field }) => (
+            render={() => (
               <SegmentedControl
                 data={[
                   {
@@ -140,16 +138,60 @@ const Sidebar = ({ form }: { form: Form }) => {
           <Controller
             name="retriever"
             control={control}
-            render={({ field }) => (
-              <SegmentedControl
+            render={() => (
+              <Select
+                defaultValue="similarity-search"
                 data={[
                   {
                     label: "Similarity Search",
                     value: "similarity-search",
                   },
                   {
-                    label: "Vector Store",
-                    value: "vectorstore",
+                    label: "SVM",
+                    value: "SVM",
+                  },
+                  { label: "LlamaIndex", value: "Llama-Index" },
+                  { label: "TF-IDF", value: "TF-IDF" },
+                ]}
+              />
+            )}
+          />
+        </div>
+        <div>
+          <Text fz="md">Number of chunks to retrieve</Text>
+          <Controller
+            name="numNeighbors"
+            control={control}
+            render={() => (
+              <Slider
+                labelTransition="skew-down"
+                marks={[
+                  { value: 3, label: "3" },
+                  { value: 4, label: "4" },
+                  { value: 5, label: "5" },
+                ]}
+                max={5}
+                min={3}
+                step={1}
+              />
+            )}
+          />
+        </div>
+        <div>
+          <Text fz="md">Grading prompt style</Text>
+          <Controller
+            name="gradingPrompt"
+            control={control}
+            render={() => (
+              <SegmentedControl
+                data={[
+                  {
+                    label: "Fast",
+                    value: "Fast",
+                  },
+                  {
+                    label: "Descriptive",
+                    value: "Descriptive",
                   },
                 ]}
               />

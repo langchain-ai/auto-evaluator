@@ -6,7 +6,7 @@ import {
   Navbar,
   Text,
 } from "@mantine/core";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useMediaQuery } from "@mantine/hooks";
 import React from "react";
 import Body from "../components/Body";
@@ -21,11 +21,13 @@ const HomePage = () => {
     defaultValues: {
       evalQuestionsCount: 5,
       chunkSize: 1000,
-      overlap: 0,
+      overlap: 100,
       splitMethod: "RecursiveTextSplitter",
       embeddingAlgorithm: "OpenAI",
       model: "gpt-3.5-turbo",
       retriever: "similarity-search",
+      gradingPrompt: "Fast",
+      numNeighbors: 3,
       files: [],
     },
   });
