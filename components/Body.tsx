@@ -88,6 +88,7 @@ const Body = ({ form }: { form: Form }) => {
     const controller = new AbortController();
 
     let newTestDataset = [];
+    let localResults = [];
     let rowCount = 0;
 
     await fetchEventSource(API_URL + "/evaluator-stream", {
@@ -102,6 +103,7 @@ const Body = ({ form }: { form: Form }) => {
         try {
           const row: Result = JSON.parse(ev.data)?.data;
           setResults((results) => [...results, row]);
+          localResults = [...localResults, row];
           rowCount += 1;
           if (rowCount > testDataset.length) {
             newTestDataset = [
@@ -138,13 +140,14 @@ const Body = ({ form }: { form: Form }) => {
       gradingPrompt: data.gradingPrompt,
       numNeighbors: data.numNeighbors,
       avgRelevancyScore:
-        results.reduce((acc, curr) => acc + curr.retrievalScore, 0) /
-        results.length,
+        localResults.reduce((acc, curr) => acc + curr.retrievalScore, 0) /
+        localResults.length,
       avgAnswerScore:
-        results.reduce((acc, curr) => acc + curr.answerScore, 0) /
-        results.length,
+        localResults.reduce((acc, curr) => acc + curr.answerScore, 0) /
+        localResults.length,
       avgLatency:
-        results.reduce((acc, curr) => acc + curr.latency, 0) / results.length,
+        localResults.reduce((acc, curr) => acc + curr.latency, 0) /
+        localResults.length,
     };
     setExperiments((experiments) => [...experiments, experiment]);
   });
@@ -357,6 +360,9 @@ const Body = ({ form }: { form: Form }) => {
                   <td>{result?.model}</td>
                   <td>{result?.gradingPrompt}</td>
                   <td>{result?.numNeighbors}</td>
+                  <td>{result?.avgRelevancyScore}</td>
+                  <td>{result?.avgAnswerScore}</td>
+                  <td>{result?.avgLatency.toFixed(3)}</td>
                 </tr>
               ))}
             </tbody>
