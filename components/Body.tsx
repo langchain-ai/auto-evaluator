@@ -11,6 +11,7 @@ import {
   Loader,
   Flex,
   Stack,
+  Spoiler,
 } from "@mantine/core";
 import {
   IconUpload,
@@ -29,14 +30,29 @@ type Result = {
   question: string;
   answer: string;
   result: string;
-  retrievalScore: true;
-  answerScore: string;
-  latency: string;
+  retrievalScore: number;
+  answerScore: number;
+  latency: number;
 };
 
 type QAPair = {
   question: string;
   answer: string;
+};
+
+type Experiment = {
+  evalQuestionsCount: number;
+  chunkSize: number;
+  overlap: number;
+  splitMethod: string;
+  retriever: string;
+  embeddingAlgorithm: string;
+  model: string;
+  gradingPrompt: string;
+  numNeighbors: number;
+  avgRelevancyScore: number;
+  avgAnswerScore: number;
+  avgLatency: number;
 };
 
 const Body = ({ form }: { form: Form }) => {
@@ -47,6 +63,7 @@ const Body = ({ form }: { form: Form }) => {
   const [results, setResults] = useState<Result[]>([]);
   const [testDataset, setTestDataset] = useState<QAPair[]>([]);
   const [evalQuestionsCount, setEvalQuestionsCount] = useState(-1);
+  const [experiments, setExperiments] = useState<Experiment[]>([]);
 
   const submit = handleSubmit(async (data) => {
     setLoading(true);
@@ -110,6 +127,26 @@ const Body = ({ form }: { form: Form }) => {
     });
     setTestDataset((testDataset) => [...testDataset, ...newTestDataset]);
     setLoading(false);
+    const experiment: Experiment = {
+      evalQuestionsCount: data.evalQuestionsCount,
+      chunkSize: data.chunkSize,
+      overlap: data.overlap,
+      splitMethod: data.splitMethod,
+      retriever: data.retriever,
+      embeddingAlgorithm: data.embeddingAlgorithm,
+      model: data.model,
+      gradingPrompt: data.gradingPrompt,
+      numNeighbors: data.numNeighbors,
+      avgRelevancyScore:
+        results.reduce((acc, curr) => acc + curr.retrievalScore, 0) /
+        results.length,
+      avgAnswerScore:
+        results.reduce((acc, curr) => acc + curr.answerScore, 0) /
+        results.length,
+      avgLatency:
+        results.reduce((acc, curr) => acc + curr.latency, 0) / results.length,
+    };
+    setExperiments((experiments) => [...experiments, experiment]);
   });
 
   const download = useCallback(
@@ -220,46 +257,132 @@ const Body = ({ form }: { form: Form }) => {
             >
               {loading ? <Loader size="sm" /> : "Submit"}
             </Button>
-            {!!testDataset.length && (
-              <Button
-                style={{ marginBottom: "18px" }}
-                type="button"
-                onClick={() => download(testDataset, "test_dataset")}
-              >
-                Download Test Set
-              </Button>
-            )}
-            {!!testDataset.length && (
-              <Button
-                style={{ marginBottom: "18px" }}
-                type="button"
-                onClick={() => {
-                  setTestDataset([]);
-                  notifications.show({
-                    title: "Success",
-                    message: "The test set has been cleared.",
-                    color: "blue",
-                  });
-                }}
-              >
-                Clear Test Set
-              </Button>
-            )}
+          </Flex>
+        </>
+      )}
+      {!!testDataset.length && (
+        <Spoiler
+          maxHeight={0}
+          showLabel="Show precomputed test set"
+          hideLabel="Hide"
+          transitionDuration={500}
+        >
+          <Flex direction="row" gap="md">
+            <Title order={3}>Test Set</Title>
+            <Button
+              style={{ marginBottom: "18px" }}
+              type="button"
+              onClick={() => download(testDataset, "test_dataset")}
+            >
+              Download
+            </Button>
+            <Button
+              style={{ marginBottom: "18px" }}
+              type="button"
+              onClick={() => {
+                setTestDataset([]);
+                setResults([]);
+                setExperiments([]);
+                notifications.show({
+                  title: "Success",
+                  message: "The test set has been cleared.",
+                  color: "blue",
+                });
+              }}
+            >
+              Reset
+            </Button>
+          </Flex>
+          <Table>
+            <thead>
+              <tr>
+                <th>Question</th>
+                <th>Answer</th>
+              </tr>
+            </thead>
+            <tbody>
+              {testDataset?.map((result: QAPair, index: number) => (
+                <tr key={index}>
+                  <td>{result?.question}</td>
+                  <td>{result?.answer}</td>
+                </tr>
+              ))}
+            </tbody>
+          </Table>
+        </Spoiler>
+      )}
+      {!!experiments.length && (
+        <Spoiler
+          maxHeight={0}
+          showLabel="Show summary"
+          hideLabel="Hide"
+          transitionDuration={500}
+        >
+          <Flex direction="row" gap="md">
+            <Title order={3}>Summary</Title>
+            <Button
+              style={{ marginBottom: "18px" }}
+              type="button"
+              onClick={() => download(experiments, "summary")}
+            >
+              Download
+            </Button>
+          </Flex>
+          <Table>
+            <thead>
+              <tr>
+                <th># of Eval Questions</th>
+                <th>Chunk Size</th>
+                <th>Overlap</th>
+                <th>Split Method</th>
+                <th>Retriever</th>
+                <th>Embedding Algorithm</th>
+                <th>Model</th>
+                <th>Grading Prompt Style</th>
+                <th># of Chunks Retrieved</th>
+                <th>Avg Retrieval Relevancy Score</th>
+                <th>Avg Answer Similarity Score</th>
+                <th>Avg Latency (s)</th>
+              </tr>
+            </thead>
+            <tbody>
+              {experiments?.map((result: Experiment, index: number) => (
+                <tr key={index}>
+                  <td>{result?.evalQuestionsCount}</td>
+                  <td>{result?.chunkSize}</td>
+                  <td>{result?.overlap}</td>
+                  <td>{result?.splitMethod}</td>
+                  <td>{result?.retriever}</td>
+                  <td>{result?.embeddingAlgorithm}</td>
+                  <td>{result?.model}</td>
+                  <td>{result?.gradingPrompt}</td>
+                  <td>{result?.numNeighbors}</td>
+                </tr>
+              ))}
+            </tbody>
+          </Table>
+        </Spoiler>
+      )}
+      {evalQuestionsCount !== -1 && (
+        <Spoiler
+          maxHeight={0}
+          showLabel="Show results"
+          hideLabel="Hide"
+          transitionDuration={500}
+          initialState={true}
+        >
+          <Flex direction="row" gap="md">
+            <Title order={3}>Results</Title>
             {evalQuestionsCount === results.length && (
               <Button
                 style={{ marginBottom: "18px" }}
                 type="button"
                 onClick={() => download(results, "results")}
               >
-                Download Results
+                Download
               </Button>
             )}
           </Flex>
-        </>
-      )}
-      {evalQuestionsCount !== -1 && (
-        <>
-          <Title order={3}>Results</Title>
           <Table>
             <thead>
               <tr>
@@ -279,12 +402,12 @@ const Body = ({ form }: { form: Form }) => {
                   <td>{result?.result}</td>
                   <td>{result?.retrievalScore}</td>
                   <td>{result?.answerScore}</td>
-                  <td>{parseFloat(result?.latency)?.toFixed(3)}</td>
+                  <td>{result?.latency?.toFixed(3)}</td>
                 </tr>
               ))}
             </tbody>
           </Table>
-        </>
+        </Spoiler>
       )}
     </Stack>
   );
