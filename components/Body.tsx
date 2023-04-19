@@ -233,7 +233,7 @@ const Body = ({ form }: { form: Form }) => {
             </Dropzone.Idle>
             <div>
               <Text size="xl" inline align="center">
-                Upload Text for QA
+                Upload Text for QA Eval
               </Text>
               <Text size="sm" color="dimmed" mt={7} align="center">
                 {"Attach files (.txt, .pdf, .doc, .docx) up to 5 MB"}
