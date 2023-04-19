@@ -342,4 +342,3 @@ async def create_response(
     test_dataset = json.loads(test_dataset)
     return EventSourceResponse(run_evaluator(files, num_eval_questions, chunk_chars,
                                              overlap, split_method, retriever_type, embeddings, model_version,grade_prompt,num_neighbors,test_dataset), headers={"Content-Type": "text/event-stream", "Connection": "keep-alive", "Cache-Control": "no-cache"})
-                                             

@@ -98,6 +98,7 @@ const Body = ({ form }: { form: Form }) => {
       headers: {
         Accept: "text/event-stream",
       },
+      openWhenHidden: true,
       signal: controller.signal,
       onmessage(ev) {
         console.log("raw input", ev.data);
