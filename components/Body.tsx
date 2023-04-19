@@ -87,7 +87,7 @@ const Body = ({ form }: { form: Form }) => {
 
     const controller = new AbortController();
 
-    let newTestDataset = [];
+    // let newTestDataset = [];
     let localResults = [];
     let rowCount = 0;
 
@@ -106,13 +106,13 @@ const Body = ({ form }: { form: Form }) => {
           localResults = [...localResults, row];
           rowCount += 1;
           if (rowCount > testDataset.length) {
-            newTestDataset = [
-              ...newTestDataset,
+            setTestDataset((testDataset) => [
+              ...testDataset,
               {
                 question: row.question,
                 answer: row.answer,
               },
-            ];
+            ]);
           }
         } catch (e) {
           console.warn("Error parsing data", e);
@@ -127,7 +127,7 @@ const Body = ({ form }: { form: Form }) => {
         throw new Error(err);
       },
     });
-    setTestDataset((testDataset) => [...testDataset, ...newTestDataset]);
+    // setTestDataset((testDataset) => [...testDataset, ...newTestDataset]);
     setLoading(false);
     const experiment: Experiment = {
       evalQuestionsCount: data.evalQuestionsCount,
@@ -266,8 +266,8 @@ const Body = ({ form }: { form: Form }) => {
       {!!testDataset.length && (
         <Spoiler
           maxHeight={0}
-          showLabel="Show precomputed test set"
-          hideLabel="Hide"
+          showLabel="Show available test set"
+          hideLabel="Hide available test set"
           transitionDuration={500}
         >
           <Flex direction="row" gap="md">
@@ -296,7 +296,7 @@ const Body = ({ form }: { form: Form }) => {
               Reset
             </Button>
           </Flex>
-          <Table>
+          <Table withBorder withColumnBorders striped highlightOnHover>
             <thead>
               <tr>
                 <th>Question</th>
@@ -318,7 +318,7 @@ const Body = ({ form }: { form: Form }) => {
         <Spoiler
           maxHeight={0}
           showLabel="Show summary"
-          hideLabel="Hide"
+          hideLabel="Hide summary"
           transitionDuration={500}
         >
           <Flex direction="row" gap="md">
@@ -331,7 +331,7 @@ const Body = ({ form }: { form: Form }) => {
               Download
             </Button>
           </Flex>
-          <Table>
+          <Table withBorder withColumnBorders striped highlightOnHover>
             <thead>
               <tr>
                 <th># of Eval Questions</th>
@@ -369,11 +369,11 @@ const Body = ({ form }: { form: Form }) => {
           </Table>
         </Spoiler>
       )}
-      {evalQuestionsCount !== -1 && (
+      {!!results.length && (
         <Spoiler
           maxHeight={0}
           showLabel="Show results"
-          hideLabel="Hide"
+          hideLabel="Hide results"
           transitionDuration={500}
           initialState={true}
         >
@@ -389,7 +389,7 @@ const Body = ({ form }: { form: Form }) => {
               </Button>
             )}
           </Flex>
-          <Table>
+          <Table withBorder withColumnBorders striped highlightOnHover>
             <thead>
               <tr>
                 <th>Question</th>
