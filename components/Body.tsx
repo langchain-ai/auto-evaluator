@@ -25,6 +25,7 @@ import { notifications } from "@mantine/notifications";
 import { API_URL } from "../utils/variables";
 import { fetchEventSource } from "@microsoft/fetch-event-source";
 import { Parser } from "@json2csv/plainjs";
+import Papa from "papaparse";
 
 type Result = {
   question: string;
@@ -48,7 +49,7 @@ type Experiment = {
   retriever: string;
   embeddingAlgorithm: string;
   model: string;
-  gradingPrompt: string;
+  // gradingPrompt: string;
   numNeighbors: number;
   avgRelevancyScore: number;
   avgAnswerScore: number;
@@ -64,6 +65,7 @@ const Body = ({ form }: { form: Form }) => {
   const [testDataset, setTestDataset] = useState<QAPair[]>([]);
   const [evalQuestionsCount, setEvalQuestionsCount] = useState(-1);
   const [experiments, setExperiments] = useState<Experiment[]>([]);
+  const [didUploadTestDataset, setDidUploadTestDataset] = useState(false);
 
   const submit = handleSubmit(async (data) => {
     setLoading(true);
@@ -79,7 +81,7 @@ const Body = ({ form }: { form: Form }) => {
     formData.append("retriever_type", data.retriever);
     formData.append("embeddings", data.embeddingAlgorithm);
     formData.append("model_version", data.model);
-    formData.append("grade_prompt", data.gradingPrompt);
+    // formData.append("grade_prompt", data.gradingPrompt);
     formData.append("num_neighbors", data.numNeighbors.toString());
     formData.append("test_dataset", JSON.stringify(testDataset));
 
@@ -87,7 +89,6 @@ const Body = ({ form }: { form: Form }) => {
 
     const controller = new AbortController();
 
-    // let newTestDataset = [];
     let localResults = [];
     let rowCount = 0;
 
@@ -114,6 +115,9 @@ const Body = ({ form }: { form: Form }) => {
               },
             ]);
           }
+          if (rowCount === data.evalQuestionsCount) {
+            controller.abort();
+          }
         } catch (e) {
           console.warn("Error parsing data", e);
         }
@@ -127,7 +131,6 @@ const Body = ({ form }: { form: Form }) => {
         throw new Error(err);
       },
     });
-    // setTestDataset((testDataset) => [...testDataset, ...newTestDataset]);
     setLoading(false);
     const experiment: Experiment = {
       evalQuestionsCount: data.evalQuestionsCount,
@@ -137,7 +140,7 @@ const Body = ({ form }: { form: Form }) => {
       retriever: data.retriever,
       embeddingAlgorithm: data.embeddingAlgorithm,
       model: data.model,
-      gradingPrompt: data.gradingPrompt,
+      // gradingPrompt: data.gradingPrompt,
       numNeighbors: data.numNeighbors,
       avgRelevancyScore:
         localResults.reduce((acc, curr) => acc + curr.retrievalScore, 0) /
@@ -176,63 +179,150 @@ const Body = ({ form }: { form: Form }) => {
         title="Instructions"
         color="teal"
       >
-        Provide your PDFs, TXT, Docx files alongside the input parameters and
-        evaluator will generate the test dataset with a QA chain and will
-        provide you with test results.
+        Upload some sample text files and choose the input parameters for your
+        QA chain. This evaluator will generate a test dataset (if not provided)
+        and grade the performance of the QA chain.
       </Alert>
-      <Dropzone
-        onDrop={(files) => {
-          setValue("files", [...(getValues("files") ?? []), ...files]);
-          setTestDataset([]);
-        }}
-        accept={[MIME_TYPES.pdf, MIME_TYPES.docx, MIME_TYPES.doc, "text/plain"]}
-        onReject={(files) =>
-          notifications.show({
-            title: "Error",
-            message: `File type(s) not supported ${files.map(
-              (file) => file.file.type
-            )}`,
-            color: "red",
-          })
-        }
-        maxSize={3 * 1024 ** 2}
-      >
-        <Group
-          position="center"
-          spacing="xl"
-          style={{ minHeight: rem(125), pointerEvents: "none" }}
+      <Flex direction="row" gap="md">
+        <Dropzone
+          onDrop={(files) => {
+            setValue("files", [...(getValues("files") ?? []), ...files]);
+            setExperiments([]);
+            setResults([]);
+          }}
+          accept={[
+            MIME_TYPES.pdf,
+            MIME_TYPES.docx,
+            MIME_TYPES.doc,
+            "text/plain",
+          ]}
+          onReject={(files) =>
+            notifications.show({
+              title: "Error",
+              message: `File type(s) not supported ${files.map(
+                (file) => file.file.type
+              )}`,
+              color: "red",
+            })
+          }
+          maxSize={3 * 1024 ** 2}
+          style={{ width: "100%" }}
         >
-          <Dropzone.Accept>
-            <IconUpload
-              size="3.2rem"
-              stroke={1.5}
-              color={
-                theme.colors[theme.primaryColor][
-                  theme.colorScheme === "dark" ? 4 : 6
-                ]
-              }
-            />
-          </Dropzone.Accept>
-          <Dropzone.Reject>
-            <IconX
-              size="3.2rem"
-              stroke={1.5}
-              color={theme.colors.red[theme.colorScheme === "dark" ? 4 : 6]}
-            />
-          </Dropzone.Reject>
-          <Dropzone.Idle>
-            <IconPhoto size="3.2rem" stroke={1.5} />
-          </Dropzone.Idle>
-          <div>
-            <Text size="xl" inline>
-              Drag and Drop PDFs, Docx, TXT
-            </Text>
-            <Text size="sm" color="dimmed" inline mt={7}>
-              Attach as many files as you like, each file should not exceed 5mb
-            </Text>
-          </div>
-        </Group>
-      </Dropzone>
+          <Stack align="center">
+            <Dropzone.Accept>
+              <IconUpload
+                size="3.2rem"
+                stroke={1.5}
+                color={
+                  theme.colors[theme.primaryColor][
+                    theme.colorScheme === "dark" ? 4 : 6
+                  ]
+                }
+              />
+            </Dropzone.Accept>
+            <Dropzone.Reject>
+              <IconX
+                size="3.2rem"
+                stroke={1.5}
+                color={theme.colors.red[theme.colorScheme === "dark" ? 4 : 6]}
+              />
+            </Dropzone.Reject>
+            <Dropzone.Idle>
+              <IconPhoto size="3.2rem" stroke={1.5} />
+            </Dropzone.Idle>
+            <div>
+              <Text size="xl" inline align="center">
+                Upload Text for QA
+              </Text>
+              <Text size="sm" color="dimmed" mt={7} align="center">
+                {"Attach files (.txt, .pdf, .doc, .docx) up to 5 MB"}
+              </Text>
+            </div>
+          </Stack>
+        </Dropzone>
+        <Dropzone
+          onDrop={(files) =>
+            files.forEach((file) =>
+              Papa.parse(file, {
+                header: false,
+                complete: (results: { data: string[][] }) => {
+                  const datasetArray = results?.data;
+                  if (
+                    datasetArray?.[0]?.[0]?.toLowerCase() === "question" ||
+                    datasetArray?.[0]?.[0]?.toLowerCase() === "answer"
+                  ) {
+                    datasetArray.shift();
+                  }
+                  const newTestDataset = datasetArray.map((row) => ({
+                    question: row?.[0],
+                    answer: row?.[1],
+                  }));
+                  setTestDataset((testDataset) => [
+                    ...newTestDataset,
+                    ...testDataset,
+                  ]);
+                  setDidUploadTestDataset(true);
+                },
+                error: () => {
+                  notifications.show({
+                    title: "Error",
+                    message: "Error parsing test dataset CSV",
+                    color: "red",
+                  });
+                },
+              })
+            )
+          }
+          maxFiles={1}
+          multiple={false}
+          disabled={didUploadTestDataset}
+          accept={[MIME_TYPES.csv]}
+          onReject={(files) =>
+            notifications.show({
+              title: "Error",
+              message: `File type(s) not supported ${files.map(
+                (file) => file.file.type
+              )}`,
+              color: "red",
+            })
+          }
+          maxSize={3 * 1024 ** 2}
+          style={{ width: "100%" }}
+        >
+          <Stack align="center">
+            <Dropzone.Accept>
+              <IconUpload
+                size="3.2rem"
+                stroke={1.5}
+                color={
+                  theme.colors[theme.primaryColor][
+                    theme.colorScheme === "dark" ? 4 : 6
+                  ]
+                }
+              />
+            </Dropzone.Accept>
+            <Dropzone.Reject>
+              <IconX
+                size="3.2rem"
+                stroke={1.5}
+                color={theme.colors.red[theme.colorScheme === "dark" ? 4 : 6]}
+              />
+            </Dropzone.Reject>
+            <Dropzone.Idle>
+              <IconPhoto size="3.2rem" stroke={1.5} />
+            </Dropzone.Idle>
+            <div>
+              <Text size="xl" inline align="center">
+                Upload Test Dataset (Optional)
+              </Text>
+              <Text size="sm" color="dimmed" inline mt={7} align="center">
+                Attach a single csv containing up to 15 QA pairs, with the
+                columns: "question", "answer"
+              </Text>
+            </div>
+          </Stack>
+        </Dropzone>
+      </Flex>
       {!!watchFiles?.length && (
         <>
           <Table>
@@ -266,12 +356,12 @@ const Body = ({ form }: { form: Form }) => {
       {!!testDataset.length && (
         <Spoiler
           maxHeight={0}
-          showLabel="Show available test set"
-          hideLabel="Hide available test set"
+          showLabel="Show available test dataset"
+          hideLabel="Hide available test dataset"
           transitionDuration={500}
         >
           <Flex direction="row" gap="md">
-            <Title order={3}>Test Set</Title>
+            <Title order={3}>Test Dataset</Title>
             <Button
               style={{ marginBottom: "18px" }}
               type="button"
@@ -284,12 +374,11 @@ const Body = ({ form }: { form: Form }) => {
               type="button"
               onClick={() => {
                 setTestDataset([]);
-                setResults([]);
-                setExperiments([]);
+                setDidUploadTestDataset(false);
                 notifications.show({
                   title: "Success",
-                  message: "The test set has been cleared.",
-                  color: "blue",
+                  message: "The test dataset has been cleared.",
+                  color: "green",
                 });
               }}
             >
@@ -341,7 +430,7 @@ const Body = ({ form }: { form: Form }) => {
                 <th>Retriever</th>
                 <th>Embedding Algorithm</th>
                 <th>Model</th>
-                <th>Grading Prompt Style</th>
+                {/* <th>Grading Prompt Style</th> */}
                 <th># of Chunks Retrieved</th>
                 <th>Avg Retrieval Relevancy Score</th>
                 <th>Avg Answer Similarity Score</th>
@@ -358,7 +447,7 @@ const Body = ({ form }: { form: Form }) => {
                   <td>{result?.retriever}</td>
                   <td>{result?.embeddingAlgorithm}</td>
                   <td>{result?.model}</td>
-                  <td>{result?.gradingPrompt}</td>
+                  {/* <td>{result?.gradingPrompt}</td> */}
                   <td>{result?.numNeighbors}</td>
                   <td>{result?.avgRelevancyScore}</td>
                   <td>{result?.avgAnswerScore}</td>
