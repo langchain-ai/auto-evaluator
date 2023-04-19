@@ -321,8 +321,8 @@ const Body = ({ form }: { form: Form }) => {
                 Upload Test Dataset (Optional)
               </Text>
               <Text size="sm" color="dimmed" inline mt={7} align="center">
-                Attach a single CSV containing up to 15 QA pairs, with the
-                columns: "question", "answer"
+                Attach a single CSV containing up to 15 QA pairs (shape:
+                [question, answer])
               </Text>
             </div>
           </Stack>
