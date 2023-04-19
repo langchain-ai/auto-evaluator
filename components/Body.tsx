@@ -25,7 +25,7 @@ import { API_URL } from "../utils/variables";
 import { fetchEventSource } from "@microsoft/fetch-event-source";
 import { Parser } from "@json2csv/plainjs";
 
-type QATableEntry = {
+type Result = {
   question: string;
   answer: string;
   result: string;
@@ -34,19 +34,23 @@ type QATableEntry = {
   latency: string;
 };
 
-type QATable = QATableEntry[];
+type QAPair = {
+  question: string;
+  answer: string;
+};
 
 const Body = ({ form }: { form: Form }) => {
   const { setValue, watch, getValues, handleSubmit } = form;
   const watchFiles = watch("files");
   const theme = useMantineTheme();
   const [loading, setLoading] = useState(false);
-  const [qaTable, setQATable] = useState<QATable>([]);
+  const [results, setResults] = useState<Result[]>([]);
+  const [testDataset, setTestDataset] = useState<QAPair[]>([]);
   const [evalQuestionsCount, setEvalQuestionsCount] = useState(-1);
 
   const submit = handleSubmit(async (data) => {
     setLoading(true);
-    setQATable([]);
+    setResults([]);
     const formData = new FormData();
     data.files.forEach((file) => {
       formData.append("files", file);
@@ -60,10 +64,14 @@ const Body = ({ form }: { form: Form }) => {
     formData.append("model_version", data.model);
     formData.append("grade_prompt", data.gradingPrompt);
     formData.append("num_neighbors", data.numNeighbors.toString());
+    formData.append("test_dataset", JSON.stringify(testDataset));
 
     setEvalQuestionsCount(data.evalQuestionsCount);
 
     const controller = new AbortController();
+
+    let newTestDataset = [];
+    let rowCount = 0;
 
     await fetchEventSource(API_URL + "/evaluator-stream", {
       method: "POST",
@@ -74,14 +82,18 @@ const Body = ({ form }: { form: Form }) => {
       signal: controller.signal,
       onmessage(ev) {
         console.log("raw input", ev.data);
-        let parsedData;
-        let rowCount = 0;
         try {
-          parsedData = JSON.parse(ev.data);
-          setQATable((qaTable) => [...qaTable, parsedData?.data?.qaTable]);
+          const row: Result = JSON.parse(ev.data)?.data;
+          setResults((results) => [...results, row]);
           rowCount += 1;
-          if (rowCount === evalQuestionsCount) {
-            controller.abort();
+          if (rowCount > testDataset.length) {
+            newTestDataset = [
+              ...newTestDataset,
+              {
+                question: row.question,
+                answer: row.answer,
+              },
+            ];
           }
         } catch (e) {
           console.warn("Error parsing data", e);
@@ -96,21 +108,26 @@ const Body = ({ form }: { form: Form }) => {
         throw new Error(err);
       },
     });
+    setTestDataset((testDataset) => [...testDataset, ...newTestDataset]);
+    setLoading(false);
   });
 
-  const download = useCallback(() => {
-    const parser = new Parser();
-    const csv = parser.parse(qaTable);
-    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.setAttribute("href", url);
-    link.setAttribute("download", "qa_evaluation.csv");
-    link.style.visibility = "hidden";
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  }, [qaTable]);
+  const download = useCallback(
+    (data: any[], filename: string) => {
+      const parser = new Parser();
+      const csv = parser.parse(data);
+      const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.setAttribute("href", url);
+      link.setAttribute("download", filename + ".csv");
+      link.style.visibility = "hidden";
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    },
+    [results]
+  );
 
   return (
     <Stack>
@@ -124,9 +141,10 @@ const Body = ({ form }: { form: Form }) => {
         provide you with test results.
       </Alert>
       <Dropzone
-        onDrop={(files) =>
-          setValue("files", [...(getValues("files") ?? []), ...files])
-        }
+        onDrop={(files) => {
+          setValue("files", [...(getValues("files") ?? []), ...files]);
+          setTestDataset([]);
+        }}
         accept={[MIME_TYPES.pdf, MIME_TYPES.docx, MIME_TYPES.doc, "text/plain"]}
         onReject={(files) =>
           notifications.show({
@@ -181,7 +199,7 @@ const Body = ({ form }: { form: Form }) => {
             <thead>
               <tr>
                 <th>Name</th>
-                <th>Size (MB)</th>
+                <th>Size (KB)</th>
               </tr>
             </thead>
             <tbody>
@@ -202,13 +220,38 @@ const Body = ({ form }: { form: Form }) => {
             >
               {loading ? <Loader size="sm" /> : "Submit"}
             </Button>
-            {evalQuestionsCount === qaTable.length && (
+            {!!testDataset.length && (
               <Button
                 style={{ marginBottom: "18px" }}
                 type="button"
-                onClick={download}
+                onClick={() => download(testDataset, "test_dataset")}
               >
-                Download CSV
+                Download Test Set
+              </Button>
+            )}
+            {!!testDataset.length && (
+              <Button
+                style={{ marginBottom: "18px" }}
+                type="button"
+                onClick={() => {
+                  setTestDataset([]);
+                  notifications.show({
+                    title: "Success",
+                    message: "The test set has been cleared.",
+                    color: "blue",
+                  });
+                }}
+              >
+                Clear Test Set
+              </Button>
+            )}
+            {evalQuestionsCount === results.length && (
+              <Button
+                style={{ marginBottom: "18px" }}
+                type="button"
+                onClick={() => download(results, "results")}
+              >
+                Download Results
               </Button>
             )}
           </Flex>
@@ -229,14 +272,14 @@ const Body = ({ form }: { form: Form }) => {
               </tr>
             </thead>
             <tbody>
-              {qaTable?.map((response: QATableEntry, index: number) => (
+              {results?.map((result: Result, index: number) => (
                 <tr key={index}>
-                  <td>{response?.question}</td>
-                  <td>{response?.answer}</td>
-                  <td>{response?.result}</td>
-                  <td>{response?.retrievalScore}</td>
-                  <td>{response?.answerScore}</td>
-                  <td>{parseFloat(response?.latency)?.toFixed(3)}</td>
+                  <td>{result?.question}</td>
+                  <td>{result?.answer}</td>
+                  <td>{result?.result}</td>
+                  <td>{result?.retrievalScore}</td>
+                  <td>{result?.answerScore}</td>
+                  <td>{parseFloat(result?.latency)?.toFixed(3)}</td>
                 </tr>
               ))}
             </tbody>
