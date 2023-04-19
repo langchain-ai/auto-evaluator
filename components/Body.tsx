@@ -13,12 +13,7 @@ import {
   Stack,
   Spoiler,
 } from "@mantine/core";
-import {
-  IconUpload,
-  IconPhoto,
-  IconX,
-  IconAlertCircle,
-} from "@tabler/icons-react";
+import { IconUpload, IconX, IconAlertCircle } from "@tabler/icons-react";
 import { Dropzone, MIME_TYPES } from "@mantine/dropzone";
 import { Form } from "../utils/types";
 import { notifications } from "@mantine/notifications";
@@ -26,6 +21,7 @@ import { API_URL } from "../utils/variables";
 import { fetchEventSource } from "@microsoft/fetch-event-source";
 import { Parser } from "@json2csv/plainjs";
 import Papa from "papaparse";
+import { IconFile } from "@tabler/icons-react";
 
 type Result = {
   question: string;
@@ -229,7 +225,7 @@ const Body = ({ form }: { form: Form }) => {
               />
             </Dropzone.Reject>
             <Dropzone.Idle>
-              <IconPhoto size="3.2rem" stroke={1.5} />
+              <IconFile size="3.2rem" stroke={1.5} />
             </Dropzone.Idle>
             <div>
               <Text size="xl" inline align="center">
@@ -314,7 +310,7 @@ const Body = ({ form }: { form: Form }) => {
               />
             </Dropzone.Reject>
             <Dropzone.Idle>
-              <IconPhoto size="3.2rem" stroke={1.5} />
+              <IconFile size="3.2rem" stroke={1.5} />
             </Dropzone.Idle>
             <div>
               <Text size="xl" inline align="center">
