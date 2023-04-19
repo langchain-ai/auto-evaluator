@@ -6,7 +6,7 @@ import pypdf
 import logging
 import itertools
 import pandas as pd
-from typing import List
+from typing import Dict, List
 from llama_index import Document
 from langchain.llms import Anthropic
 from langchain.vectorstores import FAISS
@@ -38,12 +38,13 @@ def generate_eval(text, N, chunk, logger):
     sub_sequences = [text[i:i+chunk] for i in starting_indices]
     chain = QAGenerationChain.from_llm(ChatOpenAI(temperature=0))
     eval_set = []
+    
     for i, b in enumerate(sub_sequences):
         try:
             qa = chain.run(b)
             eval_set.append(qa)
         except:
-            logger("Error on question %s"%i)
+            logger.error("Error on question %s"%i)
     eval_pair = list(itertools.chain.from_iterable(eval_set))
     return eval_pair
 
@@ -152,7 +153,7 @@ def grade_model_retrieval(gt_dataset, predictions, grade_docs_prompt, logger):
     # IN: ground truth, model predictions
     # OUT: list of scores
 
-    logger.info("`Grading relevance of retrived docs ...`")
+    logger.info("`Grading relevance of retrieved docs ...`")
     if grade_docs_prompt == "Fast":
         prompt = GRADE_DOCS_PROMPT_FAST
     else:
@@ -170,11 +171,11 @@ def run_eval(chain, retriever, eval_qa_pair, grade_prompt, retriever_type, num_n
 
     # Compute eval
     # IN: chain, retriever, eval question, flag for docs retrieval prompt
-    # OUT: list of scores for answers and retrival, latency, predictions
+    # OUT: list of scores for answers and retrieval, latency, predictions
 
     logger.info("`Running eval ...`")
     predictions = []
-    retrived_docs = []
+    retrieved_docs = []
     gt_dataset = []
     latency = []
     
@@ -190,23 +191,23 @@ def run_eval(chain, retriever, eval_qa_pair, grade_prompt, retriever_type, num_n
     elapsed_time = end_time - start_time
     latency.append(elapsed_time)
 
-    # Extract text from retrived docs
-    retrived_doc_text = ""
+    # Extract text from retrieved docs
+    retrieved_doc_text = ""
     if retriever_type != "Llama-Index":
         docs=retriever.get_relevant_documents(eval_qa_pair["question"])
         for i,doc in enumerate(docs):
-            retrived_doc_text += "Doc %s: "%str(i+1) + doc.page_content + " "
+            retrieved_doc_text += "Doc %s: "%str(i+1) + doc.page_content + " "
     elif retriever_type == "Llama-Index":
         for i, doc in enumerate(answer.source_nodes):
-            retrived_doc_text += "Doc %s: "%str(i+1) + doc.node.text + " "
+            retrieved_doc_text += "Doc %s: "%str(i+1) + doc.node.text + " "
     
     # Log 
-    retrived = {"question": eval_qa_pair["question"], "answer": eval_qa_pair["answer"], "result": retrived_doc_text}
-    retrived_docs.append(retrived)
+    retrieved = {"question": eval_qa_pair["question"], "answer": eval_qa_pair["answer"], "result": retrieved_doc_text}
+    retrieved_docs.append(retrieved)
         
     # Grade
     graded_answers = grade_model_answer(gt_dataset, predictions, grade_prompt, logger)
-    graded_retrieval = grade_model_retrieval(gt_dataset, retrived_docs, grade_prompt, logger)
+    graded_retrieval = grade_model_retrieval(gt_dataset, retrieved_docs, grade_prompt, logger)
     return graded_answers, graded_retrieval, latency, predictions
 
 
@@ -246,6 +247,7 @@ def run_evaluator(
     model_version,
     grade_prompt,
     num_neighbors,
+    test_dataset
 ):
 
     # Set up logging
@@ -276,7 +278,6 @@ def run_evaluator(
             logger.warning(
                 "Unsupported file type for file: {}".format(file.filename))
     text =  " ".join(texts)
-    yield json.dumps({"data": {"loadingState": "Files accepted"}})
     
     logger.info("Splitting texts")
     splits = split_texts(text, chunk_chars, overlap, split_method, logger)
@@ -293,30 +294,36 @@ def run_evaluator(
     for i in range(num_eval_questions):
 
         # Generate one question
-        eval_pair = generate_eval(text, 1, 3000, logger)
-        if len(eval_pair) == 0:
-            
-            # Error in eval generation
-            continue
-
+        if i < len(test_dataset):
+            eval_pair = test_dataset[i]
         else:
-            # This returns a list, so we unpack to dict
-            eval_pair = eval_pair[0]
-            
-            # Run eval 
-            graded_answers, graded_retrieval, latency, predictions = run_eval(qa_chain, retriever, eval_pair, grade_prompt, retriever_type, num_neighbors, logger)
-            
-            # Assemble output 
-            d = pd.DataFrame(predictions)
-            d['answer score'] = [g['text'] for g in graded_answers]
-            d['docs score'] = [g['text'] for g in graded_retrieval]
-            d['latency'] = latency
-            
-            # Summary statistics
-            d['answer correct'] = ["TRUE" if "INCORRECT" not in text else "FALSE" for text in d['answer score']]
-            d['docs relevant'] = ["TRUE" if "Context is relevant: True" in text else "FALSE" for text in d['docs score']]
-            
-            yield json.dumps({"data": {"loadingState": "Done",  "data": {"qaTable": d.to_dict('records')}}})
+            eval_pair = generate_eval(text, 1, 3000, logger)
+            if len(eval_pair) == 0:    
+                # Error in eval generation
+                continue
+            else:
+                # This returns a list, so we unpack to dict
+                eval_pair = eval_pair[0]
+        
+        # Run eval 
+        graded_answers, graded_retrieval, latency, predictions = run_eval(qa_chain, retriever, eval_pair, grade_prompt, retriever_type, num_neighbors, logger)
+        
+        # Assemble output 
+        d = pd.DataFrame(predictions)
+        d['answerScore'] = [g['text'] for g in graded_answers]
+        d['retrievalScore'] = [g['text'] for g in graded_retrieval]
+        d['latency'] = latency
+        
+        # Summary statistics
+        d['answerScore'] = [1 if "INCORRECT" not in text else 0 for text in d['answerScore']]
+        d['retrievalScore'] = [1 if "Context is relevant: True" in text else 0 for text in d['retrievalScore']]
+
+        # Convert dataframe to dict
+        d_dict = d.to_dict('records')
+        if len(d_dict) == 1:
+            yield json.dumps({"data":  d_dict[0]})
+        else:
+            logger.warn("A QA pair was not evaluated correctly. Skipping this pair.")
 
 @app.post("/evaluator-stream")
 async def create_response(
@@ -325,14 +332,14 @@ async def create_response(
     chunk_chars: int = Form(1000),
     overlap: int = Form(100),
     split_method: str = Form("RecursiveTextSplitter"),
-    retriver_type: str = Form("similarity-search"),
+    retriever_type: str = Form("similarity-search"),
     embeddings: str = Form("OpenAI"),
     model_version: str = Form("gpt-3.5-turbo"),
     grade_prompt: str = Form("Fast"),
-    num_neighbors: int = Form(3)
+    num_neighbors: int = Form(3),
+    test_dataset: str = Form("[]"),
 ):
+    test_dataset = json.loads(test_dataset)
     return EventSourceResponse(run_evaluator(files, num_eval_questions, chunk_chars,
-                                             overlap, split_method, retriver_type, embeddings, model_version,grade_prompt,num_neighbors), headers={"Content-Type": "text/event-stream", "Connection": "keep-alive", "Cache-Control": "no-cache"})
-
-
-    
+                                             overlap, split_method, retriever_type, embeddings, model_version,grade_prompt,num_neighbors,test_dataset), headers={"Content-Type": "text/event-stream", "Connection": "keep-alive", "Cache-Control": "no-cache"})
+                                             
