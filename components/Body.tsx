@@ -254,12 +254,16 @@ const Body = ({ form }: { form: Form }) => {
                   ) {
                     datasetArray.shift();
                   }
-                  const newTestDataset = datasetArray.map((row) => ({
+                  const cappedDatasetArray = datasetArray.slice(
+                    0,
+                    Math.min(15, datasetArray.length)
+                  );
+                  const uploadedTestDataset = cappedDatasetArray.map((row) => ({
                     question: row?.[0],
                     answer: row?.[1],
                   }));
                   setTestDataset((testDataset) => [
-                    ...newTestDataset,
+                    ...uploadedTestDataset,
                     ...testDataset,
                   ]);
                   setDidUploadTestDataset(true);
@@ -317,7 +321,7 @@ const Body = ({ form }: { form: Form }) => {
                 Upload Test Dataset (Optional)
               </Text>
               <Text size="sm" color="dimmed" inline mt={7} align="center">
-                Attach a single csv containing up to 15 QA pairs, with the
+                Attach a single CSV containing up to 15 QA pairs, with the
                 columns: "question", "answer"
               </Text>
             </div>
