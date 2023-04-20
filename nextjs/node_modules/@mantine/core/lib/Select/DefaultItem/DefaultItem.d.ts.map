@@ -1,1 +1,0 @@
-{"version":3,"file":"DefaultItem.d.ts","sourceRoot":"","sources":["../../../src/Select/DefaultItem/DefaultItem.tsx"],"names":[],"mappings":"AAAA,OAAO,KAAqB,MAAM,OAAO,CAAC;AAE1C,MAAM,WAAW,eAAgB,SAAQ,IAAI,CAAC,KAAK,CAAC,wBAAwB,CAAC,KAAK,CAAC,EAAE,OAAO,CAAC;IAC3F,KAAK,EAAE,KAAK,CAAC,SAAS,CAAC;IACvB,KAAK,CAAC,EAAE,MAAM,CAAC;CAChB;AAED,eAAO,MAAM,WAAW,wFAMvB,CAAC"}

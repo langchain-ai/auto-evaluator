@@ -1,1 +1,0 @@
-{"version":3,"file":"get-input-offsets.d.ts","sourceRoot":"","sources":["../../../src/Input/InputWrapper/get-input-offsets.ts"],"names":[],"mappings":"AAAA,wBAAgB,eAAe,CAC7B,iBAAiB,EAAE,CAAC,OAAO,GAAG,OAAO,GAAG,aAAa,GAAG,OAAO,CAAC,EAAE,EAClE,EAAE,cAAc,EAAE,QAAQ,EAAE,EAAE;IAAE,cAAc,EAAE,OAAO,CAAC;IAAC,QAAQ,EAAE,OAAO,CAAA;CAAE;;;EAU7E"}

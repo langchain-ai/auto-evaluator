@@ -1,1 +1,0 @@
-{"version":3,"file":"keys.js","sources":["../../src/keys/keys.ts"],"sourcesContent":["export function keys<T, K extends keyof T>(object: T): K[] {\n  return Object.keys(object) as K[];\n}\n"],"names":[],"mappings":"AAAO,SAAS,IAAI,CAAC,MAAM,EAAE;AAC7B,EAAE,OAAO,MAAM,CAAC,IAAI,CAAC,MAAM,CAAC,CAAC;AAC7B;;;;"}

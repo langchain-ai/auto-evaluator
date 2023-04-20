@@ -1,1 +1,0 @@
-{"version":3,"file":"Footer.d.ts","sourceRoot":"","sources":["../../../src/AppShell/Footer/Footer.tsx"],"names":[],"mappings":"AAAA,OAAO,KAAqB,MAAM,OAAO,CAAC;AAE1C,OAAO,EAAmB,0BAA0B,EAAE,MAAM,oCAAoC,CAAC;AAEjG,MAAM,WAAW,WACf,SAAQ,0BAA0B,EAChC,KAAK,CAAC,wBAAwB,CAAC,KAAK,CAAC;IACvC,qBAAqB;IACrB,QAAQ,EAAE,KAAK,CAAC,SAAS,CAAC;CAC3B;AAOD,eAAO,MAAM,MAAM,iFAGjB,CAAC"}

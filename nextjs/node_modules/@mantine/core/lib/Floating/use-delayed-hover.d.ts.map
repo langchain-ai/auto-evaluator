@@ -1,1 +1,0 @@
-{"version":3,"file":"use-delayed-hover.d.ts","sourceRoot":"","sources":["../../src/Floating/use-delayed-hover.ts"],"names":[],"mappings":"AAEA,UAAU,oBAAoB;IAC5B,IAAI,IAAI,IAAI,CAAC;IACb,KAAK,IAAI,IAAI,CAAC;IACd,SAAS,EAAE,MAAM,CAAC;IAClB,UAAU,EAAE,MAAM,CAAC;CACpB;AAED,wBAAgB,eAAe,CAAC,EAAE,IAAI,EAAE,KAAK,EAAE,SAAS,EAAE,UAAU,EAAE,EAAE,oBAAoB;;;EAgC3F"}

@@ -1,1 +1,0 @@
-{"version":3,"file":"Timeline.styles.js","sources":["../../src/Timeline/Timeline.styles.ts"],"sourcesContent":["import { createStyles } from '@mantine/styles';\n\nexport default createStyles(() => ({\n  root: {},\n}));\n"],"names":["createStyles"],"mappings":";;;;;;AACA,gBAAeA,mBAAY,CAAC,OAAO;AACnC,EAAE,IAAI,EAAE,EAAE;AACV,CAAC,CAAC,CAAC;;;;"}
