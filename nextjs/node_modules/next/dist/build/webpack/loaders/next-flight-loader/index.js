@@ -1,0 +1,81 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+exports.default = transformSource;
+var _constants = require("../../../../lib/constants");
+var _constants1 = require("../../../../shared/lib/constants");
+var _warnOnce = require("../../../../shared/lib/utils/warn-once");
+var _getPageStaticInfo = require("../../../analysis/get-page-static-info");
+var _getModuleBuildInfo = require("../get-module-build-info");
+async function transformSource(source, sourceMap) {
+    var ref, ref1;
+    // Avoid buffer to be consumed
+    if (typeof source !== "string") {
+        throw new Error("Expected source to have been transformed to a string.");
+    }
+    const moduleProxy = this._compiler.name === "edge-server" ? "next/dist/esm/build/webpack/loaders/next-flight-loader/module-proxy" : "next/dist/build/webpack/loaders/next-flight-loader/module-proxy";
+    const callback = this.async();
+    // Assign the RSC meta information to buildInfo.
+    // Exclude next internal files which are not marked as client files
+    const buildInfo = (0, _getModuleBuildInfo).getModuleBuildInfo(this._module);
+    buildInfo.rsc = (0, _getPageStaticInfo).getRSCModuleInformation(source);
+    // A client boundary.
+    if (((ref = buildInfo.rsc) == null ? void 0 : ref.type) === _constants1.RSC_MODULE_TYPES.client) {
+        var ref2, ref3;
+        const sourceType = (ref2 = this._module) == null ? void 0 : (ref3 = ref2.parser) == null ? void 0 : ref3.sourceType;
+        const detectedClientEntryType = buildInfo.rsc.clientEntryType;
+        const clientRefs = buildInfo.rsc.clientRefs;
+        // It's tricky to detect the type of a client boundary, but we should always
+        // use the `module` type when we can, to support `export *` and `export from`
+        // syntax in other modules that import this client boundary.
+        let assumedSourceType = sourceType;
+        if (assumedSourceType === "auto" && detectedClientEntryType === "auto") {
+            if (clientRefs.length === 0 || clientRefs.length === 1 && clientRefs[0] === "") {
+                // If there's zero export detected in the client boundary, and it's the
+                // `auto` type, we can safely assume it's a CJS module because it doesn't
+                // have ESM exports.
+                assumedSourceType = "commonjs";
+            } else if (!clientRefs.includes("*")) {
+                // Otherwise, we assume it's an ESM module.
+                assumedSourceType = "module";
+            }
+        }
+        if (assumedSourceType === "module") {
+            if (clientRefs.includes("*")) {
+                return callback(new Error(`It's currently unsupport to use "export *" in a client boundary. Please use named exports instead.`));
+            }
+            let esmSource = `\
+import { createProxy } from "${moduleProxy}"
+const proxy = createProxy("${this.resourcePath}")
+
+// Accessing the __esModule property and exporting $$typeof are required here.
+// The __esModule getter forces the proxy target to create the default export
+// and the $$typeof value is for rendering logic to determine if the module
+// is a client boundary.
+export const { __esModule, $$typeof } = proxy;
+export default proxy.default;
+`;
+            let cnt = 0;
+            for (const ref of clientRefs){
+                if (ref !== "" && ref !== "default") {
+                    esmSource += `
+const e${cnt} = proxy["${ref}"];
+export { e${cnt++} as ${ref} };`;
+                } else if (ref === "") {
+                    esmSource += `\nexports[''] = proxy[''];`;
+                }
+            }
+            return callback(null, esmSource, sourceMap);
+        }
+    }
+    if (((ref1 = buildInfo.rsc) == null ? void 0 : ref1.type) !== _constants1.RSC_MODULE_TYPES.client) {
+        if (noopHeadPath === this.resourcePath) {
+            (0, _warnOnce).warnOnce(`Warning: You're using \`next/head\` inside the \`app\` directory, please migrate to the Metadata API. See https://beta.nextjs.org/docs/api-reference/metadata for more details.`);
+        }
+    }
+    return callback(null, source.replace(_constants.RSC_MOD_REF_PROXY_ALIAS, moduleProxy), sourceMap);
+}
+const noopHeadPath = require.resolve("next/dist/client/components/noop-head");
+
+//# sourceMappingURL=index.js.map

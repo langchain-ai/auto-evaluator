@@ -1,0 +1,28 @@
+# http://blog.travis-ci.com/2014-12-17-faster-builds-with-container-based-infrastructure/
+sudo: false
+addons:
+  sauce_connect: true
+language: node_js
+script: make test
+node_js:
+- '0.10'
+before_install:
+  npm install -g npm@'>=2.7.0'
+matrix:
+  include:
+  - env: BROWSER_NAME=chrome BROWSER_VERSION=41
+  - env: BROWSER_NAME=chrome BROWSER_VERSION=40
+  - env: BROWSER_NAME=firefox BROWSER_VERSION=36
+  - env: BROWSER_NAME=firefox BROWSER_VERSION=35
+  - env: BROWSER_NAME=ie BROWSER_VERSION=6
+  - env: BROWSER_NAME=ie BROWSER_VERSION=7
+  - env: BROWSER_NAME=ie BROWSER_VERSION=8
+  - env: BROWSER_NAME=ie BROWSER_VERSION=9
+  - env: BROWSER_NAME=ie BROWSER_VERSION=10
+  - env: BROWSER_NAME=ie BROWSER_VERSION=11
+  - env: BROWSER_NAME=safari BROWSER_VERSION=8
+  - env: BROWSER_NAME=safari BROWSER_VERSION=7
+env:
+  global:
+  - secure: ixZ7bnaxIkN1ix/SKpGw9BvwWRf0jrMI4Se0BSMmslA8Qc6f1sw8FqQpf7UhDhbIRFK+Ub3IB2UFXe2vXtyk7Z5QBjGBHouCnou7kdOS6UozLgjNd2oRAlIu9nLoZqxWTVp4F67euWkhv56yt+cvQ1vws5qRNc7xENAY4iuLdv4=
+  - secure: fJRg5BF0L7ow7bTLGxNUe1mQh7unnh6kNiPKotuxwdoxKjigRLZH++6aj8PFHCVOG9wMHd8kyobdVQ3+/xcG79IfQsT+mKpW9/RuXDZ8CoMjLoR/EmZ6bDfjP/2SX8jAFjBmATkja4NgMKWrSwH6rD6ufHU6TSnsmS3xwaAJFAA=

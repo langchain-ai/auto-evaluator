@@ -1,0 +1,1 @@
+{"version":3,"file":"ForwardRefWithStaticComponents.d.ts","sourceRoot":"","sources":["../src/ForwardRefWithStaticComponents.ts"],"names":[],"mappings":";AAAA,MAAM,MAAM,8BAA8B,CACxC,KAAK,SAAS,MAAM,CAAC,MAAM,EAAE,GAAG,CAAC,EACjC,MAAM,SAAS,MAAM,CAAC,MAAM,EAAE,GAAG,CAAC,IAChC,CAAC,CAAC,KAAK,EAAE,KAAK,KAAK,KAAK,CAAC,YAAY,CAAC,GACxC,MAAM,GAAG;IACP,WAAW,EAAE,MAAM,CAAC;CACrB,CAAC"}

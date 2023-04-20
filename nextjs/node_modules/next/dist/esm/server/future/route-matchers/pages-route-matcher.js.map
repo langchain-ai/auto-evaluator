@@ -1,0 +1,1 @@
+{"version":3,"sources":["../../../../src/server/future/route-matchers/pages-route-matcher.ts"],"names":["LocaleRouteMatcher","RouteMatcher","PagesRouteMatcher","PagesLocaleRouteMatcher"],"mappings":"AACA,SAASA,kBAAkB,QAAQ,wBAAwB,CAAA;AAC3D,SAASC,YAAY,QAAQ,iBAAiB,CAAA;AAE9C,OAAO,MAAMC,iBAAiB,SAASD,YAAY;CAAyB;AAE5E,OAAO,MAAME,uBAAuB,SAASH,kBAAkB;CAAyB"}

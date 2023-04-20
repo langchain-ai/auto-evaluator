@@ -1,0 +1,1 @@
+{"version":3,"sources":["../../src/lib/mime-type.ts"],"names":["imageExtMimeTypeMap","jpeg","png","ico","svg"],"mappings":"AAGA;;;;;AAAO,MAAMA,mBAAmB,GAAG;IACjCC,IAAI,EAAE,YAAY;IAClBC,GAAG,EAAE,WAAW;IAChBC,GAAG,EAAE,cAAc;IACnBC,GAAG,EAAE,eAAe;CACrB,AAAS;QALGJ,mBAAmB,GAAnBA,mBAAmB"}
