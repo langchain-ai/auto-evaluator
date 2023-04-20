@@ -1,0 +1,1 @@
+{"version":3,"file":"StepCompleted.d.ts","sourceRoot":"","sources":["../../../src/Stepper/StepCompleted/StepCompleted.tsx"],"names":[],"mappings":"AACA,OAAO,KAAK,MAAM,OAAO,CAAC;AAE1B,MAAM,WAAW,kBAAkB;IACjC,oBAAoB;IACpB,QAAQ,EAAE,KAAK,CAAC,SAAS,CAAC;CAC3B;AAED,wBAAgB,aAAa,CAG3B,KAAK,EAAE,kBAAkB,OAG1B;yBANe,aAAa"}

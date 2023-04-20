@@ -1,0 +1,1 @@
+{"version":3,"file":"loader-props.d.ts","sourceRoot":"","sources":["../../../src/Loader/loaders/loader-props.ts"],"names":[],"mappings":"AAAA,OAAO,KAAK,MAAM,OAAO,CAAC;AAC1B,OAAO,KAAK,EAAE,YAAY,EAAE,MAAM,iBAAiB,CAAC;AAEpD,MAAM,WAAW,WAAY,SAAQ,KAAK,CAAC,wBAAwB,CAAC,KAAK,CAAC;IACxE,IAAI,EAAE,MAAM,GAAG,MAAM,CAAC;IACtB,KAAK,EAAE,YAAY,CAAC;CACrB"}

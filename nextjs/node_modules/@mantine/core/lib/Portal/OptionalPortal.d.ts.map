@@ -1,0 +1,1 @@
+{"version":3,"file":"OptionalPortal.d.ts","sourceRoot":"","sources":["../../src/Portal/OptionalPortal.tsx"],"names":[],"mappings":";AACA,OAAO,EAAU,WAAW,EAAE,MAAM,UAAU,CAAC;AAE/C,MAAM,WAAW,mBAAoB,SAAQ,WAAW;IACtD,0DAA0D;IAC1D,YAAY,CAAC,EAAE,OAAO,CAAC;CACxB;AAED,wBAAgB,cAAc,CAAC,EAAE,YAAmB,EAAE,QAAQ,EAAE,GAAG,MAAM,EAAE,EAAE,mBAAmB,eAM/F;yBANe,cAAc"}

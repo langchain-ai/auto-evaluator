@@ -1,0 +1,52 @@
+{
+  "name": "@json2csv/plainjs",
+  "version": "6.1.3",
+  "description": "Pure Javascript JSON to CSV converter.",
+  "keywords": [
+    "json",
+    "to",
+    "csv",
+    "export",
+    "convert",
+    "parse"
+  ],
+  "homepage": "http://juanjodiaz.github.io/json2csv",
+  "bugs": {
+    "url": "https://github.com/juanjoDiaz/json2csv/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/juanjoDiaz/json2csv.git"
+  },
+  "license": "MIT",
+  "author": {
+    "name": "Juanjo Díaz",
+    "email": "juanjo.diazmo@gmail.com"
+  },
+  "type": "module",
+  "exports": {
+    "./*": {
+      "import": "./src/*",
+      "require": "./dist/cjs/*"
+    },
+    ".": {
+      "import": "./src/index.js",
+      "require": "./dist/cjs/index.js"
+    }
+  },
+  "main": "src/index.js",
+  "scripts": {
+    "lint": "eslint src test",
+    "test": "npm run test:raw | tap-spec",
+    "test-with-coverage": "c8 --reporter=text npm test",
+    "test:raw": "node test",
+    "dependencies:update-internal": "npm uninstall @json2csv/formatters && npm install @json2csv/formatters",
+    "build:cjs": "node ../../build-cjs.js plainjs",
+    "prepublishOnly": "npm run build:cjs"
+  },
+  "dependencies": {
+    "@json2csv/formatters": "^6.1.3",
+    "@streamparser/json": "^0.0.12",
+    "lodash.get": "^4.4.2"
+  }
+}

@@ -1,0 +1,1 @@
+{"version":3,"file":"use-lock-scroll.d.ts","sourceRoot":"","sources":["../../src/ModalBase/use-lock-scroll.ts"],"names":[],"mappings":"AAGA,UAAU,aAAa;IACrB,MAAM,EAAE,OAAO,CAAC;IAChB,kBAAkB,EAAE,MAAM,CAAC;CAC5B;AAED,wBAAgB,aAAa,CAAC,EAAE,MAAM,EAAE,kBAAkB,EAAE,EAAE,aAAa,WAoB1E"}
