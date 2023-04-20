@@ -6,7 +6,7 @@ import { IS_DEV } from "../utils/variables";
 import * as snippet from "@segment/snippet";
 import { useEffect } from "react";
 import { Notifications } from "@mantine/notifications";
-
+import { Analytics } from "@vercel/analytics/react";
 const renderSegmentSnippet = () => {
   const opts = {
     apiKey: process.env.NEXT_PUBLIC_SEGMENT_KEY,
@@ -71,6 +71,7 @@ export default function App(props: AppProps) {
       >
         <Notifications />
         <Component {...pageProps} />
+        <Analytics />
       </MantineProvider>
     </>
   );
