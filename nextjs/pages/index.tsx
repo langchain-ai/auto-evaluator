@@ -61,7 +61,7 @@ const HomePage = () => {
               />
             </MediaQuery>
             <Text size={mobileWidth === true ? "14px" : "xl"}>
-              Evaluator AI - evaluate your QA chains.
+              Auto Evaluator
             </Text>
           </div>
         </Header>
