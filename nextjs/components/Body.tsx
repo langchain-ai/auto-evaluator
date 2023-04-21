@@ -105,7 +105,9 @@ const Body = ({ form }: { form: Form }) => {
     if (results.length === 0) {
       return [initialProgress];
     }
-    const res = Math.floor((results?.length / evalQuestionsCount) * 100);
+
+    const res = 15 + Math.floor((results?.length / evalQuestionsCount) * 85);
+
     if (res === 100) {
       return [finishedProgress];
     }
