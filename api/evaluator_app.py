@@ -28,25 +28,28 @@ from gpt_index import GPTFaissIndex, LLMPredictor, ServiceContext
 from langchain.text_splitter import RecursiveCharacterTextSplitter, CharacterTextSplitter
 from text_utils import GRADE_DOCS_PROMPT, GRADE_ANSWER_PROMPT, GRADE_DOCS_PROMPT_FAST, GRADE_ANSWER_PROMPT_FAST
 
-def generate_eval(text, N, chunk, logger):
+def generate_eval(text, chunk, logger):
 
     # Generate N questions from context of chunk chars
-    # IN: text, N questions, chunk size to draw question from in the doc
+    # IN: text, chunk size to draw question from in the doc
     # OUT: list of JSON
 
     logger.info("`Generating eval QA pair ...`")
     n = len(text)
-    starting_indices = [random.randint(0, n-chunk) for _ in range(N)]
-    sub_sequences = [text[i:i+chunk] for i in starting_indices]
+    starting_index = random.randint(0, n-chunk) 
+    sub_sequence = text[starting_index:starting_index+chunk]
     chain = QAGenerationChain.from_llm(ChatOpenAI(temperature=0))
     eval_set = []
-    
-    for i, b in enumerate(sub_sequences):
+    awaiting_answer = True
+    while(awaiting_answer):
         try:
-            qa = chain.run(b)
+            qa = chain.run(sub_sequence)
             eval_set.append(qa)
+            awaiting_answer = False
         except:
-            logger.error("Error on question %s"%i)
+            logger.error("Error on question")
+            starting_index = random.randint(0, n-chunk) 
+            sub_sequence = text[starting_index:starting_index+chunk]
     eval_pair = list(itertools.chain.from_iterable(eval_set))
     return eval_pair
 
@@ -301,7 +304,7 @@ def run_evaluator(
         if i < len(test_dataset):
             eval_pair = test_dataset[i]
         else:
-            eval_pair = generate_eval(text, 1, 3000, logger)
+            eval_pair = generate_eval(text, 3000, logger)
             if len(eval_pair) == 0:    
                 # Error in eval generation
                 continue
