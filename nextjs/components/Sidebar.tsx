@@ -183,7 +183,7 @@ const Sidebar = ({ form }: { form: Form }) => {
             )}
           />
         </div>
-        {/* <div>
+        <div>
           <Text fz="md">Grading prompt style</Text>
           <Controller
             name="gradingPrompt"
@@ -204,7 +204,7 @@ const Sidebar = ({ form }: { form: Form }) => {
               />
             )}
           />
-        </div> */}
+        </div>
       </Stack>
     </>
   );

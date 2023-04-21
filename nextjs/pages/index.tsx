@@ -32,7 +32,7 @@ const HomePage = () => {
       embeddingAlgorithm: "OpenAI",
       model: "gpt-3.5-turbo",
       retriever: "similarity-search",
-      // gradingPrompt: "Fast",
+      gradingPrompt: "Fast",
       numNeighbors: 3,
       files: [],
     },

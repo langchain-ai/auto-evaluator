@@ -3,17 +3,14 @@ import {
   Group,
   Text,
   useMantineTheme,
-  rem,
   Alert,
   Table,
   Button,
   Title,
-  Loader,
   Flex,
   Stack,
   Spoiler,
   Progress,
-  Container,
   Card,
 } from "@mantine/core";
 import { IconUpload, IconX, IconAlertCircle } from "@tabler/icons-react";
@@ -32,8 +29,8 @@ type Result = {
   question: string;
   answer: string;
   result: string;
-  retrievalScore: number;
-  answerScore: number;
+  retrievalScore: { score: number; justification: string };
+  answerScore: { score: number; justification: string };
   latency: number;
 };
 
@@ -50,7 +47,7 @@ type Experiment = {
   retriever: string;
   embeddingAlgorithm: string;
   model: string;
-  // gradingPrompt: string;
+  gradingPrompt: string;
   numNeighbors: number;
   avgRelevancyScore: number;
   avgAnswerScore: number;
@@ -70,8 +67,10 @@ const Body = ({ form }: { form: Form }) => {
   const [experiments, setExperiments] = useState<Experiment[]>([]);
   const [didUploadTestDataset, setDidUploadTestDataset] = useState(false);
   const [shouldShowProgress, setShouldShowProgress] = useState(false);
+  const [gradingPromptStyle, setGradingPromptStyle] = useState(undefined);
   const experimentsResultsSpoilerRef = useRef<HTMLButtonElement>(null);
   const summarySpoilerRef = useRef<HTMLButtonElement>(null);
+  const testDatasetSpoilerRef = useRef<HTMLButtonElement>(null);
 
   const bestExperiment = useMemo(() => {
     console.log("firing");
@@ -81,8 +80,6 @@ const Body = ({ form }: { form: Form }) => {
     }
     return orderBy(experiments, "performance", "desc")[0].id;
   }, [experiments]);
-
-  console.log("bestExperiment", bestExperiment);
 
   const runExperimentButtonLabel = useMemo(() => {
     if (isEmpty(experiments)) {
@@ -148,11 +145,12 @@ const Body = ({ form }: { form: Form }) => {
     formData.append("retriever_type", data.retriever);
     formData.append("embeddings", data.embeddingAlgorithm);
     formData.append("model_version", data.model);
-    // formData.append("grade_prompt", data.gradingPrompt);
+    formData.append("grade_prompt", data.gradingPrompt);
     formData.append("num_neighbors", data.numNeighbors.toString());
     formData.append("test_dataset", JSON.stringify(testDataset));
 
     setEvalQuestionsCount(data.evalQuestionsCount);
+    setGradingPromptStyle(data.gradingPrompt);
 
     const controller = new AbortController();
 
@@ -201,7 +199,10 @@ const Body = ({ form }: { form: Form }) => {
     });
     setLoading(false);
     const avgAnswerScore =
-      localResults.reduce((acc, curr) => acc + curr.answerScore, 0) /
+      localResults.reduce((acc, curr) => acc + curr.answerScore.score, 0) /
+      localResults.length;
+    const avgRelevancyScore =
+      localResults.reduce((acc, curr) => acc + curr.retrievalScore.score, 0) /
       localResults.length;
     const avgLatency =
       localResults.reduce((acc, curr) => acc + curr.latency, 0) /
@@ -214,11 +215,9 @@ const Body = ({ form }: { form: Form }) => {
       retriever: data.retriever,
       embeddingAlgorithm: data.embeddingAlgorithm,
       model: data.model,
-      // gradingPrompt: data.gradingPrompt,
+      gradingPrompt: data.gradingPrompt,
       numNeighbors: data.numNeighbors,
-      avgRelevancyScore:
-        localResults.reduce((acc, curr) => acc + curr.retrievalScore, 0) /
-        localResults.length,
+      avgRelevancyScore,
       avgAnswerScore,
       avgLatency,
       performance: avgLatency * avgAnswerScore,
@@ -243,6 +242,8 @@ const Body = ({ form }: { form: Form }) => {
     },
     [results]
   );
+
+  const isFastGradingPrompt = gradingPromptStyle === "Fast";
 
   return (
     <Stack>
@@ -490,7 +491,7 @@ const Body = ({ form }: { form: Form }) => {
                   <th>Retriever</th>
                   <th>Embedding Algorithm</th>
                   <th>Model</th>
-                  {/* <th>Grading Prompt Style</th> */}
+                  <th>Grading Prompt Style</th>
                   <th># of Chunks Retrieved</th>
                   <th>Avg Retrieval Relevancy Score</th>
                   <th>Avg Answer Similarity Score</th>
@@ -508,7 +509,7 @@ const Body = ({ form }: { form: Form }) => {
                     <td>{result?.retriever}</td>
                     <td>{result?.embeddingAlgorithm}</td>
                     <td>{result?.model}</td>
-                    {/* <td>{result?.gradingPrompt}</td> */}
+                    <td>{result?.gradingPrompt}</td>
                     <td>{result?.numNeighbors}</td>
                     <td>{result?.avgRelevancyScore}</td>
                     <td>{result?.avgAnswerScore}</td>
@@ -638,8 +639,56 @@ const Body = ({ form }: { form: Form }) => {
                     <td>{result?.question}</td>
                     <td>{result?.answer}</td>
                     <td>{result?.result}</td>
-                    <td>{result?.retrievalScore}</td>
-                    <td>{result?.answerScore}</td>
+                    <td>
+                      {isFastGradingPrompt ? (
+                        result?.retrievalScore ? (
+                          "PASS"
+                        ) : (
+                          "FAIL"
+                        )
+                      ) : (
+                        <Spoiler
+                          maxHeight={150}
+                          hideLabel={
+                            <Text weight="bold" color="blue">
+                              Show less
+                            </Text>
+                          }
+                          showLabel={
+                            <Text weight="bold" color="blue">
+                              Show more
+                            </Text>
+                          }
+                        >
+                          {result?.retrievalScore.justification}
+                        </Spoiler>
+                      )}
+                    </td>
+                    <td>
+                      {isFastGradingPrompt ? (
+                        result?.answerScore ? (
+                          "PASS"
+                        ) : (
+                          "FAIL"
+                        )
+                      ) : (
+                        <Spoiler
+                          maxHeight={150}
+                          hideLabel={
+                            <Text weight="bold" color="blue">
+                              Show less
+                            </Text>
+                          }
+                          showLabel={
+                            <Text weight="bold" color="blue">
+                              Show more
+                            </Text>
+                          }
+                        >
+                          {result?.answerScore.justification}
+                        </Spoiler>
+                      )}
+                    </td>
                     <td>{result?.latency?.toFixed(3)}</td>
                   </tr>
                 ))}
@@ -653,8 +702,9 @@ const Body = ({ form }: { form: Form }) => {
           <Spoiler
             maxHeight={0}
             showLabel="Show available test dataset"
-            hideLabel="Hide available test dataset"
+            hideLabel={null}
             transitionDuration={500}
+            controlRef={testDatasetSpoilerRef}
           >
             <Stack>
               <Group position="apart">
@@ -683,6 +733,17 @@ const Body = ({ form }: { form: Form }) => {
                     }}
                   >
                     Reset
+                  </Button>
+                  <Button
+                    style={{ marginBottom: "18px" }}
+                    type="button"
+                    variant="subtle"
+                    onClick={() => {
+                      if (testDatasetSpoilerRef.current)
+                        testDatasetSpoilerRef.current.click();
+                    }}
+                  >
+                    Hide
                   </Button>
                 </Group>
               </Group>
