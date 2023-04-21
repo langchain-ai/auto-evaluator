@@ -1,17 +1,17 @@
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useMemo, useRef, useState } from "react";
 import {
   Group,
   Text,
   useMantineTheme,
-  rem,
   Alert,
   Table,
   Button,
   Title,
-  Loader,
   Flex,
   Stack,
   Spoiler,
+  Progress,
+  Card,
 } from "@mantine/core";
 import { IconUpload, IconX, IconAlertCircle } from "@tabler/icons-react";
 import { Dropzone, MIME_TYPES } from "@mantine/dropzone";
@@ -22,13 +22,15 @@ import { fetchEventSource } from "@microsoft/fetch-event-source";
 import { Parser } from "@json2csv/plainjs";
 import Papa from "papaparse";
 import { IconFile } from "@tabler/icons-react";
+import { ResponsiveScatterPlot } from "@nivo/scatterplot";
+import { isEmpty, isNil, orderBy } from "lodash";
 
 type Result = {
   question: string;
   answer: string;
   result: string;
-  retrievalScore: number;
-  answerScore: number;
+  retrievalScore: { score: number; justification: string };
+  answerScore: { score: number; justification: string };
   latency: number;
 };
 
@@ -45,11 +47,13 @@ type Experiment = {
   retriever: string;
   embeddingAlgorithm: string;
   model: string;
-  // gradingPrompt: string;
+  gradingPrompt: string;
   numNeighbors: number;
   avgRelevancyScore: number;
   avgAnswerScore: number;
   avgLatency: number;
+  performance: number;
+  id: number;
 };
 
 const Body = ({ form }: { form: Form }) => {
@@ -62,8 +66,72 @@ const Body = ({ form }: { form: Form }) => {
   const [evalQuestionsCount, setEvalQuestionsCount] = useState(-1);
   const [experiments, setExperiments] = useState<Experiment[]>([]);
   const [didUploadTestDataset, setDidUploadTestDataset] = useState(false);
+  const [shouldShowProgress, setShouldShowProgress] = useState(false);
+  const [gradingPromptStyle, setGradingPromptStyle] = useState(undefined);
+  const experimentsResultsSpoilerRef = useRef<HTMLButtonElement>(null);
+  const summarySpoilerRef = useRef<HTMLButtonElement>(null);
+  const testDatasetSpoilerRef = useRef<HTMLButtonElement>(null);
+
+  const bestExperiment = useMemo(() => {
+    console.log("firing");
+    if (isEmpty(experiments) || experiments.length === 1) {
+      console.log("returning null");
+      return null;
+    }
+    return orderBy(experiments, "performance", "desc")[0].id;
+  }, [experiments]);
+
+  const runExperimentButtonLabel = useMemo(() => {
+    if (isEmpty(experiments)) {
+      return "Run Experiment";
+    }
+    return "Re-run experiment";
+  }, [experiments]);
+
+  const initialProgress = {
+    value: 15,
+    color: "purple",
+    label: "Processing Files",
+  };
+
+  const finishedProgress = {
+    value: 100,
+    color: "green",
+    label: "Completed",
+  };
+
+  const experimentProgress = useMemo(() => {
+    console.log(results);
+    if (results.length === 0) {
+      return [initialProgress];
+    }
+    const res = Math.floor((results?.length / evalQuestionsCount) * 100);
+    if (res === 100) {
+      return [finishedProgress];
+    }
+    const ret = [
+      initialProgress,
+      {
+        value: res,
+        color: "blue",
+        label: "Generating Evals & Grading",
+      },
+    ];
+    return ret;
+  }, [results, evalQuestionsCount]);
+
+  const chartData = experiments.map((experiment, index) => ({
+    id: "Expt #" + (index + 1),
+    data: [
+      {
+        x: experiment.avgAnswerScore,
+        y: experiment.avgLatency,
+      },
+    ],
+  }));
 
   const submit = handleSubmit(async (data) => {
+    setShouldShowProgress(true);
     setLoading(true);
     setResults([]);
     const formData = new FormData();
@@ -77,11 +145,12 @@ const Body = ({ form }: { form: Form }) => {
     formData.append("retriever_type", data.retriever);
     formData.append("embeddings", data.embeddingAlgorithm);
     formData.append("model_version", data.model);
-    // formData.append("grade_prompt", data.gradingPrompt);
+    formData.append("grade_prompt", data.gradingPrompt);
     formData.append("num_neighbors", data.numNeighbors.toString());
     formData.append("test_dataset", JSON.stringify(testDataset));
 
     setEvalQuestionsCount(data.evalQuestionsCount);
+    setGradingPromptStyle(data.gradingPrompt);
 
     const controller = new AbortController();
 
@@ -129,7 +198,16 @@ const Body = ({ form }: { form: Form }) => {
       },
     });
     setLoading(false);
-    const experiment: Experiment = {
+    const avgAnswerScore =
+      localResults.reduce((acc, curr) => acc + curr.answerScore.score, 0) /
+      localResults.length;
+    const avgRelevancyScore =
+      localResults.reduce((acc, curr) => acc + curr.retrievalScore.score, 0) /
+      localResults.length;
+    const avgLatency =
+      localResults.reduce((acc, curr) => acc + curr.latency, 0) /
+      localResults.length;
+    const newExperiment: Experiment = {
       evalQuestionsCount: data.evalQuestionsCount,
       chunkSize: data.chunkSize,
       overlap: data.overlap,
@@ -137,19 +215,15 @@ const Body = ({ form }: { form: Form }) => {
       retriever: data.retriever,
       embeddingAlgorithm: data.embeddingAlgorithm,
       model: data.model,
-      // gradingPrompt: data.gradingPrompt,
+      gradingPrompt: data.gradingPrompt,
       numNeighbors: data.numNeighbors,
-      avgRelevancyScore:
-        localResults.reduce((acc, curr) => acc + curr.retrievalScore, 0) /
-        localResults.length,
-      avgAnswerScore:
-        localResults.reduce((acc, curr) => acc + curr.answerScore, 0) /
-        localResults.length,
-      avgLatency:
-        localResults.reduce((acc, curr) => acc + curr.latency, 0) /
-        localResults.length,
+      avgRelevancyScore,
+      avgAnswerScore,
+      avgLatency,
+      performance: avgLatency * avgAnswerScore,
+      id: experiments.length + 1,
     };
-    setExperiments((experiments) => [...experiments, experiment]);
+    setExperiments((experiments) => [...experiments, newExperiment]);
   });
 
   const download = useCallback(
@@ -169,6 +243,8 @@ const Body = ({ form }: { form: Form }) => {
     [results]
   );
 
+  const isFastGradingPrompt = gradingPromptStyle === "Fast";
+
   return (
     <Stack>
       <Alert
@@ -176,9 +252,10 @@ const Body = ({ form }: { form: Form }) => {
         title="Instructions"
         color="teal"
       >
-        Upload some sample text files and choose the input parameters for your
-        QA chain. This evaluator will generate a test dataset (if not provided)
-        and grade the performance of the QA chain.
+        Upload your text file(s) and choose the parameters for your QA chain.
+        This evaluator will generate a test dataset of QA pairs and grade the
+        performance of the QA chain. You can experiment with different
+        parameters and evaluate the performance.
       </Alert>
       <Flex direction="row" gap="md">
         <Dropzone
@@ -186,6 +263,7 @@ const Body = ({ form }: { form: Form }) => {
             setValue("files", [...(getValues("files") ?? []), ...files]);
             setExperiments([]);
             setResults([]);
+            setShouldShowProgress(false);
           }}
           accept={[
             MIME_TYPES.pdf,
@@ -288,7 +366,7 @@ const Body = ({ form }: { form: Form }) => {
             })
           }
           maxSize={3 * 1024 ** 2}
-          style={{ width: "100%" }}
+          style={{ width: "40%" }}
         >
           <Stack align="center">
             <Dropzone.Accept>
@@ -343,167 +421,351 @@ const Body = ({ form }: { form: Form }) => {
             </tbody>
           </Table>
           <Flex direction="row" gap="md">
-            <Button
-              style={{ marginBottom: "18px" }}
-              type="submit"
-              onClick={submit}
-              disabled={loading}
-            >
-              {loading ? <Loader size="sm" /> : "Submit"}
-            </Button>
+            {!loading ? (
+              <Button
+                style={{ marginBottom: "18px" }}
+                type="submit"
+                onClick={submit}
+                disabled={loading}
+              >
+                {runExperimentButtonLabel}
+              </Button>
+            ) : null}
           </Flex>
         </>
       )}
-      {!!testDataset.length && (
-        <Spoiler
-          maxHeight={0}
-          showLabel="Show available test dataset"
-          hideLabel="Hide available test dataset"
-          transitionDuration={500}
-        >
-          <Flex direction="row" gap="md">
-            <Title order={3}>Test Dataset</Title>
-            <Button
-              style={{ marginBottom: "18px" }}
-              type="button"
-              onClick={() => download(testDataset, "test_dataset")}
-            >
-              Download
-            </Button>
-            <Button
-              style={{ marginBottom: "18px" }}
-              type="button"
-              onClick={() => {
-                setTestDataset([]);
-                setDidUploadTestDataset(false);
-                notifications.show({
-                  title: "Success",
-                  message: "The test dataset has been cleared.",
-                  color: "green",
-                });
-              }}
-            >
-              Reset
-            </Button>
-          </Flex>
-          <Table withBorder withColumnBorders striped highlightOnHover>
-            <thead>
-              <tr>
-                <th>Question</th>
-                <th>Answer</th>
-              </tr>
-            </thead>
-            <tbody>
-              {testDataset?.map((result: QAPair, index: number) => (
-                <tr key={index}>
-                  <td>{result?.question}</td>
-                  <td>{result?.answer}</td>
-                </tr>
-              ))}
-            </tbody>
-          </Table>
-        </Spoiler>
+      {shouldShowProgress && (
+        <Progress
+          // value={percentLoaded}
+          // label={percentLoaded + "%"}
+          size="xl"
+          radius="xl"
+          sections={experimentProgress}
+          color={loading ? "blue" : "green"}
+        />
       )}
       {!!experiments.length && (
-        <Spoiler
-          maxHeight={0}
-          showLabel="Show summary"
-          hideLabel="Hide summary"
-          transitionDuration={500}
-        >
-          <Flex direction="row" gap="md">
-            <Title order={3}>Summary</Title>
-            <Button
-              style={{ marginBottom: "18px" }}
-              type="button"
-              onClick={() => download(experiments, "summary")}
-            >
-              Download
-            </Button>
-          </Flex>
-          <Table withBorder withColumnBorders striped highlightOnHover>
-            <thead>
-              <tr>
-                <th># of Eval Questions</th>
-                <th>Chunk Size</th>
-                <th>Overlap</th>
-                <th>Split Method</th>
-                <th>Retriever</th>
-                <th>Embedding Algorithm</th>
-                <th>Model</th>
-                {/* <th>Grading Prompt Style</th> */}
-                <th># of Chunks Retrieved</th>
-                <th>Avg Retrieval Relevancy Score</th>
-                <th>Avg Answer Similarity Score</th>
-                <th>Avg Latency (s)</th>
-              </tr>
-            </thead>
-            <tbody>
-              {experiments?.map((result: Experiment, index: number) => (
-                <tr key={index}>
-                  <td>{result?.evalQuestionsCount}</td>
-                  <td>{result?.chunkSize}</td>
-                  <td>{result?.overlap}</td>
-                  <td>{result?.splitMethod}</td>
-                  <td>{result?.retriever}</td>
-                  <td>{result?.embeddingAlgorithm}</td>
-                  <td>{result?.model}</td>
-                  {/* <td>{result?.gradingPrompt}</td> */}
-                  <td>{result?.numNeighbors}</td>
-                  <td>{result?.avgRelevancyScore}</td>
-                  <td>{result?.avgAnswerScore}</td>
-                  <td>{result?.avgLatency.toFixed(3)}</td>
+        <Card>
+          <Spoiler
+            maxHeight={0}
+            showLabel="Show summary"
+            hideLabel={null}
+            transitionDuration={500}
+            initialState={true}
+            controlRef={summarySpoilerRef}
+          >
+            <Stack>
+              <Group position="apart">
+                <Title order={3}>Summary</Title>
+                <Group>
+                  <Button
+                    style={{ marginBottom: "18px" }}
+                    type="button"
+                    variant="secondary"
+                    onClick={() => download(experiments, "summary")}
+                  >
+                    Download
+                  </Button>
+                  <Button
+                    style={{ marginBottom: "18px" }}
+                    type="button"
+                    variant="subtle"
+                    onClick={() => {
+                      if (summarySpoilerRef.current)
+                        summarySpoilerRef.current.click();
+                    }}
+                  >
+                    Hide
+                  </Button>
+                </Group>
+              </Group>
+            </Stack>
+            <Table withBorder withColumnBorders striped highlightOnHover>
+              <thead>
+                <tr>
+                  <th>Experiment #</th>
+                  <th># of Eval Questions</th>
+                  <th>Chunk Size</th>
+                  <th>Overlap</th>
+                  <th>Split Method</th>
+                  <th>Retriever</th>
+                  <th>Embedding Algorithm</th>
+                  <th>Model</th>
+                  <th>Grading Prompt Style</th>
+                  <th># of Chunks Retrieved</th>
+                  <th>Avg Retrieval Relevancy Score</th>
+                  <th>Avg Answer Similarity Score</th>
+                  <th>Avg Latency (s)</th>
                 </tr>
-              ))}
-            </tbody>
-          </Table>
-        </Spoiler>
-      )}
-      {!!results.length && (
-        <Spoiler
-          maxHeight={0}
-          showLabel="Show results"
-          hideLabel="Hide results"
-          transitionDuration={500}
-          initialState={true}
-        >
-          <Flex direction="row" gap="md">
-            <Title order={3}>Results</Title>
-            {evalQuestionsCount === results.length && (
-              <Button
-                style={{ marginBottom: "18px" }}
-                type="button"
-                onClick={() => download(results, "results")}
+              </thead>
+              <tbody>
+                {experiments?.map((result: Experiment, index: number) => (
+                  <tr key={index}>
+                    <td>{index + 1}</td>
+                    <td>{result?.evalQuestionsCount}</td>
+                    <td>{result?.chunkSize}</td>
+                    <td>{result?.overlap}</td>
+                    <td>{result?.splitMethod}</td>
+                    <td>{result?.retriever}</td>
+                    <td>{result?.embeddingAlgorithm}</td>
+                    <td>{result?.model}</td>
+                    <td>{result?.gradingPrompt}</td>
+                    <td>{result?.numNeighbors}</td>
+                    <td>{result?.avgRelevancyScore}</td>
+                    <td>{result?.avgAnswerScore}</td>
+                    <td>{result?.avgLatency.toFixed(3)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </Table>
+            <div style={{ height: 500 }}>
+              <ResponsiveScatterPlot
+                data={chartData}
+                margin={{ top: 60, right: 140, bottom: 70, left: 90 }}
+                xScale={{ type: "linear", min: 0, max: 1 }}
+                xFormat=">-.2f"
+                yScale={{ type: "linear", min: 0, max: "auto" }}
+                yFormat=">-.2f"
+                blendMode="multiply"
+                axisTop={null}
+                axisRight={null}
+                axisBottom={{
+                  tickSize: 5,
+                  tickPadding: 5,
+                  tickRotation: 0,
+                  legend: "Avg Answer Similarity Score",
+                  legendPosition: "middle",
+                  legendOffset: 46,
+                }}
+                axisLeft={{
+                  tickSize: 5,
+                  tickPadding: 5,
+                  tickRotation: 0,
+                  legend: "Avg Latency (s)",
+                  legendPosition: "middle",
+                  legendOffset: -60,
+                }}
+                legends={[
+                  {
+                    anchor: "bottom-right",
+                    direction: "column",
+                    justify: false,
+                    translateX: 130,
+                    translateY: 0,
+                    itemWidth: 100,
+                    itemHeight: 12,
+                    itemsSpacing: 5,
+                    itemDirection: "left-to-right",
+                    symbolSize: 12,
+                    symbolShape: "circle",
+                    effects: [
+                      {
+                        on: "hover",
+                        style: {
+                          itemOpacity: 1,
+                        },
+                      },
+                    ],
+                  },
+                ]}
+              />
+            </div>
+            <br />
+            {!isNil(bestExperiment) && (
+              <Alert
+                icon={<IconAlertCircle size="1rem" />}
+                title="Insight"
+                color="blue"
               >
-                Download
-              </Button>
+                The experiment that performed the best was Experiment #
+                {bestExperiment} due to combination of accuracy and latency.
+              </Alert>
             )}
-          </Flex>
-          <Table withBorder withColumnBorders striped highlightOnHover>
-            <thead>
-              <tr>
-                <th>Question</th>
-                <th>Expected Answer</th>
-                <th>Observed Answer</th>
-                <th>Retrieval Relevancy Score</th>
-                <th>Answer Similarity Score</th>
-                <th>Latency (s)</th>
-              </tr>
-            </thead>
-            <tbody>
-              {results?.map((result: Result, index: number) => (
-                <tr key={index}>
-                  <td>{result?.question}</td>
-                  <td>{result?.answer}</td>
-                  <td>{result?.result}</td>
-                  <td>{result?.retrievalScore}</td>
-                  <td>{result?.answerScore}</td>
-                  <td>{result?.latency?.toFixed(3)}</td>
+          </Spoiler>
+        </Card>
+      )}
+      {!isEmpty(results) ? (
+        <Card>
+          <Spoiler
+            maxHeight={0}
+            showLabel="Show results"
+            hideLabel={null}
+            transitionDuration={500}
+            initialState={true}
+            controlRef={experimentsResultsSpoilerRef}
+          >
+            <Stack>
+              <Group position="apart">
+                <Title order={3}>Experiment Results</Title>
+                <br />
+                <br />
+                <Group>
+                  <Button
+                    style={{ marginBottom: "18px" }}
+                    type="button"
+                    variant="subtle"
+                    onClick={() => download(results, "results")}
+                  >
+                    Download
+                  </Button>
+                  <Button
+                    style={{ marginBottom: "18px" }}
+                    type="button"
+                    variant="subtle"
+                    onClick={() => {
+                      if (experimentsResultsSpoilerRef.current)
+                        experimentsResultsSpoilerRef.current.click();
+                    }}
+                  >
+                    Hide
+                  </Button>
+                </Group>
+              </Group>
+            </Stack>
+            <Table withBorder withColumnBorders striped highlightOnHover>
+              <thead>
+                <tr>
+                  <th>Question</th>
+                  <th>Expected Answer</th>
+                  <th>Observed Answer</th>
+                  <th>Retrieval Relevancy Score</th>
+                  <th>Answer Similarity Score</th>
+                  <th>Latency (s)</th>
                 </tr>
-              ))}
-            </tbody>
-          </Table>
-        </Spoiler>
+              </thead>
+              <tbody>
+                {results?.map((result: Result, index: number) => (
+                  <tr key={index}>
+                    <td>{result?.question}</td>
+                    <td>{result?.answer}</td>
+                    <td>{result?.result}</td>
+                    <td>
+                      {isFastGradingPrompt ? (
+                        result?.retrievalScore ? (
+                          "PASS"
+                        ) : (
+                          "FAIL"
+                        )
+                      ) : (
+                        <Spoiler
+                          maxHeight={150}
+                          hideLabel={
+                            <Text weight="bold" color="blue">
+                              Show less
+                            </Text>
+                          }
+                          showLabel={
+                            <Text weight="bold" color="blue">
+                              Show more
+                            </Text>
+                          }
+                        >
+                          {result?.retrievalScore.justification}
+                        </Spoiler>
+                      )}
+                    </td>
+                    <td>
+                      {isFastGradingPrompt ? (
+                        result?.answerScore ? (
+                          "PASS"
+                        ) : (
+                          "FAIL"
+                        )
+                      ) : (
+                        <Spoiler
+                          maxHeight={150}
+                          hideLabel={
+                            <Text weight="bold" color="blue">
+                              Show less
+                            </Text>
+                          }
+                          showLabel={
+                            <Text weight="bold" color="blue">
+                              Show more
+                            </Text>
+                          }
+                        >
+                          {result?.answerScore.justification}
+                        </Spoiler>
+                      )}
+                    </td>
+                    <td>{result?.latency?.toFixed(3)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </Table>
+          </Spoiler>
+        </Card>
+      ) : null}
+      {!!testDataset.length && (
+        <Card>
+          <Spoiler
+            maxHeight={0}
+            showLabel="Show available test dataset"
+            hideLabel={null}
+            transitionDuration={500}
+            controlRef={testDatasetSpoilerRef}
+          >
+            <Stack>
+              <Group position="apart">
+                <Title order={3}>Test Dataset</Title>
+                <Group>
+                  <Button
+                    style={{ marginBottom: "18px" }}
+                    type="button"
+                    variant="secondary"
+                    onClick={() => download(testDataset, "test_dataset")}
+                  >
+                    Download
+                  </Button>
+                  <Button
+                    style={{ marginBottom: "18px" }}
+                    type="button"
+                    variant="subtle"
+                    onClick={() => {
+                      setTestDataset([]);
+                      setDidUploadTestDataset(false);
+                      notifications.show({
+                        title: "Success",
+                        message: "The test dataset has been cleared.",
+                        color: "green",
+                      });
+                    }}
+                  >
+                    Reset
+                  </Button>
+                  <Button
+                    style={{ marginBottom: "18px" }}
+                    type="button"
+                    variant="subtle"
+                    onClick={() => {
+                      if (testDatasetSpoilerRef.current)
+                        testDatasetSpoilerRef.current.click();
+                    }}
+                  >
+                    Hide
+                  </Button>
+                </Group>
+              </Group>
+            </Stack>
+            <Table withBorder withColumnBorders striped highlightOnHover>
+              <thead>
+                <tr>
+                  <th>Question</th>
+                  <th>Answer</th>
+                </tr>
+              </thead>
+              <tbody>
+                {testDataset?.map((result: QAPair, index: number) => (
+                  <tr key={index}>
+                    <td>{result?.question}</td>
+                    <td>{result?.answer}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </Table>
+          </Spoiler>
+        </Card>
       )}
     </Stack>
   );
