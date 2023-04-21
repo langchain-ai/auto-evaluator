@@ -14,6 +14,7 @@ import {
   Spoiler,
   Progress,
   Container,
+  Card,
 } from "@mantine/core";
 import { IconUpload, IconX, IconAlertCircle } from "@tabler/icons-react";
 import { Dropzone, MIME_TYPES } from "@mantine/dropzone";
@@ -488,104 +489,108 @@ const Body = ({ form }: { form: Form }) => {
           </Table>
         </Spoiler>
       )}
-      {!!results.length && (
-        <Spoiler
-          maxHeight={0}
-          showLabel="Show results"
-          hideLabel="Hide results"
-          transitionDuration={500}
-          initialState={true}
-        >
-          <Flex direction="row" gap="md">
-            <Title order={3}>Results</Title>
-            {evalQuestionsCount === results.length && (
-              <Button
-                style={{ marginBottom: "18px" }}
-                type="button"
-                onClick={() => download(results, "results")}
-              >
-                Download
-              </Button>
-            )}
-          </Flex>
-          <Table withBorder withColumnBorders striped highlightOnHover>
-            <thead>
-              <tr>
-                <th>Question</th>
-                <th>Expected Answer</th>
-                <th>Observed Answer</th>
-                <th>Retrieval Relevancy Score</th>
-                <th>Answer Similarity Score</th>
-                <th>Latency (s)</th>
-              </tr>
-            </thead>
-            <tbody>
-              {results?.map((result: Result, index: number) => (
-                <tr key={index}>
-                  <td>{result?.question}</td>
-                  <td>{result?.answer}</td>
-                  <td>{result?.result}</td>
-                  <td>{result?.retrievalScore}</td>
-                  <td>{result?.answerScore}</td>
-                  <td>{result?.latency?.toFixed(3)}</td>
+      <Card>
+        {!!results.length && (
+          <Spoiler
+            maxHeight={0}
+            showLabel="Show results"
+            hideLabel="Hide results"
+            transitionDuration={500}
+            initialState={true}
+          >
+            <Flex direction="row" gap="md">
+              <Title order={3}>Results</Title>
+              {evalQuestionsCount === results.length && (
+                <Button
+                  style={{ marginBottom: "18px" }}
+                  type="button"
+                  onClick={() => download(results, "results")}
+                >
+                  Download
+                </Button>
+              )}
+            </Flex>
+            <Table withBorder withColumnBorders striped highlightOnHover>
+              <thead>
+                <tr>
+                  <th>Question</th>
+                  <th>Expected Answer</th>
+                  <th>Observed Answer</th>
+                  <th>Retrieval Relevancy Score</th>
+                  <th>Answer Similarity Score</th>
+                  <th>Latency (s)</th>
                 </tr>
-              ))}
-            </tbody>
-          </Table>
-        </Spoiler>
-      )}
-      <div style={{ height: 500 }}>
-        <ResponsiveScatterPlot
-          data={chartData}
-          margin={{ top: 60, right: 140, bottom: 70, left: 90 }}
-          xScale={{ type: "linear", min: 0, max: 1 }}
-          xFormat=">-.2f"
-          yScale={{ type: "linear", min: 0, max: "auto" }}
-          yFormat=">-.2f"
-          blendMode="multiply"
-          axisTop={null}
-          axisRight={null}
-          axisBottom={{
-            tickSize: 5,
-            tickPadding: 5,
-            tickRotation: 0,
-            legend: "Avg Answer Similarity Score",
-            legendPosition: "middle",
-            legendOffset: 46,
-          }}
-          axisLeft={{
-            tickSize: 5,
-            tickPadding: 5,
-            tickRotation: 0,
-            legend: "Avg Latency (s)",
-            legendPosition: "middle",
-            legendOffset: -60,
-          }}
-          legends={[
-            {
-              anchor: "bottom-right",
-              direction: "column",
-              justify: false,
-              translateX: 130,
-              translateY: 0,
-              itemWidth: 100,
-              itemHeight: 12,
-              itemsSpacing: 5,
-              itemDirection: "left-to-right",
-              symbolSize: 12,
-              symbolShape: "circle",
-              effects: [
-                {
-                  on: "hover",
-                  style: {
-                    itemOpacity: 1,
+              </thead>
+              <tbody>
+                {results?.map((result: Result, index: number) => (
+                  <tr key={index}>
+                    <td>{result?.question}</td>
+                    <td>{result?.answer}</td>
+                    <td>{result?.result}</td>
+                    <td>{result?.retrievalScore}</td>
+                    <td>{result?.answerScore}</td>
+                    <td>{result?.latency?.toFixed(3)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </Table>
+          </Spoiler>
+        )}
+      </Card>
+      <Card>
+        <div style={{ height: 500 }}>
+          <ResponsiveScatterPlot
+            data={chartData}
+            margin={{ top: 60, right: 140, bottom: 70, left: 90 }}
+            xScale={{ type: "linear", min: 0, max: 1 }}
+            xFormat=">-.2f"
+            yScale={{ type: "linear", min: 0, max: "auto" }}
+            yFormat=">-.2f"
+            blendMode="multiply"
+            axisTop={null}
+            axisRight={null}
+            axisBottom={{
+              tickSize: 5,
+              tickPadding: 5,
+              tickRotation: 0,
+              legend: "Avg Answer Similarity Score",
+              legendPosition: "middle",
+              legendOffset: 46,
+            }}
+            axisLeft={{
+              tickSize: 5,
+              tickPadding: 5,
+              tickRotation: 0,
+              legend: "Avg Latency (s)",
+              legendPosition: "middle",
+              legendOffset: -60,
+            }}
+            legends={[
+              {
+                anchor: "bottom-right",
+                direction: "column",
+                justify: false,
+                translateX: 130,
+                translateY: 0,
+                itemWidth: 100,
+                itemHeight: 12,
+                itemsSpacing: 5,
+                itemDirection: "left-to-right",
+                symbolSize: 12,
+                symbolShape: "circle",
+                effects: [
+                  {
+                    on: "hover",
+                    style: {
+                      itemOpacity: 1,
+                    },
                   },
-                },
-              ],
-            },
-          ]}
-        />
-      </div>
+                ],
+              },
+            ]}
+          />
+        </div>
+      </Card>
     </Stack>
   );
 };
