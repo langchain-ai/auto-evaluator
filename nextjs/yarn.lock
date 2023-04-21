@@ -581,18 +581,18 @@
   dependencies:
     tslib "^2.4.0"
 
-"@tabler/icons-react@^2.11.0":
-  version "2.14.0"
-  resolved "https://registry.yarnpkg.com/@tabler/icons-react/-/icons-react-2.14.0.tgz#38f3b94844d61e28249e5f704b84eafbf38d7d57"
-  integrity sha512-5lsXkV2T+ygKwrernJnnbkRtNdbBp8JANP17gdPHhhhVEUIuvaTWU+lDEwJFgyaChlepl5AwcFoMMhcnlPO6Hw==
+"@tabler/icons-react@^2.16.0":
+  version "2.16.0"
+  resolved "https://registry.yarnpkg.com/@tabler/icons-react/-/icons-react-2.16.0.tgz#9944fc966beaaed73f195b61ebaa587cb6d0ddc6"
+  integrity sha512-WwVjPzwvChmaQfhOjaVPyUjHeUosP2G1kqG6RfSkOWWiGx46nfZG7ekuBDidXuvMdTP1o2iC9JJIGm6mz3k5Uw==
   dependencies:
-    "@tabler/icons" "2.14.0"
+    "@tabler/icons" "2.16.0"
     prop-types "^15.7.2"
 
-"@tabler/icons@2.14.0":
-  version "2.14.0"
-  resolved "https://registry.yarnpkg.com/@tabler/icons/-/icons-2.14.0.tgz#167658ba130272dcf61bfd36abcc513f696f4c87"
-  integrity sha512-q4qFe8P0M0cwRlQajPtjucjVrRPVkv/aFHWrCm+HZH9eOkjYSyyFtn7/Zz7lkjBcGiPUkh08d/d3IvJToP/zvw==
+"@tabler/icons@2.16.0":
+  version "2.16.0"
+  resolved "https://registry.yarnpkg.com/@tabler/icons/-/icons-2.16.0.tgz#fd7eb6ab7c9578abd8883b018387db141e2289aa"
+  integrity sha512-1kaPH5APIWGtXe0W0eQ9g4MdfaQJ2gh95TAa94lNAqRR0JeC3fkD0yXGCcUiNK4GnGDv3UtPSCd3dbdKTe1b2A==
 
 "@types/debug@^4.0.0":
   version "4.1.7"
@@ -607,6 +607,11 @@
   integrity sha512-wLEm0QvaoawEDoTRwzTXp4b4jpwiJDvR5KMnFnVodm3scufTlBOWRD6N1OBf9TZMhjlNsSfcO5V+7AF4+Vy+9g==
   dependencies:
     "@types/unist" "*"
+
+"@types/lodash@^4.14.194":
+  version "4.14.194"
+  resolved "https://registry.yarnpkg.com/@types/lodash/-/lodash-4.14.194.tgz#b71eb6f7a0ff11bff59fc987134a093029258a76"
+  integrity sha512-r22s9tAS7imvBt2lyHC9B8AGwWnXaYb1tY09oyLkXDs4vArpYJzw09nj8MLx5VfciBPGIb+ZwG0ssYnEPJxn/g==
 
 "@types/mdast@^3.0.0":
   version "3.0.11"
