@@ -15,6 +15,8 @@
     "@mantine/next": "^6.0.4",
     "@mantine/notifications": "^6.0.6",
     "@microsoft/fetch-event-source": "^2.0.1",
+    "@nivo/core": "^0.80.0",
+    "@nivo/scatterplot": "^0.80.0",
     "@segment/snippet": "^4.15.3",
     "@tabler/icons-react": "^2.11.0",
     "@vercel/analytics": "^1.0.0",
