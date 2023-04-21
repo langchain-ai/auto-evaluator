@@ -21,7 +21,6 @@ import slackIcon from "../public/slack-mark.svg";
 import Link from "next/link";
 
 const HomePage = () => {
-  const [opened, setOpened] = useState(false);
   const mobileWidth = useMediaQuery("(max-width: 390px)");
   const form = useForm<FormValues>({
     defaultValues: {
@@ -44,19 +43,14 @@ const HomePage = () => {
     <AppShell
       navbarOffsetBreakpoint="sm"
       navbar={
-        <Navbar
-          p="md"
-          hiddenBreakpoint="sm"
-          hidden={!opened}
-          width={{ sm: 200, lg: 400 }}
-        >
+        <Navbar p="md" hiddenBreakpoint="sm" width={{ sm: 200, lg: 400 }}>
           <Sidebar form={form} />
           <br />
         </Navbar>
       }
       header={
         <Header height={{ base: 50, md: 70 }}>
-          <Group position="apart" pr={40} pl={20}>
+          <Group position="apart" pr={40} pl={20} pt={4}>
             <Text size={mobileWidth === true ? "14px" : "xl"}>Evaluator</Text>
             <Group>
               <Link
