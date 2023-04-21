@@ -73,9 +73,7 @@ const Body = ({ form }: { form: Form }) => {
   const testDatasetSpoilerRef = useRef<HTMLButtonElement>(null);
 
   const bestExperiment = useMemo(() => {
-    console.log("firing");
     if (isEmpty(experiments) || experiments.length === 1) {
-      console.log("returning null");
       return null;
     }
     return orderBy(experiments, "performance", "desc")[0].id;
@@ -101,7 +99,6 @@ const Body = ({ form }: { form: Form }) => {
   };
 
   const experimentProgress = useMemo(() => {
-    console.log(results);
     if (results.length === 0) {
       return [initialProgress];
     }
@@ -222,7 +219,7 @@ const Body = ({ form }: { form: Form }) => {
       avgRelevancyScore,
       avgAnswerScore,
       avgLatency,
-      performance: avgLatency * avgAnswerScore,
+      performance: avgAnswerScore / avgLatency,
       id: experiments.length + 1,
     };
     setExperiments((experiments) => [...experiments, newExperiment]);
