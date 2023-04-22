@@ -2,27 +2,55 @@
 
 `Context`
 
-[Question-Answering](https://python.langchain.com/en/latest/use_cases/question_answering.html) over documents is a popular use-case for LLMs. LLM ops platforms, such as LangChain, make it easy to assemble LLM components (e.g., models, document retrievers, data loaders) into chains that support question answering. 
+[Question-Answering](https://python.langchain.com/en/latest/use_cases/question_answering.html) over documents is a popular use-case for LLMs. LangChain  makes it easy to assemble LLM components (e.g., models and retrievers) into chains that support question answering: input documents are split into chunks and stored in a retriver. Relevant chunks are retrived given a user `question`. These chunks are then passed to an LLM for synthesis into an `answer`.
 
-These workflow involove a number of parameters and stages. In particular, input documents are split into chunks (given a split size and overlap), embedded, and stored in a retriver. Relevant chunks are retrived given a user `question`. These chunks are passed to an LLM for synthesis into an `answer`.
+![image](https://user-images.githubusercontent.com/122662504/233764113-f0f55ffd-49cc-4b61-b371-1afb1c644a1f.png)
  
-But it is often not always obvious to determine how to grade these systems and, as a result, how to determine the parameters (e.g., chunk size) or components (e.g., model choice, retriver choice) that yield the best QA performance. This app aims to address these limitations, making it easy to evaluate QA chain.
+ `Challenge`
+  
+It is not always obvious to determine how to grade these systems and, as a result, how to determine the parameters (e.g., chunk size) or components (e.g., model choice, retriver choice) that yield the best QA performance. This app aims to address these limitations.
 
 `Usage`
 
 Inputs:
-* `Documents`: Input a set of documents that you want to ask questions over.
-* `(Optional) Test set`: Input a test set of question-answer pairs that you want to evaluate.
 
-`Stages`
+* `Documents`: Input a set of documents that you want to ask questions about.
+* `(Optional) Test set`: Input a test set of question-answer pairs that you want to evaluate on the input documents.
 
-The app performs several steps:
+![image](https://user-images.githubusercontent.com/122662504/233764159-ba75a90d-a76e-43ea-8484-05c864f798ef.png)
 
-* `Test set generation`: The app will auto-generate a test set of question-answer pair on the doc(s). To do this, it uses the Langchain `QAGenerationChain`. You can see the promp used for this chain [here](https://github.com/hwchase17/langchain/blob/master/langchain/chains/qa_generation/prompt.py). Recent [work](https://arxiv.org/abs/2212.09251) on model-written evals from research organization like Anthropic presents opportunity for improvement. 
+`Building the document retriver`:
 
-* `Building a document retriver`: The app will build a [retriver](https://blog.langchain.dev/retrieval/). This is simply an abstraction that accepts a question and returns a set of relevant documents. Under the hood, it uses a few different possible mechanisms, such as embedding similarity search over the vector database, SVM, TF-IDF, [Llama-Index](https://gpt-index.readthedocs.io/en/latest/), etc. The user can select the desired retriver method as well as document indexing parameters (e.g., split size, overlap, etc).The documents returned by the retriver are fed to the LLM for final answer generation.
+* The app will build a [retriver](https://blog.langchain.dev/retrieval/) on the input documents. 
+* This is an abstraction that accepts a question and returns a set of relevant documents. 
+* The retriver can be selected by the user, e.g., embedding similarity search over the vector database, SVM, TF-IDF, or [Llama-Index](https://gpt-index.readthedocs.io/en/latest/).
 
-* `Model-graded evaluation`: OpenAI and others [have shown](https://github.com/openai/evals/blob/main/evals/registry/modelgraded/closedqa.yaml) that model-graded evaluation is an effective way to evaluate models. We use two different evals: (1) we evaluate the relevance of the retrived documents relative to the question and (2) we evaluate the similarity of the LLM generated answer relative to ground truth answer. 
+![image](https://user-images.githubusercontent.com/122662504/233764422-b149f05f-2a3e-4b02-806d-fa33e7d8bcaa.png)
+
+`Test set generation`:
+
+* The app will auto-generate a test set of question-answer pair on the doc(s). 
+* To do this, it uses the Langchain `QAGenerationChain`. 
+* You can see the promp used for this chain [here](https://github.com/hwchase17/langchain/blob/master/langchain/chains/qa_generation/prompt.py). 
+* Recent [work](https://arxiv.org/abs/2212.09251) on model-written evals from research organization like Anthropic offer opportunity for improvement. 
+
+![image](https://user-images.githubusercontent.com/122662504/233764320-ea47a992-8523-4207-945a-2ae51876a78e.png)
+
+`Model-graded evaluation`: 
+
+* OpenAI and others [have shown](https://github.com/openai/evals/blob/main/evals/registry/modelgraded/closedqa.yaml) that model-graded evaluation is an effective way to evaluate models.
+* We use two different evals: 
+(1) we evaluate the relevance of the retrived documents relative to the question 
+(2) we evaluate the similarity of the LLM generated answer relative to ground truth answer
+
+* The prompts for both can be seen [here](https://github.com/dankolesnikov/evaluator-app/blob/main/api/text_utils.py)
+* Users can select which grading promp to use: 
+(1) the `GRADE_ANSWER_PROMPT_FAST` and `GRADE_DOCS_PROMPT_FAST` do not ask the model to explain itself
+(2) the other prompts explicity ask the LLM grader to explain itself, resulting in higher latency 
+
+Experimental results are summarized for the user:
+
+![image](https://user-images.githubusercontent.com/122662504/233764970-be7f43ac-9df1-43d4-97e1-b089c69e7dc3.png)
 
 ## Contributing
 
