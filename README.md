@@ -80,7 +80,9 @@ The left panel of the app (shown in red in the above image) has several user-con
 
 `Model` - LLM for summarization of retrieved chunks into the answer.
 
-`Model-graded evaluation prompt` - The prompt choice for model-graded evaluation. As mentioned above, the prompts can be seen [here](https://github.com/dankolesnikov/evaluator-app/blob/main/api/text_utils.py). More prompts would be a welcome addition.
+`Grading prompt style` - The prompt choice for model-graded evaluation. As mentioned above, the prompts can be seen [here](https://github.com/dankolesnikov/evaluator-app/blob/main/api/text_utils.py). More prompts would be a welcome addition. For example, with the `Descriptive` prompt, you will see a more detailed output with model grade justification.
+
+![image](https://user-images.githubusercontent.com/122662504/233796875-9223d73f-31dd-47cc-815b-c14c4ceceda8.png)
 
 ## Logging experiments 
 
