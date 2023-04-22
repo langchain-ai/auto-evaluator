@@ -1,27 +1,13 @@
-import {
-  AppShell,
-  Burger,
-  Group,
-  Header,
-  MediaQuery,
-  Navbar,
-  Text,
-} from "@mantine/core";
-import { useState } from "react";
+import { AppShell, Navbar } from "@mantine/core";
 import { useMediaQuery } from "@mantine/hooks";
 import React from "react";
-import Body from "../components/Body";
-import Sidebar from "../components/Sidebar";
 import { useForm } from "react-hook-form";
+import Body from "../components/Body";
+import HeaderEvaluator from "../components/HeaderEvaluator";
+import Sidebar from "../components/Sidebar";
 import { FormValues } from "../utils/types";
-import Image from "next/image";
-import { useRouter } from "next/router";
-import githubIcon from "../public/github-mark.svg";
-import slackIcon from "../public/slack-mark.svg";
-import Link from "next/link";
 
 const HomePage = () => {
-  const mobileWidth = useMediaQuery("(max-width: 390px)");
   const form = useForm<FormValues>({
     defaultValues: {
       evalQuestionsCount: 5,
@@ -37,8 +23,6 @@ const HomePage = () => {
     },
   });
 
-  const router = useRouter();
-
   return (
     <AppShell
       navbarOffsetBreakpoint="sm"
@@ -48,29 +32,7 @@ const HomePage = () => {
           <br />
         </Navbar>
       }
-      header={
-        <Header height={{ base: 50, md: 70 }}>
-          <Group position="apart" pr={40} pl={20} pt={4}>
-            <Text size={mobileWidth === true ? "14px" : "xl"}>Evaluator</Text>
-            <Group>
-              <Link
-                href={"https://github.com/dankolesnikov/evaluator-app"}
-                target="_blank"
-              >
-                <Image src={githubIcon} alt="github" width={30} height={30} />
-              </Link>
-              <Link
-                href={
-                  "https://join.slack.com/t/slack-ttf2018/shared_invite/zt-1toh7vyoy-pdo7LR15NlYhUWbuTS44cg"
-                }
-                target="_blank"
-              >
-                <Image src={slackIcon} alt="slack" width={60} height={60} />
-              </Link>
-            </Group>
-          </Group>
-        </Header>
-      }
+      header={<HeaderEvaluator />}
       styles={(theme) => ({
         main: {
           backgroundColor:

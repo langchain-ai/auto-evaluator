@@ -13,13 +13,35 @@ body {
 }
 
 a {
-  color: #0070f3;
+  color: #000;
+  text-decoration: underline;
+  background-color: transparent;
+  outline: none;
+  cursor: pointer;
+  transition: color 0.3s;
+  -webkit-text-decoration-skip: objects;
+}
+a:hover {
+  color: #0d0c0c;
+}
+a:active {
+  color: #000000;
+}
+a:active,
+a:hover {
   text-decoration: none;
+  outline: 0;
+}
+a:focus {
+  text-decoration: none;
+  outline: 0;
+}
+a[disabled] {
+  color: rgba(0, 0, 0, 0.25);
+  cursor: not-allowed;
 }
 
-a:hover {
-  text-decoration: underline;
-}
+
 
 img {
   max-width: 100%;
