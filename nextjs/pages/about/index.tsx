@@ -1,22 +1,37 @@
 import React from "react";
 import HeaderEvaluator from "../../components/HeaderEvaluator";
 import { UserCardImage } from "../../components/PersonCard";
-import { Group } from "@mantine/core";
-import Danil from "../../public/team/danil.jpg";
+import { Center, Group } from "@mantine/core";
 
 const AboutPage = () => {
   return (
     <>
       <HeaderEvaluator />
-      <Group>
-        <UserCardImage
-          avatar="../../public/team/danil.jpg"
-          name="Danil"
-          job="Founding Eng @ Shepherd"
-          twitterHandle="sfgunslinger"
-          githubHandle="dankolesnikov"
-        />
-      </Group>
+      <Center>
+        <Group pt={100}>
+          <UserCardImage
+            avatar="https://avatars.githubusercontent.com/u/122662504?v=4"
+            name="Lance"
+            job="Tech Lead @ Nuro"
+            twitterHandle="RLanceMartin"
+            githubHandle="PineappleExpress808"
+          />
+          <UserCardImage
+            avatar="https://avatars.githubusercontent.com/u/10562358?v=4"
+            name="Danil"
+            job="Founding Eng @ Shepherd"
+            twitterHandle="sfgunslinger"
+            githubHandle="dankolesnikov"
+          />
+          <UserCardImage
+            avatar="https://pbs.twimg.com/profile_images/1508934858990505986/-bPAFfFU_400x400.png"
+            name="Ben"
+            job="Software @ Rainbow"
+            twitterHandle="thebengoldberg"
+            githubHandle="benisgold"
+          />
+        </Group>
+      </Center>
     </>
   );
 };

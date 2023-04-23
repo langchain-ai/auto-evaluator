@@ -6,7 +6,12 @@ import {
   Group,
   Button,
   rem,
+  Stack,
 } from "@mantine/core";
+import Link from "next/link";
+import githubIcon from "../public/github-mark.svg";
+import twitterBlackIcon from "../public/twitter-black.svg";
+import Image from "next/image";
 
 const useStyles = createStyles((theme) => ({
   card: {
@@ -40,42 +45,31 @@ export function UserCardImage({
 
   return (
     <Card withBorder padding="xl" radius="md" className={classes.card}>
-      <Card.Section sx={{ height: 140 }} />
-      <Avatar
-        src={avatar}
-        size={80}
-        radius={80}
-        mx="auto"
-        mt={-30}
-        className={classes.avatar}
-      />
-      <Text ta="center" fz="lg" fw={500} mt="sm">
-        {name}
-      </Text>
-      <Text ta="center" fz="sm" c="dimmed">
-        {job}
-      </Text>
-      {/* <Group mt="md" position="center" spacing={30}>
-        {items}
-      </Group> */}
-      <Button
-        fullWidth
-        radius="md"
-        mt="xl"
-        size="md"
-        color={theme.colorScheme === "dark" ? undefined : "dark"}
-      >
-        {twitterHandle}
-      </Button>
-      <Button
-        fullWidth
-        radius="md"
-        mt="xl"
-        size="md"
-        color={theme.colorScheme === "dark" ? undefined : "dark"}
-      >
-        {githubHandle}
-      </Button>
+      <Stack>
+        <Avatar
+          src={avatar}
+          size={185}
+          radius={80}
+          mx="auto"
+          className={classes.avatar}
+        />
+        <div>
+          <Text ta="center" fz="lg" fw={500} mt="sm">
+            {name}
+          </Text>
+          <Text ta="center" fz="sm" c="dimmed">
+            {job}
+          </Text>
+        </div>
+        <Group position="center">
+          <Link href={`https://twitter.com/${twitterHandle}`} target="_blank">
+            <Image src={twitterBlackIcon} alt="github" width={30} height={30} />
+          </Link>
+          <Link href={`https://github.com/${githubHandle}`} target="_blank">
+            <Image src={githubIcon} alt="github" width={30} height={30} />
+          </Link>
+        </Group>
+      </Stack>
     </Card>
   );
 }
