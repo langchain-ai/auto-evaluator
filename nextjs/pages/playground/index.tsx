@@ -1,11 +1,12 @@
 import { AppShell, Navbar } from "@mantine/core";
-import React, { useEffect } from "react";
+import React from "react";
 import { useForm } from "react-hook-form";
-import HeaderEvaluator from "../components/HeaderEvaluator";
-import Sidebar from "../components/Sidebar";
-import { FormValues } from "../utils/types";
-import Demo from "../components/Demo";
-const DemoPage = () => {
+import HeaderEvaluator from "../../components/HeaderEvaluator";
+import Sidebar from "../../components/Sidebar";
+import { FormValues } from "../../utils/types";
+import Playground from "../../components/Playground";
+
+const PlaygroundPage = () => {
   const form = useForm<FormValues>({
     defaultValues: {
       evalQuestionsCount: 5,
@@ -17,32 +18,9 @@ const DemoPage = () => {
       retriever: "similarity-search",
       gradingPrompt: "Fast",
       numNeighbors: 3,
-      files: [
-        {
-          path: "karpathy-pod.txt",
-          lastModified: 1682232311844,
-          name: "karpathy-pod.txt",
-          size: 216811,
-          type: "text/plain",
-          webkitRelativePath: "",
-        },
-      ],
+      files: [],
     },
   });
-
-  // useEffect(() => {
-  //   fetch("../public/testData/karpathy-pod.txt")
-  //     // .then((r) => r.text())
-  //     .then((text) => {
-  //       console.log(text);
-  //       form.setValue("files", [
-  //         {
-  //           name: "karpathy-pod.txt",
-  //           text,
-  //         },
-  //       ]);
-  //     });
-  // });
 
   return (
     <AppShell
@@ -63,8 +41,8 @@ const DemoPage = () => {
         },
       })}
     >
-      <Demo form={form} />
+      <Playground form={form} />
     </AppShell>
   );
 };
-export default DemoPage;
+export default PlaygroundPage;

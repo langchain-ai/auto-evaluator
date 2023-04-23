@@ -15,48 +15,17 @@ import {
 } from "@mantine/core";
 import { IconUpload, IconX, IconAlertCircle } from "@tabler/icons-react";
 import { Dropzone, MIME_TYPES } from "@mantine/dropzone";
-import { Form } from "../utils/types";
+import { Experiment, Form, QAPair, Result } from "../utils/types";
 import { notifications } from "@mantine/notifications";
 import { API_URL } from "../utils/variables";
 import { fetchEventSource } from "@microsoft/fetch-event-source";
 import { Parser } from "@json2csv/plainjs";
-import Papa from "papaparse";
 import { IconFile } from "@tabler/icons-react";
 import { ResponsiveScatterPlot } from "@nivo/scatterplot";
 import { isEmpty, isNil, orderBy } from "lodash";
+import TestFileUploadZone from "./TestFileUploadZone";
 
-type Result = {
-  question: string;
-  answer: string;
-  result: string;
-  retrievalScore: { score: number; justification: string };
-  answerScore: { score: number; justification: string };
-  latency: number;
-};
-
-type QAPair = {
-  question: string;
-  answer: string;
-};
-
-type Experiment = {
-  evalQuestionsCount: number;
-  chunkSize: number;
-  overlap: number;
-  splitMethod: string;
-  retriever: string;
-  embeddingAlgorithm: string;
-  model: string;
-  gradingPrompt: string;
-  numNeighbors: number;
-  avgRelevancyScore: number;
-  avgAnswerScore: number;
-  avgLatency: number;
-  performance: number;
-  id: number;
-};
-
-const Body = ({ form }: { form: Form }) => {
+const Playground = ({ form }: { form: Form }) => {
   const { setValue, watch, getValues, handleSubmit } = form;
   const watchFiles = watch("files");
   const theme = useMantineTheme();
@@ -71,19 +40,15 @@ const Body = ({ form }: { form: Form }) => {
   const experimentsResultsSpoilerRef = useRef<HTMLButtonElement>(null);
   const summarySpoilerRef = useRef<HTMLButtonElement>(null);
   const testDatasetSpoilerRef = useRef<HTMLButtonElement>(null);
+  const [testFilesDropzoneDisabled, setTestFilesDropzoneDisabled] =
+    useState(true);
+  console.log(watchFiles);
 
   const bestExperiment = useMemo(() => {
     if (isEmpty(experiments) || experiments.length === 1) {
       return null;
     }
     return orderBy(experiments, "performance", "desc")[0].id;
-  }, [experiments]);
-
-  const runExperimentButtonLabel = useMemo(() => {
-    if (isEmpty(experiments)) {
-      return "Run Experiment";
-    }
-    return "Re-run experiment";
   }, [experiments]);
 
   const initialProgress = {
@@ -234,6 +199,10 @@ const Body = ({ form }: { form: Form }) => {
     setExperiments((experiments) => [...experiments, newExperiment]);
   });
 
+  // console.log("testDataset", testDataset);
+  // console.log("experiments", experiments);
+  // console.log("results", results);
+
   const download = useCallback(
     (data: any[], filename: string) => {
       const parser = new Parser();
@@ -272,6 +241,7 @@ const Body = ({ form }: { form: Form }) => {
             setExperiments([]);
             setResults([]);
             setShouldShowProgress(false);
+            setTestFilesDropzoneDisabled(false);
           }}
           accept={[
             MIME_TYPES.pdf,
@@ -288,7 +258,7 @@ const Body = ({ form }: { form: Form }) => {
               color: "red",
             })
           }
-          maxSize={3 * 1024 ** 2}
+          // maxSize={3 * 1024 ** 2}
           style={{ width: "100%" }}
         >
           <Stack align="center">
@@ -318,97 +288,16 @@ const Body = ({ form }: { form: Form }) => {
                 Upload Text for QA Eval
               </Text>
               <Text size="sm" color="dimmed" mt={7} align="center">
-                {"Attach files (.txt, .pdf, .doc, .docx) up to 5 MB"}
+                {"Attach files (.txt, .pdf, .doc, .docx)"}
               </Text>
             </div>
           </Stack>
         </Dropzone>
-        <Dropzone
-          onDrop={(files) =>
-            files.forEach((file) =>
-              Papa.parse(file, {
-                header: false,
-                complete: (results: { data: string[][] }) => {
-                  const datasetArray = results?.data;
-                  if (
-                    datasetArray?.[0]?.[0]?.toLowerCase() === "question" ||
-                    datasetArray?.[0]?.[0]?.toLowerCase() === "answer"
-                  ) {
-                    datasetArray.shift();
-                  }
-                  const cappedDatasetArray = datasetArray.slice(
-                    0,
-                    Math.min(15, datasetArray.length)
-                  );
-                  const uploadedTestDataset = cappedDatasetArray.map((row) => ({
-                    question: row?.[0],
-                    answer: row?.[1],
-                  }));
-                  setTestDataset((testDataset) => [
-                    ...uploadedTestDataset,
-                    ...testDataset,
-                  ]);
-                  setDidUploadTestDataset(true);
-                },
-                error: () => {
-                  notifications.show({
-                    title: "Error",
-                    message: "Error parsing test dataset CSV",
-                    color: "red",
-                  });
-                },
-              })
-            )
-          }
-          maxFiles={1}
-          multiple={false}
-          disabled={didUploadTestDataset}
-          accept={[MIME_TYPES.csv]}
-          onReject={(files) =>
-            notifications.show({
-              title: "Error",
-              message: `File type(s) not supported ${files.map(
-                (file) => file.file.type
-              )}`,
-              color: "red",
-            })
-          }
-          maxSize={3 * 1024 ** 2}
-          style={{ width: "40%" }}
-        >
-          <Stack align="center">
-            <Dropzone.Accept>
-              <IconUpload
-                size="3.2rem"
-                stroke={1.5}
-                color={
-                  theme.colors[theme.primaryColor][
-                    theme.colorScheme === "dark" ? 4 : 6
-                  ]
-                }
-              />
-            </Dropzone.Accept>
-            <Dropzone.Reject>
-              <IconX
-                size="3.2rem"
-                stroke={1.5}
-                color={theme.colors.red[theme.colorScheme === "dark" ? 4 : 6]}
-              />
-            </Dropzone.Reject>
-            <Dropzone.Idle>
-              <IconFile size="3.2rem" stroke={1.5} />
-            </Dropzone.Idle>
-            <div>
-              <Text size="xl" inline align="center">
-                Upload Test Dataset (Optional)
-              </Text>
-              <Text size="sm" color="dimmed" inline mt={7} align="center">
-                Attach a single CSV containing up to 15 QA pairs (shape:
-                [question, answer])
-              </Text>
-            </div>
-          </Stack>
-        </Dropzone>
+        <TestFileUploadZone
+          disabled={testFilesDropzoneDisabled}
+          setTestDataset={setTestDataset}
+          setDidUploadTestDataset={setDidUploadTestDataset}
+        />
       </Flex>
       {!!watchFiles?.length && (
         <>
@@ -429,16 +318,14 @@ const Body = ({ form }: { form: Form }) => {
             </tbody>
           </Table>
           <Flex direction="row" gap="md">
-            {!loading ? (
-              <Button
-                style={{ marginBottom: "18px" }}
-                type="submit"
-                onClick={submit}
-                disabled={loading}
-              >
-                {runExperimentButtonLabel}
-              </Button>
-            ) : null}
+            <Button
+              style={{ marginBottom: "18px" }}
+              type="submit"
+              onClick={submit}
+              disabled={loading}
+            >
+              Re-run Experiment
+            </Button>
           </Flex>
         </>
       )}
@@ -770,4 +657,4 @@ const Body = ({ form }: { form: Form }) => {
     </Stack>
   );
 };
-export default Body;
+export default Playground;

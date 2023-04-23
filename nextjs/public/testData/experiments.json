@@ -1,0 +1,18 @@
+[
+  {
+    "evalQuestionsCount": 5,
+    "chunkSize": 1000,
+    "overlap": 100,
+    "splitMethod": "RecursiveTextSplitter",
+    "retriever": "similarity-search",
+    "embeddingAlgorithm": "OpenAI",
+    "model": "gpt-3.5-turbo",
+    "gradingPrompt": "Fast",
+    "numNeighbors": 3,
+    "avgRelevancyScore": 1,
+    "avgAnswerScore": 0.8,
+    "avgLatency": 8.2950945854187,
+    "performance": 0.09644254104181736,
+    "id": 1
+  }
+]
