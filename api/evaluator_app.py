@@ -32,8 +32,8 @@ from gpt_index import GPTFaissIndex, LLMPredictor, ServiceContext
 from langchain.text_splitter import RecursiveCharacterTextSplitter, CharacterTextSplitter
 from text_utils import GRADE_DOCS_PROMPT, GRADE_ANSWER_PROMPT, GRADE_DOCS_PROMPT_FAST, GRADE_ANSWER_PROMPT_FAST, GRADE_ANSWER_PROMPT_BIAS_CHECK
 
+
 def generate_eval(text, chunk, logger):
-    
     """
     Generate question answer pair from input text 
     @param text: text to generate eval set from
@@ -45,7 +45,7 @@ def generate_eval(text, chunk, logger):
     logger.info("`Generating eval QA pair ...`")
     # Generate random starting index in the doc to draw question from
     num_of_chars = len(text)
-    starting_index = random.randint(0, num_of_chars-chunk) 
+    starting_index = random.randint(0, num_of_chars-chunk)
     sub_sequence = text[starting_index:starting_index+chunk]
     # Set up QAGenerationChain chain using GPT 3.5 as default
     chain = QAGenerationChain.from_llm(ChatOpenAI(temperature=0))
@@ -59,14 +59,13 @@ def generate_eval(text, chunk, logger):
             awaiting_answer = False
         except JSONDecodeError:
             logger.error("Error on question")
-            starting_index = random.randint(0, num_of_chars-chunk) 
+            starting_index = random.randint(0, num_of_chars-chunk)
             sub_sequence = text[starting_index:starting_index+chunk]
     eval_pair = list(itertools.chain.from_iterable(eval_set))
     return eval_pair
 
 
 def split_texts(text, chunk_size, overlap, split_method, logger):
-
     """
     Split text into chunks
     @param text: text to split
@@ -88,8 +87,8 @@ def split_texts(text, chunk_size, overlap, split_method, logger):
     splits = text_splitter.split_text(text)
     return splits
 
-def make_llm(model):
 
+def make_llm(model):
     """
     Make LLM
     @param model: LLM to use
@@ -102,8 +101,8 @@ def make_llm(model):
         llm = Anthropic(temperature=0)
     return llm
 
-def make_retriever(splits, retriever_type, embeddings, num_neighbors, llm, logger):
 
+def make_retriever(splits, retriever_type, embeddings, num_neighbors, llm, logger):
     """
     Make document retriever
     @param splits: list of str splits
@@ -131,21 +130,22 @@ def make_retriever(splits, retriever_type, embeddings, num_neighbors, llm, logge
             vectorstore = FAISS.from_texts(splits, HuggingFaceEmbeddings())
         retriever = vectorstore.as_retriever(k=num_neighbors)
     elif retriever_type == "SVM":
-        retriever = SVMRetriever.from_texts(splits,embd)
+        retriever = SVMRetriever.from_texts(splits, embd)
     elif retriever_type == "TF-IDF":
         retriever = TFIDFRetriever.from_texts(splits)
     elif retriever_type == "Llama-Index":
         documents = [Document(t, LangchainEmbedding(embd)) for t in splits]
         llm_predictor = LLMPredictor(llm)
-        context = ServiceContext.from_defaults(chunk_size_limit=512,llm_predictor=llm_predictor)
+        context = ServiceContext.from_defaults(
+            chunk_size_limit=512, llm_predictor=llm_predictor)
         dims = 1536
         faiss_index = faiss.IndexFlatL2(dims)
-        retriever = GPTFaissIndex.from_documents(documents, faiss_index=faiss_index, service_context=context)
+        retriever = GPTFaissIndex.from_documents(
+            documents, faiss_index=faiss_index, service_context=context)
     return retriever
 
 
 def make_chain(llm, retriever, retriever_type):
-
     """
     Make retrival chain
     @param llm: model
@@ -156,16 +156,16 @@ def make_chain(llm, retriever, retriever_type):
 
     if retriever_type != "Llama-Index":
         qa_chain = RetrievalQA.from_chain_type(llm,
-                                        chain_type="stuff",
-                                        retriever=retriever,
-                                        input_key="question")
+                                               chain_type="stuff",
+                                               retriever=retriever,
+                                               input_key="question")
     elif retriever_type == "Llama-Index":
         qa_chain = retriever
-    
+
     return qa_chain
 
-def grade_model_answer(predicted_dataset, predictions, grade_answer_prompt, logger):
 
+def grade_model_answer(predicted_dataset, predictions, grade_answer_prompt, logger):
     """
     Grades the answer based on ground truth and model predictions.
     @param predicted_dataset: A list of dictionaries containing ground truth questions and answers.
@@ -183,7 +183,7 @@ def grade_model_answer(predicted_dataset, predictions, grade_answer_prompt, logg
     else:
         prompt = GRADE_ANSWER_PROMPT
 
-    eval_chain = QAEvalChain.from_llm(llm=ChatOpenAI(model_name="gpt-3.5-turbo", temperature=0), 
+    eval_chain = QAEvalChain.from_llm(llm=ChatOpenAI(model_name="gpt-3.5-turbo", temperature=0),
                                       prompt=prompt)
     graded_outputs = eval_chain.evaluate(predicted_dataset,
                                          predictions,
@@ -191,8 +191,8 @@ def grade_model_answer(predicted_dataset, predictions, grade_answer_prompt, logg
                                          prediction_key="result")
     return graded_outputs
 
+
 def grade_model_retrieval(gt_dataset, predictions, grade_docs_prompt, logger):
-    
     """
     Grades the relevance of retrieved documents based on ground truth and model predictions.
     @param gt_dataset: list of dictionaries containing ground truth questions and answers.
@@ -207,7 +207,7 @@ def grade_model_retrieval(gt_dataset, predictions, grade_docs_prompt, logger):
     else:
         prompt = GRADE_DOCS_PROMPT
 
-    eval_chain = QAEvalChain.from_llm(llm=ChatOpenAI(model_name="gpt-3.5-turbo", temperature=0), 
+    eval_chain = QAEvalChain.from_llm(llm=ChatOpenAI(model_name="gpt-3.5-turbo", temperature=0),
                                       prompt=prompt)
     graded_outputs = eval_chain.evaluate(gt_dataset,
                                          predictions,
@@ -215,8 +215,8 @@ def grade_model_retrieval(gt_dataset, predictions, grade_docs_prompt, logger):
                                          prediction_key="result")
     return graded_outputs
 
-def run_eval(chain, retriever, eval_qa_pair, grade_prompt, retriever_type, num_neighbors, logger):
 
+def run_eval(chain, retriever, eval_qa_pair, grade_prompt, retriever_type, num_neighbors, logger):
     """
     Runs evaluation on a model's performance on a given evaluation dataset.
     @param chain: Model chain used for answering questions
@@ -237,14 +237,16 @@ def run_eval(chain, retriever, eval_qa_pair, grade_prompt, retriever_type, num_n
     retrieved_docs = []
     gt_dataset = []
     latency = []
-    
+
     # Get answer and log latency
     start_time = time.time()
     if retriever_type != "Llama-Index":
         predictions.append(chain(eval_qa_pair))
     elif retriever_type == "Llama-Index":
-        answer = chain.query(eval_qa_pair["question"],similarity_top_k=num_neighbors,response_mode="tree_summarize",use_async=True)
-        predictions.append({"question": eval_qa_pair["question"], "answer": eval_qa_pair["answer"],"result": answer.response})
+        answer = chain.query(
+            eval_qa_pair["question"], similarity_top_k=num_neighbors, response_mode="tree_summarize", use_async=True)
+        predictions.append(
+            {"question": eval_qa_pair["question"], "answer": eval_qa_pair["answer"], "result": answer.response})
     gt_dataset.append(eval_qa_pair)
     end_time = time.time()
     elapsed_time = end_time - start_time
@@ -253,20 +255,24 @@ def run_eval(chain, retriever, eval_qa_pair, grade_prompt, retriever_type, num_n
     # Extract text from retrieved docs
     retrieved_doc_text = ""
     if retriever_type != "Llama-Index":
-        docs=retriever.get_relevant_documents(eval_qa_pair["question"])
-        for i,doc in enumerate(docs):
-            retrieved_doc_text += "Doc %s: "%str(i+1) + doc.page_content + " "
+        docs = retriever.get_relevant_documents(eval_qa_pair["question"])
+        for i, doc in enumerate(docs):
+            retrieved_doc_text += "Doc %s: " % str(i+1) + \
+                doc.page_content + " "
     elif retriever_type == "Llama-Index":
         for i, doc in enumerate(answer.source_nodes):
-            retrieved_doc_text += "Doc %s: "%str(i+1) + doc.node.text + " "
-    
-    # Log 
-    retrieved = {"question": eval_qa_pair["question"], "answer": eval_qa_pair["answer"], "result": retrieved_doc_text}
+            retrieved_doc_text += "Doc %s: " % str(i+1) + doc.node.text + " "
+
+    # Log
+    retrieved = {"question": eval_qa_pair["question"],
+                 "answer": eval_qa_pair["answer"], "result": retrieved_doc_text}
     retrieved_docs.append(retrieved)
-        
+
     # Grade
-    graded_answers = grade_model_answer(gt_dataset, predictions, grade_prompt, logger)
-    graded_retrieval = grade_model_retrieval(gt_dataset, retrieved_docs, grade_prompt, logger)
+    graded_answers = grade_model_answer(
+        gt_dataset, predictions, grade_prompt, logger)
+    graded_retrieval = grade_model_retrieval(
+        gt_dataset, retrieved_docs, grade_prompt, logger)
     return graded_answers, graded_retrieval, latency, predictions
 
 
@@ -289,9 +295,10 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
 @app.get("/")
 async def root():
-    return {"message": "Welcome to the QA Evaluator!"}
+    return {"message": "Welcome to the Auto Evaluator!"}
 
 
 def run_evaluator(
@@ -335,20 +342,21 @@ def run_evaluator(
         else:
             logger.warning(
                 "Unsupported file type for file: {}".format(file.filename))
-    text =  " ".join(texts)
-    
+    text = " ".join(texts)
+
     logger.info("Splitting texts")
     splits = split_texts(text, chunk_chars, overlap, split_method, logger)
 
     logger.info("Make LLM")
     llm = make_llm(model_version)
-    
+
     logger.info("Make retriever")
-    retriever = make_retriever(splits, retriever_type, embeddings, num_neighbors, llm, logger)
-    
+    retriever = make_retriever(
+        splits, retriever_type, embeddings, num_neighbors, llm, logger)
+
     logger.info("Make chain")
-    qa_chain = make_chain(llm,retriever,retriever_type)
-    
+    qa_chain = make_chain(llm, retriever, retriever_type)
+
     for i in range(num_eval_questions):
 
         # Generate one question
@@ -356,32 +364,37 @@ def run_evaluator(
             eval_pair = test_dataset[i]
         else:
             eval_pair = generate_eval(text, 3000, logger)
-            if len(eval_pair) == 0:    
+            if len(eval_pair) == 0:
                 # Error in eval generation
                 continue
             else:
                 # This returns a list, so we unpack to dict
                 eval_pair = eval_pair[0]
-        
-        # Run eval 
-        graded_answers, graded_retrieval, latency, predictions = run_eval(qa_chain, retriever, eval_pair, grade_prompt, retriever_type, num_neighbors, logger)
-        
-        # Assemble output 
+
+        # Run eval
+        graded_answers, graded_retrieval, latency, predictions = run_eval(
+            qa_chain, retriever, eval_pair, grade_prompt, retriever_type, num_neighbors, logger)
+
+        # Assemble output
         d = pd.DataFrame(predictions)
         d['answerScore'] = [g['text'] for g in graded_answers]
         d['retrievalScore'] = [g['text'] for g in graded_retrieval]
         d['latency'] = latency
-        
+
         # Summary statistics
-        d['answerScore'] = [{'score': 1 if "INCORRECT" not in text else 0, 'justification': text} for text in d['answerScore']]
-        d['retrievalScore'] = [{'score': 1 if "Context is relevant: True" not in text else 0, 'justification': text} for text in d['retrievalScore']]
+        d['answerScore'] = [{'score': 1 if "INCORRECT" not in text else 0,
+                             'justification': text} for text in d['answerScore']]
+        d['retrievalScore'] = [{'score': 1 if "Context is relevant: True" in text else 0,
+                                'justification': text} for text in d['retrievalScore']]
 
         # Convert dataframe to dict
         d_dict = d.to_dict('records')
         if len(d_dict) == 1:
             yield json.dumps({"data":  d_dict[0]})
         else:
-            logger.warn("A QA pair was not evaluated correctly. Skipping this pair.")
+            logger.warn(
+                "A QA pair was not evaluated correctly. Skipping this pair.")
+
 
 @app.post("/evaluator-stream")
 async def create_response(
@@ -399,4 +412,4 @@ async def create_response(
 ):
     test_dataset = json.loads(test_dataset)
     return EventSourceResponse(run_evaluator(files, num_eval_questions, chunk_chars,
-                                             overlap, split_method, retriever_type, embeddings, model_version,grade_prompt,num_neighbors,test_dataset), headers={"Content-Type": "text/event-stream", "Connection": "keep-alive", "Cache-Control": "no-cache"})
+                                             overlap, split_method, retriever_type, embeddings, model_version, grade_prompt, num_neighbors, test_dataset), headers={"Content-Type": "text/event-stream", "Connection": "keep-alive", "Cache-Control": "no-cache"})

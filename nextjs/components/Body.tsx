@@ -129,6 +129,16 @@ const Body = ({ form }: { form: Form }) => {
     ],
   }));
 
+  const renderPassFail = (data: any) => {
+    if (data.score === 0) {
+      return "Incorrect";
+    }
+    if (data.score === 1) {
+      return "Correct";
+    }
+    throw new Error(`Problem parsing ${data}`);
+  };
+
   const submit = handleSubmit(async (data) => {
     setShouldShowProgress(true);
     setLoading(true);
@@ -165,7 +175,6 @@ const Body = ({ form }: { form: Form }) => {
       openWhenHidden: true,
       signal: controller.signal,
       onmessage(ev) {
-        console.log("raw input", ev.data);
         try {
           const row: Result = JSON.parse(ev.data)?.data;
           setResults((results) => [...results, row]);
@@ -640,11 +649,7 @@ const Body = ({ form }: { form: Form }) => {
                     <td>{result?.result}</td>
                     <td>
                       {isFastGradingPrompt ? (
-                        result?.retrievalScore ? (
-                          "PASS"
-                        ) : (
-                          "FAIL"
-                        )
+                        renderPassFail(result.retrievalScore)
                       ) : (
                         <Spoiler
                           maxHeight={150}
@@ -665,11 +670,7 @@ const Body = ({ form }: { form: Form }) => {
                     </td>
                     <td>
                       {isFastGradingPrompt ? (
-                        result?.answerScore ? (
-                          "PASS"
-                        ) : (
-                          "FAIL"
-                        )
+                        renderPassFail(result?.answerScore)
                       ) : (
                         <Spoiler
                           maxHeight={150}

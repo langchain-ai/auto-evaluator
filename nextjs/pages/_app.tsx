@@ -23,7 +23,7 @@ export default function App(props: AppProps) {
     fontFamily:
       "Greycliff CF, Inter,-apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Helvetica Neue,Arial, Noto Sans",
   };
-  const pageName = "Evaluator";
+  const pageName = "Auto-Evaluator";
   useEffect(() => {
     if (!IS_DEV) {
       // @ts-expect-error
@@ -46,7 +46,7 @@ export default function App(props: AppProps) {
         <link rel="icon" href="favicon/favicon.ico" />
         <meta
           name="description"
-          content="Evaluator helps you evaluate your LLM apps."
+          content="Auto-Evaluator helps you evaluate your LLM apps."
         />
         <meta name="og:title" content={pageName} />
         <meta name="twitter:card" content="summary_large_image" />
