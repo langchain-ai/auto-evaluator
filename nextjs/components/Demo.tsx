@@ -31,6 +31,7 @@ import { isEmpty, isNil, orderBy } from "lodash";
 import sampleResults from "../public/testData/results.json";
 import sampleTestDataset from "../public/testData/testDataset.json";
 import sampleExperiments from "../public/testData/experiments.json";
+import SummaryChart from "./SummaryChart";
 
 const Demo = ({ form }: { form: Form }) => {
   const { setValue, watch, getValues, handleSubmit } = form;
@@ -292,7 +293,7 @@ const Demo = ({ form }: { form: Form }) => {
           >
             <Stack>
               <Group position="apart">
-                <Title order={3}>Summary</Title>
+                <Title order={3}>Experiment Summary</Title>
                 <Group>
                   <Button
                     style={{ marginBottom: "18px" }}
@@ -355,56 +356,7 @@ const Demo = ({ form }: { form: Form }) => {
               </tbody>
             </Table>
             <div style={{ height: 500 }}>
-              <ResponsiveScatterPlot
-                data={chartData}
-                margin={{ top: 60, right: 140, bottom: 70, left: 90 }}
-                xScale={{ type: "linear", min: 0, max: 1 }}
-                xFormat=">-.2f"
-                yScale={{ type: "linear", min: 0, max: "auto" }}
-                yFormat=">-.2f"
-                blendMode="multiply"
-                axisTop={null}
-                axisRight={null}
-                axisBottom={{
-                  tickSize: 5,
-                  tickPadding: 5,
-                  tickRotation: 0,
-                  legend: "Avg Answer Similarity Score",
-                  legendPosition: "middle",
-                  legendOffset: 46,
-                }}
-                axisLeft={{
-                  tickSize: 5,
-                  tickPadding: 5,
-                  tickRotation: 0,
-                  legend: "Avg Latency (s)",
-                  legendPosition: "middle",
-                  legendOffset: -60,
-                }}
-                legends={[
-                  {
-                    anchor: "bottom-right",
-                    direction: "column",
-                    justify: false,
-                    translateX: 130,
-                    translateY: 0,
-                    itemWidth: 100,
-                    itemHeight: 12,
-                    itemsSpacing: 5,
-                    itemDirection: "left-to-right",
-                    symbolSize: 12,
-                    symbolShape: "circle",
-                    effects: [
-                      {
-                        on: "hover",
-                        style: {
-                          itemOpacity: 1,
-                        },
-                      },
-                    ],
-                  },
-                ]}
-              />
+              <SummaryChart chartData={chartData} />
             </div>
             <br />
             {!isNil(bestExperiment) && (
