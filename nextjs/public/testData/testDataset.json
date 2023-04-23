@@ -1,0 +1,22 @@
+[
+  {
+    "question": "What does the speaker think of artificial neural networks?",
+    "answer": "The speaker thinks of artificial neural networks as a complicated alien artifact that is doing compression."
+  },
+  {
+    "question": "What is the potential for building a better search engine using the tools available today?",
+    "answer": "There is definite scope for building a significantly better search engine built on these tools."
+  },
+  {
+    "question": "What is the transformer and what are some of its key features?",
+    "answer": "The transformer is a series of blocks with attention and a multilayer perceptron. It has residual connections, layer normalizations, soft max attention, and is designed to be optimizable and run efficiently on hardware like GPUs. It is very expressive in a forward pass and can express many different types of algorithms. The residual connections support the ability to learn short algorithms fast and first, and then gradually extend them longer during training."
+  },
+  {
+    "question": "What is the author's opinion on becoming an expert at something?",
+    "answer": "The author believes that if you spend 10,000 hours of deliberate effort and work, you will become an expert at it."
+  },
+  {
+    "question": "What is the software that makes you survive?",
+    "answer": "The software that runs on the hardware that was built by the genes is what makes you survive."
+  }
+]
