@@ -18,7 +18,7 @@ const HeaderEvaluator = () => {
             gradient={{ from: "blue", to: "#bf2015" }}
             size={mobileWidth === true ? "14px" : "28px"}
           >
-            Evaluator
+            Auto-Evaluator
           </Text>
         </Link>
         <Group>
