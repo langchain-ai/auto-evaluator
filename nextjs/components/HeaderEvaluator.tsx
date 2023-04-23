@@ -37,20 +37,22 @@ const HeaderEvaluator = () => {
           <Link style={{ textDecoration: "none" }} href="/about">
             <Text c="black">About</Text>
           </Link>
-          <Link
-            href={"https://github.com/dankolesnikov/evaluator-app"}
-            target="_blank"
-          >
-            <Image src={githubIcon} alt="github" width={30} height={30} />
-          </Link>
-          <Link
-            href={
-              "https://join.slack.com/t/slack-ttf2018/shared_invite/zt-1toh7vyoy-pdo7LR15NlYhUWbuTS44cg"
-            }
-            target="_blank"
-          >
-            <Image src={slackIcon} alt="slack" width={60} height={60} />
-          </Link>
+          <Group spacing={0}>
+            <Link
+              href={"https://github.com/dankolesnikov/evaluator-app"}
+              target="_blank"
+            >
+              <Image src={githubIcon} alt="github" width={30} height={30} />
+            </Link>
+            <Link
+              href={
+                "https://join.slack.com/t/slack-ttf2018/shared_invite/zt-1toh7vyoy-pdo7LR15NlYhUWbuTS44cg"
+              }
+              target="_blank"
+            >
+              <Image src={slackIcon} alt="slack" width={60} height={60} />
+            </Link>
+          </Group>
         </Group>
       </Group>
     </Header>
