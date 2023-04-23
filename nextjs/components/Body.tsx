@@ -130,7 +130,6 @@ const Body = ({ form }: { form: Form }) => {
   }));
 
   const renderPassFail = (data: any) => {
-    console.log(data);
     if (data.score === 0) {
       return "Incorrect";
     }
@@ -176,7 +175,6 @@ const Body = ({ form }: { form: Form }) => {
       openWhenHidden: true,
       signal: controller.signal,
       onmessage(ev) {
-        console.log("raw input", ev.data);
         try {
           const row: Result = JSON.parse(ev.data)?.data;
           setResults((results) => [...results, row]);
