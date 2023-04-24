@@ -25,17 +25,15 @@ import { notifications } from "@mantine/notifications";
 import { API_URL } from "../utils/variables";
 import { fetchEventSource } from "@microsoft/fetch-event-source";
 import { Parser } from "@json2csv/plainjs";
-import { ResponsiveScatterPlot } from "@nivo/scatterplot";
 import { isEmpty, isNil, orderBy } from "lodash";
-
 import sampleResults from "../public/testData/results.json";
 import sampleTestDataset from "../public/testData/testDataset.json";
 import sampleExperiments from "../public/testData/experiments.json";
 import SummaryChart from "./SummaryChart";
 import ExperimentSummaryTable from "./ExperimentSummaryTable";
 import FilesTable from "./tables/FilesTable";
-import renderPassFail from "../utils/renderPassFail";
 import ExperimentResultTable from "./tables/ExperimentResultTable";
+import sampleText from "../public/testData/karpathy-pod.json";
 
 const Demo = ({ form }: { form: Form }) => {
   const { setValue, watch, getValues, handleSubmit } = form;
@@ -53,10 +51,19 @@ const Demo = ({ form }: { form: Form }) => {
   const [isFirstRun, setIsFirstRun] = useState(true);
 
   useEffect(() => {
+    setValue("files", [
+      new File(
+        [new Blob([sampleText.text], { type: "text/plain" })],
+        "karpathy-pod.txt",
+        {
+          type: "text/plain",
+        }
+      ),
+    ]);
     setResults(sampleResults);
     setTestDataset(sampleTestDataset);
     setExperiments(sampleExperiments);
-  });
+  }, []);
 
   const bestExperiment = useMemo(() => {
     if (isEmpty(experiments) || experiments.length === 1) {
@@ -119,6 +126,7 @@ const Demo = ({ form }: { form: Form }) => {
     setShouldShowProgress(true);
     setLoading(true);
     setResults([]);
+
     const formData = new FormData();
     data.files.forEach((file) => {
       formData.append("files", file);
