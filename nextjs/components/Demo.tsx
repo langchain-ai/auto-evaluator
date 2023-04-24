@@ -237,7 +237,7 @@ const Demo = ({ form }: { form: Form }) => {
   return (
     <Stack>
       <Title order={3}>Get Started</Title>
-      <Alert color="darkGray">
+      <Alert color="blue">
         Welcome to the auto-evaluator! This is an app to evaluate the
         performance of question-answering LLM chains. This demo has pre-loaded
         two things: (1) a document (the Lex Fridman podcast with Andrej
@@ -252,7 +252,7 @@ const Demo = ({ form }: { form: Form }) => {
           <Flex direction="row" gap="md">
             {!loading || isFirstRun ? (
               <Stack>
-                <Alert color="green">
+                <Alert color="blue">
                   <Text>
                     Choose the question-answering chain configuration (left) and
                     launch an experiment using the button below. For more detail
@@ -271,7 +271,6 @@ const Demo = ({ form }: { form: Form }) => {
                   type="submit"
                   onClick={submit}
                   disabled={loading}
-                  color="green"
                 >
                   {runExperimentButtonLabel}
                 </Button>
@@ -303,7 +302,7 @@ const Demo = ({ form }: { form: Form }) => {
             <Stack>
               <Group position="apart">
                 <Title order={3}>Experiment Results</Title>
-                <Alert color="darkGray">
+                <Alert color="blue">
                   This table shows the each question-answer pair from the test
                   set along with the model's answer to the question. The app
                   will score two things: (1) the relevance of the retrieved

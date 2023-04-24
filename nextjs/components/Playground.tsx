@@ -226,7 +226,7 @@ const Playground = ({ form }: { form: Form }) => {
       <Alert
         icon={<IconAlertCircle size="1rem" />}
         title="Instructions"
-        color="teal"
+        color="blue"
       >
         Upload your text file(s) and choose the parameters for your QA chain.
         This evaluator will generate a test dataset of QA pairs and grade the
@@ -322,7 +322,6 @@ const Playground = ({ form }: { form: Form }) => {
               type="submit"
               onClick={submit}
               disabled={loading}
-              color="green"
             >
               {runExperimentButtonLabel}
             </Button>
