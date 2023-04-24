@@ -6,8 +6,16 @@ import githubIcon from "../public/github-mark.svg";
 // import slackIcon from "../public/slack-mark.svg";
 import { useMediaQuery } from "@mantine/hooks";
 
-const HeaderEvaluator = () => {
+export enum MenuItem {
+  Demo = "Demo",
+  Playground = "Playground",
+  About = "About",
+}
+
+const HeaderEvaluator = ({ activeTab }: { activeTab: MenuItem }) => {
   const mobileWidth = useMediaQuery("(max-width: 390px)");
+  // const [activeTab, setActive] = React.useState<MenuItem>(null);
+  const borderBottom = "1px solid #000";
 
   return (
     <Header height={{ base: "75px" }}>
@@ -23,10 +31,25 @@ const HeaderEvaluator = () => {
             </Text>
           </Link>
           <Group>
-            <Link href="/" style={{ textDecoration: "none" }}>
+            <Link
+              href="/"
+              style={{
+                textDecoration: "none",
+                borderBottom: activeTab === MenuItem.Demo ? borderBottom : null,
+              }}
+              // onClick={() => setActive(MenuItem.Demo)}
+            >
               <Text c="black">Demo</Text>
             </Link>
-            <Link href="/playground" style={{ textDecoration: "none" }}>
+            <Link
+              href="/playground"
+              style={{
+                textDecoration: "none",
+                borderBottom:
+                  activeTab === MenuItem.Playground ? borderBottom : null,
+              }}
+              // onClick={() => setActive(MenuItem.Playground)}
+            >
               <Text c="black">Playground</Text>
             </Link>
             <Link
@@ -38,7 +61,15 @@ const HeaderEvaluator = () => {
             >
               <Text c="black">Docs</Text>
             </Link>
-            <Link style={{ textDecoration: "none" }} href="/about">
+            <Link
+              style={{
+                textDecoration: "none",
+                borderBottom:
+                  activeTab === MenuItem.About ? borderBottom : null,
+              }}
+              // onClick={() => setActive(MenuItem.About)}
+              href="/about"
+            >
               <Text c="black">About</Text>
             </Link>
             {/* <Group spacing={0}> */}

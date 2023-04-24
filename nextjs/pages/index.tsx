@@ -1,7 +1,7 @@
 import { AppShell, Navbar } from "@mantine/core";
 import React, { useEffect } from "react";
 import { useForm } from "react-hook-form";
-import HeaderEvaluator from "../components/HeaderEvaluator";
+import HeaderEvaluator, { MenuItem } from "../components/HeaderEvaluator";
 import Sidebar from "../components/Sidebar";
 import { FormValues } from "../utils/types";
 import Demo from "../components/Demo";
@@ -31,7 +31,7 @@ const DemoPage = () => {
           <br />
         </Navbar>
       }
-      header={<HeaderEvaluator />}
+      header={<HeaderEvaluator activeTab={MenuItem.Demo} />}
       styles={(theme) => ({
         main: {
           backgroundColor:

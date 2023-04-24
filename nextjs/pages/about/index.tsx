@@ -1,12 +1,12 @@
 import React from "react";
-import HeaderEvaluator from "../../components/HeaderEvaluator";
+import HeaderEvaluator, { MenuItem } from "../../components/HeaderEvaluator";
 import { UserCardImage } from "../../components/PersonCard";
 import { Center, Group } from "@mantine/core";
 
 const AboutPage = () => {
   return (
     <>
-      <HeaderEvaluator />
+      <HeaderEvaluator activeTab={MenuItem.About} />
       <Center>
         <Group pt={100}>
           <UserCardImage
