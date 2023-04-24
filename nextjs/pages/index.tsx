@@ -26,7 +26,7 @@ const DemoPage = () => {
     <AppShell
       navbarOffsetBreakpoint="sm"
       navbar={
-        <Navbar p="md" hiddenBreakpoint="sm" width={{ sm: 200, lg: 400 }}>
+        <Navbar p="md" hiddenBreakpoint="sm" width={{ base: "30%" }}>
           <Sidebar form={form} />
           <br />
         </Navbar>
