@@ -32,6 +32,10 @@ import sampleResults from "../public/testData/results.json";
 import sampleTestDataset from "../public/testData/testDataset.json";
 import sampleExperiments from "../public/testData/experiments.json";
 import SummaryChart from "./SummaryChart";
+import ExperimentSummaryTable from "./ExperimentSummaryTable";
+import FilesTable from "./tables/FilesTable";
+import renderPassFail from "../utils/renderPassFail";
+import ExperimentResultTable from "./tables/ExperimentResultTable";
 
 const Demo = ({ form }: { form: Form }) => {
   const { setValue, watch, getValues, handleSubmit } = form;
@@ -110,16 +114,6 @@ const Demo = ({ form }: { form: Form }) => {
       },
     ],
   }));
-
-  const renderPassFail = (data: any) => {
-    if (data.score === 0) {
-      return "Incorrect";
-    }
-    if (data.score === 1) {
-      return "Correct";
-    }
-    throw new Error(`Problem parsing ${data}`);
-  };
 
   const submit = handleSubmit(async (data) => {
     setShouldShowProgress(true);
@@ -241,24 +235,9 @@ const Demo = ({ form }: { form: Form }) => {
       <Flex direction="row" gap="md"></Flex>
       {!!watchFiles?.length && (
         <>
-          <Table>
-            <thead>
-              <tr>
-                <th>Name</th>
-                <th>Size (KB)</th>
-              </tr>
-            </thead>
-            <tbody>
-              {watchFiles?.map((file, id) => (
-                <tr key={id}>
-                  <td>{file?.name}</td>
-                  <td>{(file?.size / 1000).toFixed(1)}</td>
-                </tr>
-              ))}
-            </tbody>
-          </Table>
+          <FilesTable files={watchFiles} />
           <Flex direction="row" gap="md">
-            {!loading || setIsFirstRun ? (
+            {!loading || isFirstRun ? (
               <Button
                 style={{ marginBottom: "18px" }}
                 type="submit"
@@ -281,97 +260,6 @@ const Demo = ({ form }: { form: Form }) => {
           color={loading ? "blue" : "green"}
         />
       )}
-      {!!experiments.length && (
-        <Card>
-          <Spoiler
-            maxHeight={0}
-            showLabel="Show summary"
-            hideLabel={null}
-            transitionDuration={500}
-            initialState={true}
-            controlRef={summarySpoilerRef}
-          >
-            <Stack>
-              <Group position="apart">
-                <Title order={3}>Experiment Summary</Title>
-                <Group>
-                  <Button
-                    style={{ marginBottom: "18px" }}
-                    type="button"
-                    variant="secondary"
-                    onClick={() => download(experiments, "summary")}
-                  >
-                    Download
-                  </Button>
-                  <Button
-                    style={{ marginBottom: "18px" }}
-                    type="button"
-                    variant="subtle"
-                    onClick={() => {
-                      if (summarySpoilerRef.current)
-                        summarySpoilerRef.current.click();
-                    }}
-                  >
-                    Hide
-                  </Button>
-                </Group>
-              </Group>
-            </Stack>
-            <Table withBorder withColumnBorders striped highlightOnHover>
-              <thead>
-                <tr>
-                  <th>Experiment #</th>
-                  <th># of Eval Questions</th>
-                  <th>Chunk Size</th>
-                  <th>Overlap</th>
-                  <th>Split Method</th>
-                  <th>Retriever</th>
-                  <th>Embedding Algorithm</th>
-                  <th>Model</th>
-                  <th>Grading Prompt Style</th>
-                  <th># of Chunks Retrieved</th>
-                  <th>Avg Retrieval Relevancy Score</th>
-                  <th>Avg Answer Similarity Score</th>
-                  <th>Avg Latency (s)</th>
-                </tr>
-              </thead>
-              <tbody>
-                {experiments?.map((result: Experiment, index: number) => (
-                  <tr key={index}>
-                    <td>{index + 1}</td>
-                    <td>{result?.evalQuestionsCount}</td>
-                    <td>{result?.chunkSize}</td>
-                    <td>{result?.overlap}</td>
-                    <td>{result?.splitMethod}</td>
-                    <td>{result?.retriever}</td>
-                    <td>{result?.embeddingAlgorithm}</td>
-                    <td>{result?.model}</td>
-                    <td>{result?.gradingPrompt}</td>
-                    <td>{result?.numNeighbors}</td>
-                    <td>{result?.avgRelevancyScore}</td>
-                    <td>{result?.avgAnswerScore}</td>
-                    <td>{result?.avgLatency.toFixed(3)}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </Table>
-            <div style={{ height: 500 }}>
-              <SummaryChart chartData={chartData} />
-            </div>
-            <br />
-            {!isNil(bestExperiment) && (
-              <Alert
-                icon={<IconAlertCircle size="1rem" />}
-                title="Insight"
-                color="blue"
-              >
-                The experiment that performed the best was Experiment #
-                {bestExperiment} due to combination of accuracy and latency.
-              </Alert>
-            )}
-          </Spoiler>
-        </Card>
-      )}
       {!isEmpty(results) ? (
         <Card>
           <Spoiler
@@ -387,7 +275,7 @@ const Demo = ({ form }: { form: Form }) => {
                 <Title order={3}>Experiment Results</Title>
                 <br />
                 <br />
-                <Group>
+                <Group spacing={0}>
                   <Button
                     style={{ marginBottom: "18px" }}
                     type="button"
@@ -410,73 +298,67 @@ const Demo = ({ form }: { form: Form }) => {
                 </Group>
               </Group>
             </Stack>
-            <Table withBorder withColumnBorders striped highlightOnHover>
-              <thead>
-                <tr>
-                  <th>Question</th>
-                  <th>Expected Answer</th>
-                  <th>Observed Answer</th>
-                  <th>Retrieval Relevancy Score</th>
-                  <th>Answer Similarity Score</th>
-                  <th>Latency (s)</th>
-                </tr>
-              </thead>
-              <tbody>
-                {results?.map((result: Result, index: number) => (
-                  <tr key={index}>
-                    <td>{result?.question}</td>
-                    <td>{result?.answer}</td>
-                    <td>{result?.result}</td>
-                    <td>
-                      {isFastGradingPrompt ? (
-                        renderPassFail(result.retrievalScore)
-                      ) : (
-                        <Spoiler
-                          maxHeight={150}
-                          hideLabel={
-                            <Text weight="bold" color="blue">
-                              Show less
-                            </Text>
-                          }
-                          showLabel={
-                            <Text weight="bold" color="blue">
-                              Show more
-                            </Text>
-                          }
-                        >
-                          {result?.retrievalScore.justification}
-                        </Spoiler>
-                      )}
-                    </td>
-                    <td>
-                      {isFastGradingPrompt ? (
-                        renderPassFail(result?.answerScore)
-                      ) : (
-                        <Spoiler
-                          maxHeight={150}
-                          hideLabel={
-                            <Text weight="bold" color="blue">
-                              Show less
-                            </Text>
-                          }
-                          showLabel={
-                            <Text weight="bold" color="blue">
-                              Show more
-                            </Text>
-                          }
-                        >
-                          {result?.answerScore.justification}
-                        </Spoiler>
-                      )}
-                    </td>
-                    <td>{result?.latency?.toFixed(3)}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </Table>
+            <ExperimentResultTable
+              results={results}
+              isFastGradingPrompt={isFastGradingPrompt}
+            />
           </Spoiler>
         </Card>
       ) : null}
+      {!!experiments.length && (
+        <Card>
+          <Spoiler
+            maxHeight={0}
+            showLabel="Show summary"
+            hideLabel={null}
+            transitionDuration={500}
+            initialState={true}
+            controlRef={summarySpoilerRef}
+          >
+            <Stack>
+              <Group position="apart">
+                <Title order={3}>Summary</Title>
+                <Group spacing={0}>
+                  <Button
+                    style={{ marginBottom: "18px" }}
+                    type="button"
+                    variant="secondary"
+                    onClick={() => download(experiments, "summary")}
+                  >
+                    Download
+                  </Button>
+                  <Button
+                    style={{ marginBottom: "18px" }}
+                    type="button"
+                    variant="subtle"
+                    onClick={() => {
+                      if (summarySpoilerRef.current)
+                        summarySpoilerRef.current.click();
+                    }}
+                  >
+                    Hide
+                  </Button>
+                </Group>
+              </Group>
+            </Stack>
+            <ExperimentSummaryTable experiments={experiments} />
+            <div style={{ height: 500 }}>
+              <SummaryChart chartData={chartData} />
+            </div>
+            <br />
+            {!isNil(bestExperiment) && (
+              <Alert
+                icon={<IconAlertCircle size="1rem" />}
+                title="Insight"
+                color="blue"
+              >
+                The experiment that performed the best was Experiment #
+                {bestExperiment} due to combination of accuracy and latency.
+              </Alert>
+            )}
+          </Spoiler>
+        </Card>
+      )}
       {!!testDataset.length && (
         <Card>
           <Spoiler
@@ -489,7 +371,7 @@ const Demo = ({ form }: { form: Form }) => {
             <Stack>
               <Group position="apart">
                 <Title order={3}>Test Dataset</Title>
-                <Group>
+                <Group spacing={0}>
                   <Button
                     style={{ marginBottom: "18px" }}
                     type="button"

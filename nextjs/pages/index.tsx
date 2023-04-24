@@ -17,38 +17,15 @@ const DemoPage = () => {
       retriever: "similarity-search",
       gradingPrompt: "Fast",
       numNeighbors: 3,
-      files: [
-        {
-          path: "karpathy-pod.txt",
-          lastModified: 1682232311844,
-          name: "karpathy-pod.txt",
-          size: 216811,
-          type: "text/plain",
-          webkitRelativePath: "",
-        },
-      ],
+      files: [],
     },
   });
-
-  // useEffect(() => {
-  //   fetch("../public/testData/karpathy-pod.txt")
-  //     // .then((r) => r.text())
-  //     .then((text) => {
-  //       console.log(text);
-  //       form.setValue("files", [
-  //         {
-  //           name: "karpathy-pod.txt",
-  //           text,
-  //         },
-  //       ]);
-  //     });
-  // });
 
   return (
     <AppShell
       navbarOffsetBreakpoint="sm"
       navbar={
-        <Navbar p="md" hiddenBreakpoint="sm" width={{ sm: 200, lg: 400 }}>
+        <Navbar p="md" hiddenBreakpoint="sm" width={{ base: "30%" }}>
           <Sidebar form={form} />
           <br />
         </Navbar>
