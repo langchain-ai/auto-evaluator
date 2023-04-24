@@ -5,6 +5,7 @@ import HeaderEvaluator from "../components/HeaderEvaluator";
 import Sidebar from "../components/Sidebar";
 import { FormValues } from "../utils/types";
 import Demo from "../components/Demo";
+
 const DemoPage = () => {
   const form = useForm<FormValues>({
     defaultValues: {
@@ -17,32 +18,9 @@ const DemoPage = () => {
       retriever: "similarity-search",
       gradingPrompt: "Fast",
       numNeighbors: 3,
-      files: [
-        {
-          path: "karpathy-pod.txt",
-          lastModified: 1682232311844,
-          name: "karpathy-pod.txt",
-          size: 216811,
-          type: "text/plain",
-          webkitRelativePath: "",
-        },
-      ],
+      files: [],
     },
   });
-
-  // useEffect(() => {
-  //   fetch("../public/testData/karpathy-pod.txt")
-  //     // .then((r) => r.text())
-  //     .then((text) => {
-  //       console.log(text);
-  //       form.setValue("files", [
-  //         {
-  //           name: "karpathy-pod.txt",
-  //           text,
-  //         },
-  //       ]);
-  //     });
-  // });
 
   return (
     <AppShell
