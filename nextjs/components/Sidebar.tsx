@@ -1,11 +1,4 @@
-import {
-  ScrollArea,
-  SegmentedControl,
-  Select,
-  Slider,
-  Stack,
-  Text,
-} from "@mantine/core";
+import { ScrollArea, Select, Slider, Stack, Text } from "@mantine/core";
 import React from "react";
 import { Form } from "../utils/types";
 import { Controller } from "react-hook-form";
@@ -111,7 +104,7 @@ const Sidebar = ({ form }: { form: Form }) => {
               name="splitMethod"
               control={control}
               render={({ field }) => (
-                <SegmentedControl
+                <Select
                   {...field}
                   data={[
                     {
@@ -133,7 +126,7 @@ const Sidebar = ({ form }: { form: Form }) => {
               name="embeddingAlgorithm"
               control={control}
               render={({ field }) => (
-                <SegmentedControl
+                <Select
                   {...field}
                   data={[
                     {
@@ -200,7 +193,7 @@ const Sidebar = ({ form }: { form: Form }) => {
               name="gradingPrompt"
               control={control}
               render={({ field }) => (
-                <SegmentedControl
+                <Select
                   {...field}
                   data={[
                     {

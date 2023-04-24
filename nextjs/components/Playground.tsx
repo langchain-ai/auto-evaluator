@@ -42,7 +42,6 @@ const Playground = ({ form }: { form: Form }) => {
   const testDatasetSpoilerRef = useRef<HTMLButtonElement>(null);
   const [testFilesDropzoneDisabled, setTestFilesDropzoneDisabled] =
     useState(true);
-  console.log(watchFiles);
 
   const bestExperiment = useMemo(() => {
     if (isEmpty(experiments) || experiments.length === 1) {
@@ -199,9 +198,9 @@ const Playground = ({ form }: { form: Form }) => {
     setExperiments((experiments) => [...experiments, newExperiment]);
   });
 
-  // console.log("testDataset", testDataset);
-  // console.log("experiments", experiments);
-  // console.log("results", results);
+  const runExperimentButtonLabel = experiments.length
+    ? "Re-run experiment"
+    : "Run Experiment";
 
   const download = useCallback(
     (data: any[], filename: string) => {
@@ -323,8 +322,9 @@ const Playground = ({ form }: { form: Form }) => {
               type="submit"
               onClick={submit}
               disabled={loading}
+              color="green"
             >
-              Re-run Experiment
+              {runExperimentButtonLabel}
             </Button>
           </Flex>
         </>
