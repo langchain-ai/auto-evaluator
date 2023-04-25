@@ -213,6 +213,10 @@ const Sidebar = ({ form }: { form: Form }) => {
                       label: "Descriptive w/ bias check",
                       value: "Descriptive w/ bias check",
                     },
+                    {
+                      label: "OpenAI grading prompt",
+                      value: "OpenAI grading prompt",
+                    },
                   ]}
                 />
               )}

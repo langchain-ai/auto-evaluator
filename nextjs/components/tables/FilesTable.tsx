@@ -5,7 +5,7 @@ const FilesTable = ({ files }: { files: any[] }) => {
     <Table>
       <thead>
         <tr>
-          <th>Name</th>
+          <th>File Name</th>
           <th>Size (KB)</th>
         </tr>
       </thead>
