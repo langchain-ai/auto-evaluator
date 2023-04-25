@@ -56,10 +56,10 @@ GRADE_ANSWER_PROMPT_FAST = PromptTemplate(input_variables=["query", "result", "a
 template = """ 
     Given the question: \n
     {query}
-    Decide if the following retreived context is relevant: \n
+    Decide if the following retrieved context is relevant: \n
     {result}
-    Explain why the retreived context supports or does not support the correct answer: \n {answer} \n
-    Then print "CORRECT" if the retreived context supports the answer or "INCORRECT" if it does not (without quotes or punctuation) on its own line."""
+    Explain why the retrieved context supports or does not support the correct answer: \n {answer} \n
+    Then print "CORRECT" if the retrieved context supports the answer or "INCORRECT" if it does not (without quotes or punctuation) on its own line."""
 
 GRADE_DOCS_PROMPT = PromptTemplate(input_variables=["query", "result", "answer"], template=template)
 
@@ -68,9 +68,9 @@ template = """
     {query}
     And the answer: \n 
     {answer}
-    Decide if the following retreived supports or does not support the answer: \n
+    Decide if the following retrieved supports or does not support the answer: \n
     {result}
-    Print "CORRECT" if the retreived context supports the answer or "INCORRECT" if it does not (without quotes or punctuation) on its own line. """
+    Print "CORRECT" if the retrieved context supports the answer or "INCORRECT" if it does not (without quotes or punctuation) on its own line. """
 
 GRADE_DOCS_PROMPT_FAST = PromptTemplate(input_variables=["query", "result", "answer"], template=template)
 

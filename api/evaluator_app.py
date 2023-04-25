@@ -205,6 +205,7 @@ def grade_model_retrieval(gt_dataset, predictions, grade_docs_prompt, logger):
     if grade_docs_prompt == "Fast":
         prompt = GRADE_DOCS_PROMPT_FAST
     else:
+        print("USING FULL PROMPT")
         prompt = GRADE_DOCS_PROMPT
 
     eval_chain = QAEvalChain.from_llm(llm=ChatOpenAI(model_name="gpt-3.5-turbo", temperature=0),
@@ -213,6 +214,7 @@ def grade_model_retrieval(gt_dataset, predictions, grade_docs_prompt, logger):
                                          predictions,
                                          question_key="question",
                                          prediction_key="result")
+    print(graded_outputs)
     return graded_outputs
 
 

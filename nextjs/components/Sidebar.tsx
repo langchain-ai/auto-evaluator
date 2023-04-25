@@ -10,10 +10,15 @@ const Sidebar = ({ form }: { form: Form }) => {
     <>
       <ScrollArea scrollbarSize={0}>
         <Text fz="xl">Parameters</Text>
-        <br />
         <Stack
           spacing="30px"
-          style={{ overflowX: "hidden", height: "100%", paddingRight: "15px" }}
+          style={{
+            overflowX: "hidden",
+            height: "100%",
+            paddingRight: "15px",
+            paddingLeft: "5px",
+            paddingTop: "15px",
+          }}
         >
           <div>
             <Text fz="md">Number of eval questions</Text>
@@ -203,6 +208,10 @@ const Sidebar = ({ form }: { form: Form }) => {
                     {
                       label: "Descriptive",
                       value: "Descriptive",
+                    },
+                    {
+                      label: "Descriptive w/ bias check",
+                      value: "Descriptive w/ bias check",
                     },
                   ]}
                 />
