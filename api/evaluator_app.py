@@ -147,7 +147,7 @@ def make_retriever(splits, retriever_type, embeddings, num_neighbors, llm, logge
 
 def make_chain(llm, retriever, retriever_type):
     """
-    Make retrival chain
+    Make retrieval chain
     @param llm: model
     @param retriever: retriever
     @param retriever_type: retriever type
