@@ -109,7 +109,7 @@ const Demo = ({ form }: { form: Form }) => {
   }, [results, evalQuestionsCount]);
 
   const chartData = experiments.map((experiment, index) => ({
-    id: index === 0 ? "baseline" : "Expt #" + index,
+    id: index === 0 ? "baseline" : "Expt #" + experiment.id,
     data: [
       {
         x: experiment.avgAnswerScore,
@@ -210,7 +210,7 @@ const Demo = ({ form }: { form: Form }) => {
       avgAnswerScore,
       avgLatency,
       performance: avgAnswerScore / avgLatency,
-      id: experiments.length + 1,
+      id: experiments.length,
     };
     setExperiments((experiments) => [...experiments, newExperiment]);
   });
@@ -237,7 +237,7 @@ const Demo = ({ form }: { form: Form }) => {
   return (
     <Stack>
       <Title order={3}>Get Started</Title>
-      <Alert color="blue">
+      <Alert style={{ backgroundColor: "#E5E5E5" }}>
         Welcome to the auto-evaluator! This is an app to evaluate the
         performance of question-answering LLM chains. This demo has pre-loaded
         two things: (1) a document (the Lex Fridman podcast with Andrej
@@ -249,10 +249,79 @@ const Demo = ({ form }: { form: Form }) => {
       {!!watchFiles?.length && (
         <>
           <FilesTable files={watchFiles} />
+          {!!testDataset.length && (
+            <Card>
+              <Spoiler
+                maxHeight={0}
+                showLabel="Show available test dataset"
+                hideLabel={null}
+                transitionDuration={500}
+                controlRef={testDatasetSpoilerRef}
+              >
+                <Stack>
+                  <Group position="apart">
+                    <Title order={3}>Test Dataset</Title>
+                    <Group spacing={0}>
+                      <Button
+                        style={{ marginBottom: "18px" }}
+                        type="button"
+                        variant="secondary"
+                        onClick={() => download(testDataset, "test_dataset")}
+                      >
+                        Download
+                      </Button>
+                      <Button
+                        style={{ marginBottom: "18px" }}
+                        type="button"
+                        variant="subtle"
+                        onClick={() => {
+                          setTestDataset([]);
+                          notifications.show({
+                            title: "Success",
+                            message: "The test dataset has been cleared.",
+                            color: "green",
+                          });
+                        }}
+                      >
+                        Reset
+                      </Button>
+                      <Button
+                        style={{ marginBottom: "18px" }}
+                        type="button"
+                        variant="subtle"
+                        onClick={() => {
+                          if (testDatasetSpoilerRef.current)
+                            testDatasetSpoilerRef.current.click();
+                        }}
+                      >
+                        Hide
+                      </Button>
+                    </Group>
+                  </Group>
+                </Stack>
+                <Table withBorder withColumnBorders striped highlightOnHover>
+                  <thead>
+                    <tr>
+                      <th>Question</th>
+                      <th>Answer</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {testDataset?.map((result: QAPair, index: number) => (
+                      <tr key={index}>
+                        <td>{result?.question}</td>
+                        <td>{result?.answer}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </Table>
+              </Spoiler>
+            </Card>
+          )}
           <Flex direction="row" gap="md">
             {!loading || isFirstRun ? (
               <Stack>
-                <Alert color="blue">
+                <Alert style={{ backgroundColor: "#E5E5E5" }}>
                   <Text>
                     Choose the question-answering chain configuration (left) and
                     launch an experiment using the button below. For more detail
@@ -302,7 +371,7 @@ const Demo = ({ form }: { form: Form }) => {
             <Stack>
               <Group position="apart">
                 <Title order={3}>Experiment Results</Title>
-                <Alert color="blue">
+                <Alert style={{ backgroundColor: "#E5E5E5" }}>
                   This table shows the each question-answer pair from the test
                   set along with the model's answer to the question. The app
                   will score two things: (1) the relevance of the retrieved
@@ -397,79 +466,13 @@ const Demo = ({ form }: { form: Form }) => {
                 title="Insight"
                 color="blue"
               >
-                The experiment that performed the best was Experiment #
-                {bestExperiment} due to combination of accuracy and latency.
+                The experiment that performed the best was{" "}
+                {bestExperiment === 0
+                  ? "the baseline"
+                  : "Experiment #" + bestExperiment}{" "}
+                due to combination of accuracy and latency.
               </Alert>
             )}
-          </Spoiler>
-        </Card>
-      )}
-      {!!testDataset.length && (
-        <Card>
-          <Spoiler
-            maxHeight={0}
-            showLabel="Show available test dataset"
-            hideLabel={null}
-            transitionDuration={500}
-            controlRef={testDatasetSpoilerRef}
-          >
-            <Stack>
-              <Group position="apart">
-                <Title order={3}>Test Dataset</Title>
-                <Group spacing={0}>
-                  <Button
-                    style={{ marginBottom: "18px" }}
-                    type="button"
-                    variant="secondary"
-                    onClick={() => download(testDataset, "test_dataset")}
-                  >
-                    Download
-                  </Button>
-                  <Button
-                    style={{ marginBottom: "18px" }}
-                    type="button"
-                    variant="subtle"
-                    onClick={() => {
-                      setTestDataset([]);
-                      notifications.show({
-                        title: "Success",
-                        message: "The test dataset has been cleared.",
-                        color: "green",
-                      });
-                    }}
-                  >
-                    Reset
-                  </Button>
-                  <Button
-                    style={{ marginBottom: "18px" }}
-                    type="button"
-                    variant="subtle"
-                    onClick={() => {
-                      if (testDatasetSpoilerRef.current)
-                        testDatasetSpoilerRef.current.click();
-                    }}
-                  >
-                    Hide
-                  </Button>
-                </Group>
-              </Group>
-            </Stack>
-            <Table withBorder withColumnBorders striped highlightOnHover>
-              <thead>
-                <tr>
-                  <th>Question</th>
-                  <th>Answer</th>
-                </tr>
-              </thead>
-              <tbody>
-                {testDataset?.map((result: QAPair, index: number) => (
-                  <tr key={index}>
-                    <td>{result?.question}</td>
-                    <td>{result?.answer}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </Table>
           </Spoiler>
         </Card>
       )}

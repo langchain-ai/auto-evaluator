@@ -1,9 +1,9 @@
 const renderPassFail = (data: any) => {
   if (data.score === 0) {
-    return "Incorrect";
+    return "INCORRECT";
   }
   if (data.score === 1) {
-    return "Correct";
+    return "CORRECT";
   }
   throw new Error(`Problem parsing ${data}`);
 };

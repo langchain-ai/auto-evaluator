@@ -95,10 +95,10 @@ const Playground = ({ form }: { form: Form }) => {
 
   const renderPassFail = (data: any) => {
     if (data.score === 0) {
-      return "Incorrect";
+      return "INCORRECT";
     }
     if (data.score === 1) {
-      return "Correct";
+      return "CORRECT";
     }
     throw new Error(`Problem parsing ${data}`);
   };
@@ -303,7 +303,7 @@ const Playground = ({ form }: { form: Form }) => {
           <Table>
             <thead>
               <tr>
-                <th>Name</th>
+                <th>File Name</th>
                 <th>Size (KB)</th>
               </tr>
             </thead>
@@ -316,6 +316,76 @@ const Playground = ({ form }: { form: Form }) => {
               ))}
             </tbody>
           </Table>
+          {!!testDataset.length && (
+            <Card>
+              <Spoiler
+                maxHeight={0}
+                showLabel="Show available test dataset"
+                hideLabel={null}
+                transitionDuration={500}
+                controlRef={testDatasetSpoilerRef}
+              >
+                <Stack>
+                  <Group position="apart">
+                    <Title order={3}>Test Dataset</Title>
+                    <Group>
+                      <Button
+                        style={{ marginBottom: "18px" }}
+                        type="button"
+                        variant="secondary"
+                        onClick={() => download(testDataset, "test_dataset")}
+                      >
+                        Download
+                      </Button>
+                      <Button
+                        style={{ marginBottom: "18px" }}
+                        type="button"
+                        variant="subtle"
+                        onClick={() => {
+                          setTestDataset([]);
+                          setDidUploadTestDataset(false);
+                          notifications.show({
+                            title: "Success",
+                            message: "The test dataset has been cleared.",
+                            color: "green",
+                          });
+                        }}
+                      >
+                        Reset
+                      </Button>
+                      <Button
+                        style={{ marginBottom: "18px" }}
+                        type="button"
+                        variant="subtle"
+                        onClick={() => {
+                          if (testDatasetSpoilerRef.current)
+                            testDatasetSpoilerRef.current.click();
+                        }}
+                      >
+                        Hide
+                      </Button>
+                    </Group>
+                  </Group>
+                </Stack>
+                <Table withBorder withColumnBorders striped highlightOnHover>
+                  <thead>
+                    <tr>
+                      <th>Question</th>
+                      <th>Answer</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {testDataset?.map((result: QAPair, index: number) => (
+                      <tr key={index}>
+                        <td>{result?.question}</td>
+                        <td>{result?.answer}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </Table>
+              </Spoiler>
+            </Card>
+          )}
           <Flex direction="row" gap="md">
             <Button
               style={{ marginBottom: "18px" }}
@@ -583,76 +653,6 @@ const Playground = ({ form }: { form: Form }) => {
           </Spoiler>
         </Card>
       ) : null}
-      {!!testDataset.length && (
-        <Card>
-          <Spoiler
-            maxHeight={0}
-            showLabel="Show available test dataset"
-            hideLabel={null}
-            transitionDuration={500}
-            controlRef={testDatasetSpoilerRef}
-          >
-            <Stack>
-              <Group position="apart">
-                <Title order={3}>Test Dataset</Title>
-                <Group>
-                  <Button
-                    style={{ marginBottom: "18px" }}
-                    type="button"
-                    variant="secondary"
-                    onClick={() => download(testDataset, "test_dataset")}
-                  >
-                    Download
-                  </Button>
-                  <Button
-                    style={{ marginBottom: "18px" }}
-                    type="button"
-                    variant="subtle"
-                    onClick={() => {
-                      setTestDataset([]);
-                      setDidUploadTestDataset(false);
-                      notifications.show({
-                        title: "Success",
-                        message: "The test dataset has been cleared.",
-                        color: "green",
-                      });
-                    }}
-                  >
-                    Reset
-                  </Button>
-                  <Button
-                    style={{ marginBottom: "18px" }}
-                    type="button"
-                    variant="subtle"
-                    onClick={() => {
-                      if (testDatasetSpoilerRef.current)
-                        testDatasetSpoilerRef.current.click();
-                    }}
-                  >
-                    Hide
-                  </Button>
-                </Group>
-              </Group>
-            </Stack>
-            <Table withBorder withColumnBorders striped highlightOnHover>
-              <thead>
-                <tr>
-                  <th>Question</th>
-                  <th>Answer</th>
-                </tr>
-              </thead>
-              <tbody>
-                {testDataset?.map((result: QAPair, index: number) => (
-                  <tr key={index}>
-                    <td>{result?.question}</td>
-                    <td>{result?.answer}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </Table>
-          </Spoiler>
-        </Card>
-      )}
     </Stack>
   );
 };
