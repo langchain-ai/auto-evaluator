@@ -1,22 +1,22 @@
 [
   {
-    "question": "What does the speaker think of artificial neural networks?",
-    "answer": "The speaker thinks of artificial neural networks as a complicated alien artifact that is doing compression."
+    "question": "Why is the transformer architecture expressive in the forward pass?",
+    "answer": "The transformer architecture is expressive because it uses a general message passing scheme where nodes get to look at each other, decide what's interesting and then update each other."
   },
   {
-    "question": "What is the potential for building a better search engine using the tools available today?",
-    "answer": "There is definite scope for building a significantly better search engine built on these tools."
+    "question": "What design criteria does the Transformer meet?",
+    "answer": "The transformer is very expressive in a forward pass, optimizable in the backward pass using the techniques that we have such as gradient descent, and it can run efficiently on our hardware such as GPUs."
   },
   {
-    "question": "What is the transformer and what are some of its key features?",
-    "answer": "The transformer is a series of blocks with attention and a multilayer perceptron. It has residual connections, layer normalizations, soft max attention, and is designed to be optimizable and run efficiently on hardware like GPUs. It is very expressive in a forward pass and can express many different types of algorithms. The residual connections support the ability to learn short algorithms fast and first, and then gradually extend them longer during training."
+    "question": "Why is next word prediction an effective training objective?",
+    "answer": "On a sufficiently large dataset, the task of predicting the next word multi-tasks knowledge of a lot of things, including understanding of chemistry, physics, and human nature. You have to understand a lot about the world to make that prediction on an internet-scale dataset."
   },
   {
-    "question": "What is the author's opinion on becoming an expert at something?",
-    "answer": "The author believes that if you spend 10,000 hours of deliberate effort and work, you will become an expert at it."
+    "question": "What was the World Of Bits project and why did it fail?",
+    "answer": "World Of Bits was an effort to give AI access to tools, such as a keyboard and mouse, in order to complete tasks, such as complete bookings. It failed because it turned out that reinforcement learning is an extremely inefficient way of training neural networks. You take many actions, but you only get a sparse reward once in a while. Starting from scratch, it is very unlikely to stumble on the correct action - such as a booking - by chance at random, so the reward signal is very sparse."
   },
   {
-    "question": "What is the software that makes you survive?",
-    "answer": "The software that runs on the hardware that was built by the genes is what makes you survive."
+    "question": "Why can additional sensors be a liability in an autonomous vehicle system?",
+    "answer": "Each sensor adds complexity to the system. The hardware must be sourced, versioned, and maintain firmware. Software must ingest it, track versions. The cost of this additional bloat or entropy must be weighted against the added benefit of that particular sensor."
   }
 ]

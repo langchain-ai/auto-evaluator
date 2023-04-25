@@ -28,7 +28,7 @@ const ExperimentSummaryTable = ({
       <tbody>
         {experiments?.map((result: Experiment, index: number) => (
           <tr key={index}>
-            <td>{index + 1}</td>
+            <td>{index === 0 ? "baseline" : index}</td>
             <td>{result?.evalQuestionsCount}</td>
             <td>{result?.chunkSize}</td>
             <td>{result?.overlap}</td>

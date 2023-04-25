@@ -72,12 +72,8 @@ const Demo = ({ form }: { form: Form }) => {
     return orderBy(experiments, "performance", "desc")[0].id;
   }, [experiments]);
 
-  const runExperimentButtonLabel = useMemo(() => {
-    if (isEmpty(experiments)) {
-      return "Run Experiment";
-    }
-    return "Re-run experiment";
-  }, [experiments]);
+  const runExperimentButtonLabel =
+    experiments.length > 1 ? "Re-run experiment" : "Run Experiment";
 
   const initialProgress = {
     value: 15,
@@ -113,7 +109,7 @@ const Demo = ({ form }: { form: Form }) => {
   }, [results, evalQuestionsCount]);
 
   const chartData = experiments.map((experiment, index) => ({
-    id: "Expt #" + (index + 1),
+    id: index === 0 ? "baseline" : "Expt #" + index,
     data: [
       {
         x: experiment.avgAnswerScore,
@@ -240,20 +236,45 @@ const Demo = ({ form }: { form: Form }) => {
 
   return (
     <Stack>
-      <Flex direction="row" gap="md"></Flex>
+      <Title order={3}>Get Started</Title>
+      <Alert color="blue">
+        Welcome to the auto-evaluator! This is an app to evaluate the
+        performance of question-answering LLM chains. This demo has pre-loaded
+        two things: (1) a document (the Lex Fridman podcast with Andrej
+        Karpathy) and (2) a "test set" of question-answer pairs for this
+        episode. The aim is to evaluate the performance of various
+        question-answering LLM chain configurations against the test set. You
+        can build any QA chain using the components and score its performance.
+      </Alert>
       {!!watchFiles?.length && (
         <>
           <FilesTable files={watchFiles} />
           <Flex direction="row" gap="md">
             {!loading || isFirstRun ? (
-              <Button
-                style={{ marginBottom: "18px" }}
-                type="submit"
-                onClick={submit}
-                disabled={loading}
-              >
-                {runExperimentButtonLabel}
-              </Button>
+              <Stack>
+                <Alert color="blue">
+                  <Text>
+                    Choose the question-answering chain configuration (left) and
+                    launch an experiment using the button below. For more detail
+                    on each setting, see full the documentation{" "}
+                    <a
+                      style={{ color: "blue" }}
+                      href="https://github.com/dankolesnikov/auto-evaluator-app"
+                    >
+                      here
+                    </a>
+                    .
+                  </Text>
+                </Alert>
+                <Button
+                  style={{ marginBottom: "18px", width: 170 }}
+                  type="submit"
+                  onClick={submit}
+                  disabled={loading}
+                >
+                  {runExperimentButtonLabel}
+                </Button>
+              </Stack>
             ) : null}
           </Flex>
         </>
@@ -281,8 +302,24 @@ const Demo = ({ form }: { form: Form }) => {
             <Stack>
               <Group position="apart">
                 <Title order={3}>Experiment Results</Title>
-                <br />
-                <br />
+                <Alert color="blue">
+                  This table shows the each question-answer pair from the test
+                  set along with the model's answer to the question. The app
+                  will score two things: (1) the relevance of the retrieved
+                  documents relative to the question and (2) the similarity of
+                  the LLM generated answer relative to ground truth answer. The
+                  prompts for both can be seen{" "}
+                  <a
+                    style={{ color: "blue" }}
+                    href="https://github.com/dankolesnikov/auto-evaluator-app/blob/main/api/text_utils.py"
+                  >
+                    here
+                  </a>{" "}
+                  and can be chosen by the user in the drop-down list "Grading
+                  prompt style". The "Fast" prompt will only have the LLM grader
+                  output the score. The other prompts will also produce an
+                  explanation.
+                </Alert>
                 <Group spacing={0}>
                   <Button
                     style={{ marginBottom: "18px" }}

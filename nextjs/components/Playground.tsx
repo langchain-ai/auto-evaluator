@@ -42,7 +42,6 @@ const Playground = ({ form }: { form: Form }) => {
   const testDatasetSpoilerRef = useRef<HTMLButtonElement>(null);
   const [testFilesDropzoneDisabled, setTestFilesDropzoneDisabled] =
     useState(true);
-  console.log(watchFiles);
 
   const bestExperiment = useMemo(() => {
     if (isEmpty(experiments) || experiments.length === 1) {
@@ -199,9 +198,9 @@ const Playground = ({ form }: { form: Form }) => {
     setExperiments((experiments) => [...experiments, newExperiment]);
   });
 
-  // console.log("testDataset", testDataset);
-  // console.log("experiments", experiments);
-  // console.log("results", results);
+  const runExperimentButtonLabel = experiments.length
+    ? "Re-run experiment"
+    : "Run Experiment";
 
   const download = useCallback(
     (data: any[], filename: string) => {
@@ -227,7 +226,7 @@ const Playground = ({ form }: { form: Form }) => {
       <Alert
         icon={<IconAlertCircle size="1rem" />}
         title="Instructions"
-        color="teal"
+        color="blue"
       >
         Upload your text file(s) and choose the parameters for your QA chain.
         This evaluator will generate a test dataset of QA pairs and grade the
@@ -324,7 +323,7 @@ const Playground = ({ form }: { form: Form }) => {
               onClick={submit}
               disabled={loading}
             >
-              Re-run Experiment
+              {runExperimentButtonLabel}
             </Button>
           </Flex>
         </>
