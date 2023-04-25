@@ -58,19 +58,19 @@ template = """
     {query}
     Decide if the following retreived context is relevant: \n
     {result}
-    Answer in the following format: \n
-    "Context is relevant: True or False." \n 
-    And explain why it supports or does not support the correct answer: {answer}"""
+    Explain why the retreived context supports or does not support the correct answer: \n {answer} \n
+    Then print "CORRECT" if the retreived context supports the answer or "INCORRECT" if it does not (without quotes or punctuation) on its own line."""
 
 GRADE_DOCS_PROMPT = PromptTemplate(input_variables=["query", "result", "answer"], template=template)
 
 template = """ 
     Given the question: \n
     {query}
-    Decide if the following retreived context is relevant to the {answer}: \n
+    And the answer: \n 
+    {answer}
+    Decide if the following retreived supports or does not support the answer: \n
     {result}
-    Answer in the following format: \n
-    "Context is relevant: True or False." \n """
+    Print "CORRECT" if the retreived context supports the answer or "INCORRECT" if it does not (without quotes or punctuation) on its own line. """
 
 GRADE_DOCS_PROMPT_FAST = PromptTemplate(input_variables=["query", "result", "answer"], template=template)
 
@@ -110,7 +110,7 @@ template = """You are assessing a submitted student answer to a question relativ
       conciseness:  Is the answer concise and to the point?"
       correct: Is the answer correct?"
     ***
-    Does the submission meet the criterion? First, write out in a step by step manner your reasoning about the criterion to be sure that your conclusion is correct. Avoid simply stating the correct answers at the outset. Then print the "CORRECT" or "INCORRECT" (without quotes or punctuation) on its own line corresponding to the correct answer.
+    Does the submission meet the criterion? First, write out in a step by step manner your reasoning about the criterion to be sure that your conclusion is correct. Avoid simply stating the correct answers at the outset. Then print "CORRECT" or "INCORRECT" (without quotes or punctuation) on its own line corresponding to the correct answer.
     Reasoning:
 """
 
