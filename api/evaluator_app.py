@@ -30,7 +30,7 @@ from langchain.embeddings import HuggingFaceEmbeddings
 from langchain.embeddings.openai import OpenAIEmbeddings
 from gpt_index import GPTFaissIndex, LLMPredictor, ServiceContext
 from langchain.text_splitter import RecursiveCharacterTextSplitter, CharacterTextSplitter
-from text_utils import GRADE_DOCS_PROMPT, GRADE_ANSWER_PROMPT, GRADE_DOCS_PROMPT_FAST, GRADE_ANSWER_PROMPT_FAST, GRADE_ANSWER_PROMPT_BIAS_CHECK
+from text_utils import GRADE_DOCS_PROMPT, GRADE_ANSWER_PROMPT, GRADE_DOCS_PROMPT_FAST, GRADE_ANSWER_PROMPT_FAST, GRADE_ANSWER_PROMPT_BIAS_CHECK, GRADE_ANSWER_PROMPT_OPENAI
 
 
 def generate_eval(text, chunk, logger):
@@ -180,6 +180,8 @@ def grade_model_answer(predicted_dataset, predictions, grade_answer_prompt, logg
         prompt = GRADE_ANSWER_PROMPT_FAST
     elif grade_answer_prompt == "Descriptive w/ bias check":
         prompt = GRADE_ANSWER_PROMPT_BIAS_CHECK
+    elif grade_answer_prompt == "OpenAI grading prompt":
+        prompt = GRADE_ANSWER_PROMPT_OPENAI
     else:
         prompt = GRADE_ANSWER_PROMPT
 
@@ -197,7 +199,7 @@ def grade_model_retrieval(gt_dataset, predictions, grade_docs_prompt, logger):
     Grades the relevance of retrieved documents based on ground truth and model predictions.
     @param gt_dataset: list of dictionaries containing ground truth questions and answers.
     @param predictions: list of dictionaries containing model predictions for the questions
-    @param grade_docs_prompt: prompt level for the grading. Either "Fast" or "Full"
+    @param grade_docs_prompt: prompt level for the grading.
     @return: list of scores for the retrieved documents.
     """
 
