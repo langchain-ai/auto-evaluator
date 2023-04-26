@@ -57,7 +57,7 @@ The app can be used in two ways:
 - It shows the latency for retrieval and LLM answer summarization per question.
 - It shows the model grader output (the raw output of the grading prompt).
 
-![image](https://user-images.githubusercontent.com/122662504/233794221-c1f3f663-4295-4432-8b7b-c6bd89c9c273.png)
+![image](https://user-images.githubusercontent.com/122662504/234647319-ffb98df6-1d60-4e38-a804-cc3d20acf356.png)
 
 ## User inputs
 
