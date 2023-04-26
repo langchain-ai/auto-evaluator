@@ -7,9 +7,13 @@ import * as snippet from "@segment/snippet";
 import { useEffect } from "react";
 import { Notifications } from "@mantine/notifications";
 import { Analytics } from "@vercel/analytics/react";
+import LogRocket from "logrocket";
+
+LogRocket.init("dyuioj/auto-evaluator");
+
 const renderSegmentSnippet = () => {
   const opts = {
-    apiKey: process.env.NEXT_PUBLIC_SEGMENT_KEY,
+    apiKey: "g48PRvHJM9QiuK36ZYYwY2KBRM17l53G", //process.env.NEXT_PUBLIC_SEGMENT_KEY,
     page: true,
   };
 
