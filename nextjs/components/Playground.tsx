@@ -95,10 +95,10 @@ const Playground = ({ form }: { form: Form }) => {
 
   const renderPassFail = (data: any) => {
     if (data.score === 0) {
-      return "INCORRECT";
+      return "Incorrect";
     }
     if (data.score === 1) {
-      return "CORRECT";
+      return "Correct";
     }
     throw new Error(`Problem parsing ${data}`);
   };
@@ -603,7 +603,7 @@ const Playground = ({ form }: { form: Form }) => {
                     <td>{result?.question}</td>
                     <td>{result?.answer}</td>
                     <td>{result?.result}</td>
-                    <td>
+                    <td style={{ whiteSpace: "pre-wrap" }}>
                       {isFastGradingPrompt ? (
                         renderPassFail(result.retrievalScore)
                       ) : (
@@ -624,7 +624,7 @@ const Playground = ({ form }: { form: Form }) => {
                         </Spoiler>
                       )}
                     </td>
-                    <td>
+                    <td style={{ whiteSpace: "pre-wrap" }}>
                       {isFastGradingPrompt ? (
                         renderPassFail(result?.answerScore)
                       ) : (
