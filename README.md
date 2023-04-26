@@ -16,14 +16,15 @@ This app aims to address the above limitations. Recent [work](https://arxiv.org/
 
 `Usage`
 
-Inputs:
+The app can be used in two ways:
 
-- `Documents`: Input a set of documents that you want to ask questions about.
-- `(Optional) Test set`: Input a test set of question-answer pairs as a csv.
+- `Demo`: We pre-loaded a document (a [transcript](https://youtu.be/OYsYgzzsdT0) of the Lex Fridman podcast with Andrej Karpathy) and a set of 5 [question-answer pairs](https://github.com/langchain-ai/auto-evaluator/blob/main/api/docs/karpathy-lex-pod/karpathy-pod-eval.csv) from the podcast. You can configure QA chain(s) and run an experiment.
 
-You can see (and use) an example input document and test set **_here_** (TO ADD).
+![image](https://user-images.githubusercontent.com/122662504/234627824-2304f741-9f7b-4252-bdb4-ef2bdfd8139a.png)
 
-![image](https://user-images.githubusercontent.com/122662504/233793757-aa5772ff-39e2-4331-9c43-ed1321166c80.png)
+- `Playground`: Input a set of documents that you want to ask questions about. Optionally, also include your own test set of question-answer pairs related to the documents; see an example [here](https://github.com/langchain-ai/auto-evaluator/tree/main/api/docs/karpathy-lex-pod). If you do not supply a test set, the app will auto-generate one. If the test set is smaller than the desired number of eval questions specified in the top left, the app will auto-generate the remainder. 
+
+![image](https://user-images.githubusercontent.com/122662504/234629201-4c17b411-f910-476b-9bf6-1246c7c5a307.png)
 
 `Building the document retrieval`:
 
@@ -38,18 +39,14 @@ You can see (and use) an example input document and test set **_here_** (TO ADD)
 
 `Model-graded evaluation`:
 
-- We use two different evals:
+- We let the user select from a number of model-graded evaluation prompts:
 
 (1) The app will evaluate the `relevance of the retrieved documents` relative to the question.
 
 (2) The app will evaluate the `similarity of the LLM generated answer` relative to ground truth answer.
 
 - The prompts for both can be seen [here](https://github.com/dankolesnikov/evaluator-app/blob/main/api/text_utils.py)
-- Users can select which grading prompt to use:
-
-(1) `GRADE_ANSWER_PROMPT_FAST` and `GRADE_DOCS_PROMPT_FAST` do not ask the model to explain itself.
-
-(2) The other prompts ask the LLM grader to explain itself (slower, but better explainability).
+- Users can select which grading prompt to use. [Here](https://rlancemartin.notion.site/Auto-Evaluator-Opportunities-7b3459dc2ae34440ae3481fe6f43ba40) are some notes in prompt selection from our experience. 
 
 `Experimental results`:
 
