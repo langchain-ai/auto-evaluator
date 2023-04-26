@@ -23,7 +23,7 @@ STUDENT ANSWER: student's answer here
 TRUE ANSWER: true answer here
 GRADE: CORRECT or INCORRECT here
 
-Grade the student answers based ONLY on their factual accuracy. Ignore differences in punctuation and phrasing between the student answer and true answer. It is OK if the student answer contains more information than the true answer, as long as it does not contain any conflicting statements. Begin! 
+Grade the student answers based ONLY on their factual accuracy. Ignore differences in punctuation and phrasing between the student answer and true answer. It is OK if the student answer contains more information than the true answer, as long as it does not contain any conflicting statements. If the student answers that there is no specific information provided in the context, then the answer is INCORRECT. Begin! 
 
 QUESTION: {query}
 STUDENT ANSWER: {result}
@@ -44,7 +44,7 @@ STUDENT ANSWER: student's answer here
 TRUE ANSWER: true answer here
 GRADE: CORRECT or INCORRECT here
 
-Grade the student answers based ONLY on their factual accuracy. Ignore differences in punctuation and phrasing between the student answer and true answer. It is OK if the student answer contains more information than the true answer, as long as it does not contain any conflicting statements. Begin! 
+Grade the student answers based ONLY on their factual accuracy. Ignore differences in punctuation and phrasing between the student answer and true answer. It is OK if the student answer contains more information than the true answer, as long as it does not contain any conflicting statements. If the student answers that there is no specific information provided in the context, then the answer is INCORRECT. Begin! 
 
 QUESTION: {query}
 STUDENT ANSWER: {result}
@@ -63,7 +63,7 @@ STUDENT ANSWER: student's answer here
 TRUE ANSWER: true answer here
 GRADE: CORRECT or INCORRECT here
 
-Grade the student answers based ONLY on their factual accuracy. Ignore differences in punctuation and phrasing between the student answer and true answer. It is OK if the student answer contains more information than the true answer, as long as it does not contain any conflicting statements. Begin! 
+Grade the student answers based ONLY on their factual accuracy. Ignore differences in punctuation and phrasing between the student answer and true answer. It is OK if the student answer contains more information than the true answer, as long as it does not contain any conflicting statements. If the student answers that there is no specific information provided in the context, then the answer is INCORRECT. Begin! 
 
 QUESTION: {query}
 STUDENT ANSWER: {result}
@@ -98,21 +98,26 @@ GRADE_ANSWER_PROMPT_OPENAI = PromptTemplate(input_variables=["query", "result", 
 template = """ 
     Given the question: \n
     {query}
-    And the answer: \n 
-    {answer}
-    Decide if the following retrieved supports or does not support the answer: \n
+    Here are some documents retrieved in response to the question: \n
     {result}
-    Print "CORRECT" (without quotes or punctuation) if the retrieved context supports the answer or "INCORRECT" if it does not (without quotes or punctuation) on its own line. """
+    And here is the answer to the question: \n 
+    {answer}
+    Criteria: 
+      relevance: Are the retrived documents relevant to the question and do they support the answer?"
+    Do the retrieved documents meet the criterion? Print "CORRECT" (without quotes or punctuation) if the retrieved context are relevant or "INCORRECT" if not (without quotes or punctuation) on its own line. """
 
 GRADE_DOCS_PROMPT_FAST = PromptTemplate(input_variables=["query", "result", "answer"], template=template)
 
 template = """ 
     Given the question: \n
     {query}
-    And the following retrieved context: \n
+    Here are some documents retrieved in response to the question: \n
     {result}
-    Determine if the context is relevant to the correct answer: {answer} \n
-    First, explain why the retrieved context supports or does not support the correct answer.
-    Then, print "CORRECT" (without quotes or punctuation) if the retrieved context supports the answer or "INCORRECT" if it does not (without quotes or punctuation) on its own line."""
+    And here is the answer to the question: \n 
+    {answer}
+    Criteria: 
+      relevance: Are the retrived documents relevant to the question and do they support the answer?"
+    Do the retrieved documents meet the criterion? First, write out in a step by step manner your reasoning about the criterion to be sure that your conclusion is correct.
+    Then, print "CORRECT" (without quotes or punctuation) if the retrieved context are relevant or "INCORRECT" if not (without quotes or punctuation) on its own line."""
 
 GRADE_DOCS_PROMPT = PromptTemplate(input_variables=["query", "result", "answer"], template=template)
