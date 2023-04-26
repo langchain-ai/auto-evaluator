@@ -247,8 +247,8 @@ const Demo = ({ form }: { form: Form }) => {
         episode. The aim is to evaluate the performance of various
         question-answering LLM chain configurations against the test set. You
         can build any QA chain using the components and score its performance.
-      </Alert>
-      <Alert style={alertStyle}>
+        <br />
+        <br />
         <Text>
           Choose the question-answering chain configuration (left) and launch an
           experiment using the button below. For more detail on each setting,

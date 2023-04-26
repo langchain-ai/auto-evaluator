@@ -10,9 +10,9 @@
     "gradingPrompt": "Fast",
     "numNeighbors": 3,
     "avgRelevancyScore": 1,
-    "avgAnswerScore": 0.8,
-    "avgLatency": 8.2950945854187,
-    "performance": 0.09644254104181736,
+    "avgAnswerScore": 1,
+    "avgLatency": 9.526081418991089,
+    "performance": 0.1049749583292886,
     "id": 1
   }
 ]

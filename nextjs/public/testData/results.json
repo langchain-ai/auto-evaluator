@@ -1,8 +1,8 @@
 [
   {
-    "question": "What does the speaker think of artificial neural networks?",
-    "answer": "The speaker thinks of artificial neural networks as a complicated alien artifact that is doing compression.",
-    "result": "The speaker, Andrei Kapathe, thinks that artificial neural networks are a mathematical abstraction of the brain and that they are surprisingly good at learning. He also believes that they can produce emergent behavior despite being simple mathematically. However, he is hesitant to draw analogies to the brain and thinks that the artifacts produced after training are unique. Overall, he seems to have a positive view of artificial neural networks.",
+    "question": "Why is the transformer architecture expressive in the forward pass?",
+    "answer": " \"The transformer architecture is expressive because it uses a general message passing scheme where nodes get to look at each other",
+    "result": "The transformer architecture is expressive in the forward pass because it uses a message passing scheme where nodes get to look at each other, decide what's interesting, and then update each other. This allows it to express a wide range of algorithms and computations. Additionally, the architecture includes residual connections, layer normalizations, and soft max attention, which further enhance its expressiveness.",
     "answerScore": {
       "score": 1,
       "justification": "Correct"
@@ -11,12 +11,12 @@
       "score": 1,
       "justification": "Correct"
     },
-    "latency": 6.560474157333374
+    "latency": 7.728518009185791
   },
   {
-    "question": "What is the potential for building a better search engine using the tools available today?",
-    "answer": "There is definite scope for building a significantly better search engine built on these tools.",
-    "result": "According to the context, there is definite scope for building a significantly better search engine using the tools available today. Google has all the tools, people, data, and puzzle pieces needed to build a better search engine, but it's not clear if they are capable of innovating on their search engine right now. It's possible that a startup or another more competent organization could build a better search engine. The development of powerful models that can read all the text and web pages could lead to search engines becoming oracles that can provide answers and supporting evidence directly.",
+    "question": "What design criteria does the Transformer meet?",
+    "answer": " \"The transformer is very expressive in a forward pass",
+    "result": "The Transformer meets several design criteria, including being a general-purpose computer that can be trained on arbitrary problems, having a powerful architecture that allows for very general computation as message passing, being optimizable using backpropagation and gradient descent, running efficiently on hardware like GPUs, and being resilient and stable. Additionally, the Transformer supports the ability to learn short algorithms fast and first, and then gradually extend them.",
     "answerScore": {
       "score": 1,
       "justification": "Correct"
@@ -25,12 +25,12 @@
       "score": 1,
       "justification": "Correct"
     },
-    "latency": 8.74968695640564
+    "latency": 8.410926818847656
   },
   {
-    "question": "What is the transformer and what are some of its key features?",
-    "answer": "The transformer is a series of blocks with attention and a multilayer perceptron. It has residual connections, layer normalizations, soft max attention, and is designed to be optimizable and run efficiently on hardware like GPUs. It is very expressive in a forward pass and can express many different types of algorithms. The residual connections support the ability to learn short algorithms fast and first, and then gradually extend them longer during training.",
-    "result": "The transformer is a neural network architecture that is capable of processing various types of data, such as text, images, and speech. It was introduced in a paper called \"Attention is All You Need\" in 2016. The transformer is designed with a message passing scheme where nodes get to look at each other, decide what's interesting, and then update each other. It has a multi-layer perceptron, residual connections, layer normalizations, and soft max attention. The transformer is optimizable and can express lots of different types of algorithms in the forward pass. It is a general-purpose computer that can be trained on arbitrary problems.",
+    "question": "Why is next word prediction an effective training objective?",
+    "answer": " \"On a sufficiently large dataset",
+    "result": "Next word prediction is an effective training objective because it requires the model to understand a lot about the world in order to make accurate predictions. By training on a large dataset of text, the model is multitasking and learning about various topics such as chemistry, physics, and human nature. This results in the model developing emergent properties and surprising behaviors that make it effective at predicting the next word in a sequence. Additionally, pre-training a massive neural net on a large dataset like this can make it efficient at training on new tasks with very few examples.",
     "answerScore": {
       "score": 1,
       "justification": "Correct"
@@ -39,12 +39,12 @@
       "score": 1,
       "justification": "Correct"
     },
-    "latency": 10.325161933898926
+    "latency": 10.851821184158325
   },
   {
-    "question": "What is the author's opinion on becoming an expert at something?",
-    "answer": "The author believes that if you spend 10,000 hours of deliberate effort and work, you will become an expert at it.",
-    "result": "The author believes that to become an expert at something, one needs to put in 10,000 hours of deliberate effort and work. They also believe that it doesn't matter as much where you put in those hours, as long as you are spending the time and effort to become an expert. The author thinks that if you spend 10,000 hours of deliberate effort and work, you will become an expert at it.",
+    "question": "What was the World Of Bits project and why did it fail?",
+    "answer": " \"World Of Bits was an effort to give AI access to tools",
+    "result": "The World of Bits project was a project at OpenAI that aimed to train a reinforcement learning system to take actions on the internet, rather than just consuming it. The idea was to give neural networks access to a keyboard and a mouse and allow them to interact with the digital world. However, it is not clear why the project failed, as the speaker does not mention any specific reasons for its failure.",
     "answerScore": {
       "score": 1,
       "justification": "Correct"
@@ -53,20 +53,20 @@
       "score": 1,
       "justification": "Correct"
     },
-    "latency": 7.934467792510986
+    "latency": 8.963755130767822
   },
   {
-    "question": "What is the software that makes you survive?",
-    "answer": "The software that runs on the hardware that was built by the genes is what makes you survive.",
-    "result": "According to the context, the software that makes a person survive is the ability to deal with bugs and programming issues and technical issues and design decisions that turn out to be the wrong ones. It's the ability to think through all of that given that you want to think to exist. Additionally, a big factor for some people is whether other humans are going to appreciate their work and find it useful.",
+    "question": "Why can additional sensors be a liability in an autonomous vehicle system?",
+    "answer": " \"Each sensor adds complexity to the system. The hardware must be sourced",
+    "result": "Additional sensors can be a liability in an autonomous vehicle system because they are not free and require an entire supply chain, procurement, maintenance, and firmware writing. They can also hold back the production line and may need replacement. Moreover, incorporating them into a big fleet that collects a lot of data and integrating them with a data engine that's able to quickly find different parts of the data that then continuously improves whatever the model that you're using can be challenging. Therefore, it's essential to consider the full cost of any one sensor before adopting it and focus resources on necessary and sufficient sensors like vision.",
     "answerScore": {
-      "score": 0,
-      "justification": "Incorrect"
+      "score": 1,
+      "justification": "CORRECT"
     },
     "retrievalScore": {
       "score": 1,
       "justification": "Correct"
     },
-    "latency": 7.90568208694458
+    "latency": 11.67538595199585
   }
 ]

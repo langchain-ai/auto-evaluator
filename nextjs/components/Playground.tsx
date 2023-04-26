@@ -42,6 +42,7 @@ const Playground = ({ form }: { form: Form }) => {
   const testDatasetSpoilerRef = useRef<HTMLButtonElement>(null);
   const [testFilesDropzoneDisabled, setTestFilesDropzoneDisabled] =
     useState(true);
+  console.log(results);
 
   const bestExperiment = useMemo(() => {
     if (isEmpty(experiments) || experiments.length === 1) {
@@ -196,6 +197,7 @@ const Playground = ({ form }: { form: Form }) => {
       id: experiments.length + 1,
     };
     setExperiments((experiments) => [...experiments, newExperiment]);
+    console.log(newExperiment);
   });
 
   const runExperimentButtonLabel = experiments.length
