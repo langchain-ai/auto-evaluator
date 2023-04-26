@@ -28,7 +28,7 @@ const ExperimentResultsTable = ({
               <td>{result?.question}</td>
               <td>{result?.answer}</td>
               <td>{result?.result}</td>
-              <td>
+              <td style={{ whiteSpace: "pre-wrap" }}>
                 {isFastGradingPrompt ? (
                   renderPassFail(result.retrievalScore)
                 ) : (
@@ -49,7 +49,7 @@ const ExperimentResultsTable = ({
                   </Spoiler>
                 )}
               </td>
-              <td>
+              <td style={{ whiteSpace: "pre-wrap" }}>
                 {isFastGradingPrompt ? (
                   renderPassFail(result?.answerScore)
                 ) : (
