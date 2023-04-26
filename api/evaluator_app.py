@@ -384,9 +384,9 @@ def run_evaluator(
         d['latency'] = latency
 
         # Summary statistics
-        d['answerScore'] = [{'score': 1 if "INCORRECT" not in text else 0,
+        d['answerScore'] = [{'score': 1 if "Incorrect" not in text else 0,
                              'justification': text} for text in d['answerScore']]
-        d['retrievalScore'] = [{'score': 1 if "INCORRECT" not in text else 0,
+        d['retrievalScore'] = [{'score': 1 if "Incorrect" not in text else 0,
                                 'justification': text} for text in d['retrievalScore']]
 
         # Convert dataframe to dict
