@@ -50,6 +50,8 @@ const Demo = ({ form }: { form: Form }) => {
   const testDatasetSpoilerRef = useRef<HTMLButtonElement>(null);
   const [isFirstRun, setIsFirstRun] = useState(true);
 
+  const alertStyle = { backgroundColor: `rgba(193,194,197,0.38)` };
+
   useEffect(() => {
     setValue("files", [
       new File(
@@ -237,7 +239,7 @@ const Demo = ({ form }: { form: Form }) => {
   return (
     <Stack>
       <Title order={3}>Get Started</Title>
-      <Alert color="#adb5bd47">
+      <Alert style={alertStyle}>
         Welcome to the auto-evaluator! This is an app to evaluate the
         performance of question-answering LLM chains. This demo has pre-loaded
         two things: (1) a document (the Lex Fridman podcast with Andrej
@@ -246,7 +248,7 @@ const Demo = ({ form }: { form: Form }) => {
         question-answering LLM chain configurations against the test set. You
         can build any QA chain using the components and score its performance.
       </Alert>
-      <Alert color="blue">
+      <Alert style={alertStyle}>
         <Text>
           Choose the question-answering chain configuration (left) and launch an
           experiment using the button below. For more detail on each setting,
@@ -371,7 +373,7 @@ const Demo = ({ form }: { form: Form }) => {
             <Stack>
               <Group position="apart">
                 <Title order={3}>Experiment Results</Title>
-                <Alert color="#adb5bd47">
+                <Alert style={alertStyle}>
                   This table shows the each question-answer pair from the test
                   set along with the model's answer to the question. The app
                   will score two things: (1) the relevance of the retrieved

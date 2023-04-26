@@ -220,13 +220,14 @@ const Playground = ({ form }: { form: Form }) => {
   );
 
   const isFastGradingPrompt = gradingPromptStyle === "Fast";
+  const alertStyle = { backgroundColor: `rgba(193,194,197,0.38)` };
 
   return (
     <Stack>
       <Alert
         icon={<IconAlertCircle size="1rem" />}
         title="Instructions"
-        color="blue"
+        style={alertStyle}
       >
         Upload your text file(s) and choose the parameters for your QA chain.
         This evaluator will generate a test dataset of QA pairs and grade the
