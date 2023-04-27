@@ -78,7 +78,7 @@ const Demo = ({ form }: { form: Form }) => {
   const initialProgress = {
     value: 15,
     color: "purple",
-    label: "Processing Files",
+    label: "Building Index ...",
   };
 
   const finishedProgress = {
