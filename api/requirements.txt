@@ -1,6 +1,6 @@
 pandas==1.4.3
 fastapi==0.85.2
-langchain==0.0.145
+langchain==0.0.151
 python-multipart==0.0.6
 uvicorn==0.18.3
 openai==0.27.0
