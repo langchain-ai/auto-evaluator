@@ -1,4 +1,10 @@
-import React, { useCallback, useMemo, useRef, useState } from "react";
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import {
   Group,
   Text,
@@ -107,6 +113,16 @@ const Playground = ({ form }: { form: Form }) => {
     setShouldShowProgress(true);
     setLoading(true);
     setResults([]);
+
+    if (
+      didUploadTestDataset ||
+      data.evalQuestionsCount !== evalQuestionsCount
+    ) {
+      setExperiments([]);
+    }
+
+    setDidUploadTestDataset(false);
+
     const formData = new FormData();
     data.files.forEach((file) => {
       formData.append("files", file);
@@ -344,7 +360,6 @@ const Playground = ({ form }: { form: Form }) => {
                         variant="subtle"
                         onClick={() => {
                           setTestDataset([]);
-                          setDidUploadTestDataset(false);
                           notifications.show({
                             title: "Success",
                             message: "The test dataset has been cleared.",
