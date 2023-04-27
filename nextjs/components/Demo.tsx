@@ -151,7 +151,7 @@ const Demo = ({ form }: { form: Form }) => {
 
     let localResults = [];
     let rowCount = 0;
-
+    console.log(API_URL);
     await fetchEventSource(API_URL + "/evaluator-stream", {
       method: "POST",
       body: formData,
