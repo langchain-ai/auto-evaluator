@@ -2,71 +2,71 @@
   {
     "question": "Why is the transformer architecture expressive in the forward pass?",
     "answer": "The transformer architecture is expressive because it uses a general message passing scheme where nodes get to look at each other, decide what's interesting and then update each other.",
-    "result": "The transformer architecture is expressive in the forward pass because it uses a message passing scheme where nodes get to look at each other, decide what's interesting, and then update each other. This allows the architecture to express a wide range of algorithms and computations. Additionally, the soft max attention, residual connections, and layer normalizations also contribute to the expressiveness of the architecture.",
+    "result": "The transformer architecture is designed to be very expressive in the forward pass and is optimized for hardware with lots of parallelism. It is designed to perform a lot of operations serially and is very optimizable in the backward pass. The residual connections in the transformer support a kind of passing where nodes get to communicate and broadcast their keys and values.",
     "answerScore": {
       "score": 1,
-      "justification": "GRADE: CORRECT\n\nThe student answer accurately explains that the transformer architecture is expressive in the forward pass because it uses a message passing scheme where nodes get to look at each other, decide what's interesting, and then update each other. The student also correctly identifies the soft max attention, residual connections, and layer normalizations as contributing factors to the expressiveness of the architecture. Although the student answer contains more information than the true answer, it does not contain any conflicting statements and accurately conveys the main idea."
+      "justification": "GRADE: Correct\n\nJUSTIFICATION: The student answer accurately explains that the transformer architecture is designed to be expressive in the forward pass and uses a message passing scheme where nodes update each other. The additional information provided by the student does not conflict with the true answer."
     },
     "retrievalScore": {
       "score": 1,
-      "justification": "Correct"
+      "justification": "GRADE: Correct\n\nJUSTIFICATION: All of the retrieved documents discuss the transformer architecture and its design features, specifically its ability to be expressive in the forward pass. Doc 3 specifically mentions the message passing scheme used by the transformer architecture, which directly answers the question. Therefore, the retrieved documents are relevant and support the answer."
     },
-    "latency": 8.57672905921936
+    "latency": 9.03007197380066
   },
   {
     "question": "What design criteria does the Transformer meet?",
     "answer": "The transformer is very expressive in a forward pass, optimizable in the backward pass using the techniques that we have such as gradient descent, and it can run efficiently on our hardware such as GPUs.",
-    "result": "The Transformer meets several design criteria, including being a general-purpose computer that can be trained on arbitrary problems, having a powerful architecture that allows for very general computation as message passing, being optimizable using backpropagation and gradient descent, running efficiently on hardware like GPUs, and being resilient and stable. Additionally, the Transformer supports residual connections that allow for the learning of short algorithms quickly and gradually extending them. Overall, the Transformer is designed to simultaneously optimize for many desirable properties of a neural network architecture.",
+    "result": "The Transformer was designed to be both expressive in the forward pass and optimizable in the backward pass, with hardware efficiency in mind. The authors aimed to create a powerful architecture that could express general computation and support message passing. The Transformer has been remarkably stable since its release in 2016, with some minor reshuffling of layer normalizations in a pre-norm formulation.",
     "answerScore": {
-      "score": 0,
-      "justification": "GRADE: INCORRECT\n\nThe student answer contains more information than the true answer, but it also includes some conflicting statements. The true answer states that the Transformer is \"very expressive in a forward pass, optimizable in the backward pass using the techniques that we have such as gradient descent, and it can run efficiently on our hardware such as GPUs.\" However, the student answer includes additional design criteria that are not mentioned in the true answer, such as being a general-purpose computer and supporting residual connections. While these may be true statements, they do not align with the true answer and therefore cannot be considered correct."
+      "score": 1,
+      "justification": "GRADE: Correct\n\nJUSTIFICATION: The student answer accurately describes the design criteria of the Transformer, including its expressiveness in the forward pass, optimizability in the backward pass, and hardware efficiency. The additional information provided does not conflict with the true answer."
     },
     "retrievalScore": {
       "score": 1,
-      "justification": "The retrieved context supports the correct answer. It mentions that the transformer is designed to be very expressive in a forward pass, optimizable in the backward pass using techniques such as gradient descent, and efficient on hardware such as GPUs. It also mentions that the transformer is designed with parallelism in mind and that it has been remarkably stable and resilient. Therefore, the retrieved context is relevant to the correct answer.\n\nCORRECT"
+      "justification": "GRADE: Correct\n\nJUSTIFICATION: The retrieved documents provide information on the design criteria of the Transformer, including its efficiency on hardware, expressiveness in the forward pass, and optimizability in the backward pass. These criteria directly answer the question and support the answer provided."
     },
-    "latency": 12.091065883636475
+    "latency": 9.81938886642456
   },
   {
     "question": "Why is next word prediction an effective training objective?",
     "answer": "On a sufficiently large dataset, the task of predicting the next word multi-tasks knowledge of a lot of things, including understanding of chemistry, physics, and human nature. You have to understand a lot about the world to make that prediction on an internet-scale dataset.",
-    "result": "Next word prediction is an effective training objective because it requires the model to understand a lot about the world in order to make accurate predictions. By training on a large dataset of text, the model is multitasking and learning about various topics such as chemistry, physics, and human nature. This results in the model developing emergent properties and surprising behaviors that make it effective at predicting the next word in a sequence. Additionally, pre-training a massive neural net on a large dataset like this can make it efficient at training on new tasks with very few examples.",
+    "result": "Next word prediction is an effective training objective because it is a simple objective that can be applied to language models, which have existed for a long time. By consuming a sequence of words and predicting the next word, neural nets can be trained on large datasets and prompted to solve problems. This objective requires understanding of the world and context, making it an effective way to train language models.",
     "answerScore": {
       "score": 1,
-      "justification": "GRADE: CORRECT\n\nThe student answer accurately explains why next word prediction is an effective training objective. It mentions that the model needs to understand a lot about the world to make accurate predictions, and that training on a large dataset of text allows the model to multitask and learn about various topics. The answer also mentions that pre-training a massive neural net on a large dataset can make it efficient at training on new tasks with very few examples. While the student answer contains more information than the true answer, it does not contain any conflicting statements and accurately addresses the question."
+      "justification": "GRADE: Correct\n\nJUSTIFICATION: The student answer accurately explains that next word prediction is an effective training objective because it requires understanding of the world and context, making it an effective way to train language models. The answer also mentions that neural nets can be trained on large datasets and prompted to solve problems, which is also true."
     },
     "retrievalScore": {
       "score": 1,
-      "justification": "The retrieved context supports the correct answer that next word prediction is an effective training objective because it requires understanding of various topics and a lot about the world to make accurate predictions on a large dataset. Therefore, it can be considered a multitasking objective. \n\nCORRECT"
+      "justification": "GRADE: Correct\n\nJUSTIFICATION: All of the retrieved documents discuss the task of predicting the next word in a sequence and how it relates to language modeling and neural networks. They also mention the importance of understanding various aspects of the world to effectively predict the next word. Therefore, they are relevant to the question and support the answer."
     },
-    "latency": 11.910303115844727
+    "latency": 9.98887300491333
   },
   {
     "question": "What was the World Of Bits project and why did it fail?",
     "answer": "World Of Bits was an effort to give AI access to tools, such as a keyboard and mouse, in order to complete tasks, such as complete bookings. It failed because it turned out that reinforcement learning is an extremely inefficient way of training neural networks. You take many actions, but you only get a sparse reward once in a while. Starting from scratch, it is very unlikely to stumble on the correct action - such as a booking - by chance at random, so the reward signal is very sparse.",
-    "result": "The World of Bits project was a project at OpenAI that aimed to train a reinforcement learning system to take actions on the internet, rather than just consuming it. The idea was to give neural networks access to a keyboard and a mouse and allow them to interact with the digital world. However, it is not clear from the context why the project failed or if it even failed.",
+    "result": "The World of Bits project was an attempt to use reinforcement learning to teach neural networks how to complete tasks using a keyboard and mouse. The project failed because this approach was found to be inefficient and impractical for solving problems. The project also lacked a clear goal or purpose.",
     "answerScore": {
-      "score": 0,
-      "justification": "GRADE: INCORRECT\n\nThe student answer contains some accurate information about the World of Bits project, such as its goal to train a reinforcement learning system to interact with the digital world using a keyboard and mouse. However, the answer is incomplete and inaccurate in terms of why the project failed. The true answer explains that the project failed because reinforcement learning is an inefficient way of training neural networks due to the sparse reward signal. The student answer does not mention this and instead suggests that it is unclear why the project failed or if it even failed. Therefore, the student answer is incorrect."
+      "score": 1,
+      "justification": "GRADE: Correct\n\nJUSTIFICATION: The student accurately describes the World of Bits project as an attempt to use reinforcement learning to teach neural networks how to complete tasks using a keyboard and mouse. They also correctly state that the project failed due to the inefficiency and impracticality of this approach, as well as the lack of a clear goal or purpose."
     },
     "retrievalScore": {
-      "score": 0,
-      "justification": "Incorrect"
+      "score": 1,
+      "justification": "GRADE: Correct\n\nJUSTIFICATION: \n- Doc 1 mentions the World Of Bits project and the time period it was active.\n- Doc 2 discusses the inefficiency of reinforcement learning, which was the approach taken in the World Of Bits project.\n- Doc 3 is not directly related to the question, but it does not contradict the information in the other documents.\n- Doc 4 provides a clear explanation of what the World Of Bits project was and what it aimed to achieve."
     },
-    "latency": 9.841618061065674
+    "latency": 10.1092050075531
   },
   {
     "question": "Why can additional sensors be a liability in an autonomous vehicle system?",
     "answer": "Each sensor adds complexity to the system. The hardware must be sourced, versioned, and maintain firmware. Software must ingest it, track versions. The cost of this additional bloat or entropy must be weighted against the added benefit of that particular sensor.",
-    "result": "Additional sensors can be a liability in an autonomous vehicle system because they are not free and require an entire supply chain, procurement, maintenance, and firmware writing. They can also hold back the production line and may need replacement. Moreover, incorporating them into a big fleet that collects a lot of data and integrating them with a data engine that's able to quickly find different parts of the data that then continuously improves whatever the model that you're using can be challenging. Therefore, it's essential to consider the full cost of any one sensor before adopting it and focus resources on necessary and sufficient sensors.",
+    "result": "Additional sensors can be a liability in an autonomous vehicle system because they are not free and can add bloat to the data engine. They can also be a distraction and may change over time, requiring additional resources to maintain. It is important to focus resources on necessary and sufficient sensors and consider the full cost of adding a sensor.",
     "answerScore": {
       "score": 1,
-      "justification": "GRADE: CORRECT\n\nThe student answer accurately explains why additional sensors can be a liability in an autonomous vehicle system. They mention the cost and maintenance required for each sensor, as well as the challenge of integrating them into a data engine. While their answer contains more information than the true answer, it does not contain any conflicting statements and accurately addresses the question."
+      "justification": "GRADE: Correct\n\nJUSTIFICATION: The student answer accurately explains that additional sensors can add complexity and cost to an autonomous vehicle system, and emphasizes the importance of considering the full cost and necessity of adding a sensor."
     },
     "retrievalScore": {
       "score": 1,
-      "justification": "The retrieved context directly supports the correct answer by explaining the potential liabilities and costs associated with adding additional sensors to an autonomous vehicle system. It mentions the need for sourcing and maintaining hardware and firmware, as well as the added complexity and cost of incorporating new sensors into the system. Therefore, the context supports the answer that each sensor adds complexity and must be weighed against its added benefit. \n\nCORRECT"
+      "justification": "GRADE: Correct\n\nJUSTIFICATION: All four documents discuss the potential drawbacks of adding additional sensors to an autonomous vehicle system, including increased complexity, cost, and potential distraction. The answer provided is supported by the information in the retrieved documents."
     },
-    "latency": 12.687427997589111
+    "latency": 9.15720510482788
   }
 ]
