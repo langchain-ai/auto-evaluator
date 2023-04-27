@@ -1,7 +1,7 @@
 {
   "private": true,
   "scripts": {
-    "dev": "doppler run -- next dev",
+    "dev": "next dev",
     "build": "next build",
     "start": "next start"
   },

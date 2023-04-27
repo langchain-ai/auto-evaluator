@@ -22,7 +22,7 @@ The app can be used in two ways:
 
 ![image](https://user-images.githubusercontent.com/122662504/234627824-2304f741-9f7b-4252-bdb4-ef2bdfd8139a.png)
 
-- `Playground`: Input a set of documents that you want to ask questions about. Optionally, also include your own test set of question-answer pairs related to the documents; see an example [here](https://github.com/langchain-ai/auto-evaluator/tree/main/api/docs/karpathy-lex-pod). If you do not supply a test set, the app will auto-generate one. If the test set is smaller than the desired number of eval questions specified in the top left, the app will auto-generate the remainder. 
+- `Playground`: Input a set of documents that you want to ask questions about. Optionally, also include your own test set of question-answer pairs related to the documents; see an example [here](https://github.com/langchain-ai/auto-evaluator/tree/main/api/docs/karpathy-lex-pod). If you do not supply a test set, the app will auto-generate one. If the test set is smaller than the desired number of eval questions specified in the top left, the app will auto-generate the remainder.
 
 ![image](https://user-images.githubusercontent.com/122662504/234629201-4c17b411-f910-476b-9bf6-1246c7c5a307.png)
 
@@ -41,7 +41,7 @@ The app can be used in two ways:
 
 - For each question, we use a `RetrievalQA` chain to answer it.
 - This will fetch chunks that are relevant to the question from the `retriever` and pass them to the LLM.
-- We expose the `QA_CHAIN_PROMPT`  used for to pass this context to the LLM [here](https://github.com/langchain-ai/auto-evaluator/blob/main/api/text_utils.py).
+- We expose the `QA_CHAIN_PROMPT` used for to pass this context to the LLM [here](https://github.com/langchain-ai/auto-evaluator/blob/main/api/text_utils.py).
 
 `Model-graded evaluation`:
 
@@ -52,7 +52,7 @@ The app can be used in two ways:
 (2) The app will evaluate the `similarity of the LLM generated answer` relative to ground truth answer.
 
 - The prompts for both can be seen [here](https://github.com/dankolesnikov/evaluator-app/blob/main/api/text_utils.py)
-- Users can select which grading prompt to use. [Here](https://rlancemartin.notion.site/Auto-Evaluator-Opportunities-7b3459dc2ae34440ae3481fe6f43ba40) are some notes in prompt selection from our experience. 
+- Users can select which grading prompt to use. [Here](https://rlancemartin.notion.site/Auto-Evaluator-Opportunities-7b3459dc2ae34440ae3481fe6f43ba40) are some notes in prompt selection from our experience.
 
 `Experimental results`:
 
@@ -109,9 +109,14 @@ Test the `api` locally:
 curl -X POST -F "files=@Docs/0333_text.txt" -F "num_eval_questions=1" -F "chunk_chars=1000" -F "overlap=100" -F "split_method=RecursiveTextSplitter" -F "retriever_type=similarity-search" -F "embeddings=OpenAI" -F "model_version=gpt-3.5-turbo" -F "grade_prompt=Fast" -F "num_neighbors=3" http://localhost:8000/evaluator-stream
 ```
 
-Run the frontend from `nextjs` folder and view web app at specified URL (e.g., `http://localhost:3001/`):
+Run the frontend from `nextjs` folder and view web app at specified URL (e.g., `http://localhost:3000/`):
 
 `yarn dev`
+
+### Environment Variables
+
+`EVALUATOR_API_URL=http://127.0.0.1:8000` - used by frontend.
+`OPENAI_API_KEY=` - used by backend.
 
 ## Deployment
 
