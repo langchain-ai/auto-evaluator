@@ -197,7 +197,8 @@ const Playground = ({ form }: { form: Form }) => {
       id: experiments.length + 1,
     };
     setExperiments((experiments) => [...experiments, newExperiment]);
-    console.log(newExperiment);
+    // console.log(newExperiment);
+    console.log(testDataset);
   });
 
   const runExperimentButtonLabel = experiments.length
