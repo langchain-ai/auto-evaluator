@@ -30,7 +30,7 @@ from langchain.embeddings import HuggingFaceEmbeddings
 from langchain.embeddings.openai import OpenAIEmbeddings
 from gpt_index import GPTFaissIndex, LLMPredictor, ServiceContext
 from langchain.text_splitter import RecursiveCharacterTextSplitter, CharacterTextSplitter
-from text_utils import GRADE_DOCS_PROMPT, GRADE_ANSWER_PROMPT, GRADE_DOCS_PROMPT_FAST, GRADE_ANSWER_PROMPT_FAST, GRADE_ANSWER_PROMPT_BIAS_CHECK, GRADE_ANSWER_PROMPT_OPENAI
+from text_utils import GRADE_DOCS_PROMPT, GRADE_ANSWER_PROMPT, GRADE_DOCS_PROMPT_FAST, GRADE_ANSWER_PROMPT_FAST, GRADE_ANSWER_PROMPT_BIAS_CHECK, GRADE_ANSWER_PROMPT_OPENAI, QA_CHAIN_PROMPT
 
 
 def generate_eval(text, chunk, logger):
@@ -95,6 +95,8 @@ def make_llm(model):
     @return: LLM
     """
 
+    print("model!")
+    print(model)
     if model in ("gpt-3.5-turbo", "gpt-4"):
         llm = ChatOpenAI(model_name=model, temperature=0)
     elif model == "anthropic":
@@ -154,10 +156,12 @@ def make_chain(llm, retriever, retriever_type):
     @return: QA chain or Llama-Index retriever, which enables QA
     """
 
+    chain_type_kwargs = {"prompt": QA_CHAIN_PROMPT}
     if retriever_type != "Llama-Index":
         qa_chain = RetrievalQA.from_chain_type(llm,
                                                chain_type="stuff",
                                                retriever=retriever,
+                                               chain_type_kwargs=chain_type_kwargs,
                                                input_key="question")
     elif retriever_type == "Llama-Index":
         qa_chain = retriever
