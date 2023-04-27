@@ -37,6 +37,12 @@ The app can be used in two ways:
 - The app will auto-generate a test set of question-answer pair on the doc(s).
 - To do this, it uses the Langchain `QAGenerationChain` with the default prompt [here](https://github.com/hwchase17/langchain/blob/master/langchain/chains/qa_generation/prompt.py).
 
+`LLM question-answering`:
+
+- For each question, we use a `RetrievalQA` chain to answer it.
+- This will fetch chunks that are relevant to the question from the `retriever` and pass them to the LLM.
+- We expose the `QA_CHAIN_PROMPT`  used for to pass this context to the LLM [here](https://github.com/langchain-ai/auto-evaluator/blob/main/api/text_utils.py).
+
 `Model-graded evaluation`:
 
 - We let the user select from a number of model-graded evaluation prompts:

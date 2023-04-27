@@ -96,7 +96,7 @@ const Sidebar = ({ form }: { form: Form }) => {
                   {...field}
                   data={[
                     { label: "GPT 3.5 Turbo", value: "gpt-3.5-turbo" },
-                    { label: "GPT 4", value: "gpt4" },
+                    { label: "GPT 4", value: "gpt-4" },
                     { label: "Anthropic", value: "anthropic" },
                   ]}
                 />
