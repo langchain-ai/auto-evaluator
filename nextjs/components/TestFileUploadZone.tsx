@@ -46,6 +46,7 @@ const TestFileUploadZone = ({
         files.forEach((file) =>
           Papa.parse(file, {
             header: false,
+            beforeFirstChunk: (chunk) => chunk.replace(/, /g, ","),
             complete: (results: { data: string[][] }) => {
               const datasetArray = results?.data;
               if (
