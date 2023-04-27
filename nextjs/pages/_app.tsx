@@ -13,7 +13,7 @@ LogRocket.init("dyuioj/auto-evaluator");
 
 const renderSegmentSnippet = () => {
   const opts = {
-    apiKey: "g48PRvHJM9QiuK36ZYYwY2KBRM17l53G", //process.env.NEXT_PUBLIC_SEGMENT_KEY,
+    apiKey: process.env.NEXT_PUBLIC_SEGMENT_KEY,
     page: true,
   };
 
