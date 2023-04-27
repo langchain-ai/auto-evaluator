@@ -20,13 +20,16 @@ const HeaderEvaluator = ({ activeTab }: { activeTab: MenuItem }) => {
       <Stack justify="center" p="15px" pr={"25px"}>
         <Group position="apart">
           <Link href="/" style={{ textDecoration: "none" }}>
-            <Text
-              variant="gradient"
-              gradient={{ from: "blue", to: "#bf2015" }}
-              size={mobileWidth === true ? "14px" : "28px"}
-            >
-              Auto-Evaluator
-            </Text>
+            <Group>
+              <Text size={mobileWidth === true ? "14px" : "28px"}>🦜🔗</Text>
+              <Text
+                variant="gradient"
+                gradient={{ from: "blue", to: "#bf2015" }}
+                size={mobileWidth === true ? "14px" : "28px"}
+              >
+                Auto-Evaluator
+              </Text>
+            </Group>
           </Link>
           <Group>
             <Link
