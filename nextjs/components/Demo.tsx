@@ -41,7 +41,7 @@ const Demo = ({ form }: { form: Form }) => {
   const [loading, setLoading] = useState(false);
   const [results, setResults] = useState<Result[]>([]);
   const [testDataset, setTestDataset] = useState<QAPair[]>([]);
-  const [evalQuestionsCount, setEvalQuestionsCount] = useState(-1);
+  const [evalQuestionsCount, setEvalQuestionsCount] = useState(5);
   const [experiments, setExperiments] = useState<Experiment[]>([]);
   const [shouldShowProgress, setShouldShowProgress] = useState(false);
   const [gradingPromptStyle, setGradingPromptStyle] = useState(undefined);
@@ -110,8 +110,8 @@ const Demo = ({ form }: { form: Form }) => {
     return ret;
   }, [results, evalQuestionsCount]);
 
-  const chartData = experiments.map((experiment, index) => ({
-    id: index === 0 ? "baseline" : "Expt #" + experiment.id,
+  const chartData = experiments.map((experiment) => ({
+    id: "Expt #" + experiment.id,
     data: [
       {
         x: experiment.avgAnswerScore,
@@ -124,6 +124,10 @@ const Demo = ({ form }: { form: Form }) => {
     setShouldShowProgress(true);
     setLoading(true);
     setResults([]);
+
+    if (data.evalQuestionsCount !== evalQuestionsCount) {
+      setExperiments([]);
+    }
 
     const formData = new FormData();
     data.files.forEach((file) => {
@@ -212,7 +216,7 @@ const Demo = ({ form }: { form: Form }) => {
       avgAnswerScore,
       avgLatency,
       performance: avgAnswerScore / avgLatency,
-      id: experiments.length,
+      id: experiments.length + 1,
     };
     setExperiments((experiments) => [...experiments, newExperiment]);
   });
@@ -468,11 +472,8 @@ const Demo = ({ form }: { form: Form }) => {
                 title="Insight"
                 color="blue"
               >
-                The experiment that performed the best was{" "}
-                {bestExperiment === 0
-                  ? "the baseline"
-                  : "Experiment #" + bestExperiment}{" "}
-                due to combination of accuracy and latency.
+                {`The experiment that performed the best was Experiment #${bestExperiment} due to combination of accuracy
+                and latency.`}
               </Alert>
             )}
           </Spoiler>
