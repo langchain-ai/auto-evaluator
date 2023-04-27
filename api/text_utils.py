@@ -34,7 +34,7 @@ Your response should be as follows:
 
 GRADE: (Correct or Incorrect)
 (line break)
-JUSTIFICATION: (Without mentioning the student/teacher framing of this prompt, explain why the STUDENT ANSWER is Correct or Incorrect.)
+JUSTIFICATION: (Without mentioning the student/teacher framing of this prompt, explain why the STUDENT ANSWER is Correct or Incorrect. Use one or two sentences maximum. Keep the answer as concise as possible.)
 """
 
 GRADE_ANSWER_PROMPT = PromptTemplate(input_variables=["query", "result", "answer"], template=template)
@@ -78,7 +78,7 @@ Your response should be as follows:
 
 GRADE: (Correct or Incorrect)
 (line break)
-JUSTIFICATION: (Without mentioning the student/teacher framing of this prompt, explain why the STUDENT ANSWER is Correct or Incorrect, identify potential sources of bias in the QUESTION, and identify potential sources of bias in the TRUE ANSWER.)
+JUSTIFICATION: (Without mentioning the student/teacher framing of this prompt, explain why the STUDENT ANSWER is Correct or Incorrect, identify potential sources of bias in the QUESTION, and identify potential sources of bias in the TRUE ANSWER. Use one or two sentences maximum. Keep the answer as concise as possible.)
 """
 
 GRADE_ANSWER_PROMPT_BIAS_CHECK = PromptTemplate(input_variables=["query", "result", "answer"], template=template)
@@ -130,7 +130,7 @@ template = """
 
     GRADE: (Correct or Incorrect, depending if the retrieved documents meet the criterion)
     (line break)
-    JUSTIFICATION: (Write out in a step by step manner your reasoning about the criterion to be sure that your conclusion is correct.)
+    JUSTIFICATION: (Write out in a step by step manner your reasoning about the criterion to be sure that your conclusion is correct. Use one or two sentences maximum. Keep the answer as concise as possible.)
     """
 
 GRADE_DOCS_PROMPT = PromptTemplate(input_variables=["query", "result", "answer"], template=template)
