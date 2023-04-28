@@ -8,6 +8,7 @@ Document [Question-Answering](https://python.langchain.com/en/latest/use_cases/q
 
 The quality of QA systems can vary considerably; for example, [we have seen](https://lancemartin.notion.site/lancemartin/Lex-GPT-a3ad671766d34f4a9a078da7adf9d382) cases of hallucination and poor answer quality due specific parameter settings. But, it is not always obvious to (1) evaluate the answer quality in a systematic way and (2) use this evaluation to guide improved QA chain settings (e.g., chunk size) or components (e.g., model or retriever choice).
 
+
 `App overview`
 
 This app aims to address the above limitations. Recent [work](https://arxiv.org/abs/2212.09251) from Anthropic has used model-written evaluation sets. OpenAI and others [have shown](https://github.com/openai/evals/blob/main/evals/registry/modelgraded/closedqa.yaml) that model-graded evaluation is an effective way to evaluate models. This app combines both of these ideas into a single workspace, auto-generating a QA test set and auto-grading the result of the specified QA chain.
