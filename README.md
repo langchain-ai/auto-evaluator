@@ -116,7 +116,7 @@ Run the frontend from `nextjs` folder and view web app at specified URL (e.g., `
 
 ### Environment Variables
 
-`EVALUATOR_API_URL=http://127.0.0.1:8000` - used by frontend.
+Front-end: there is a file `.env.local` that contains the env variables needed to run the project, it will be auto ingested by Nextjs.
 `OPENAI_API_KEY=` - used by backend.
 
 ## Deployment
