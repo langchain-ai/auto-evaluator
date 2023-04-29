@@ -24,9 +24,10 @@ from langchain.retrievers import SVMRetriever
 from langchain.evaluation.qa import QAEvalChain
 from langchain.retrievers import TFIDFRetriever
 from sse_starlette.sse import EventSourceResponse
+from langchain.embeddings import CohereEmbeddings
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi import FastAPI, File, UploadFile, Form
-from langchain.embeddings import HuggingFaceEmbeddings
+from langchain.embeddings import HuggingFaceInstructEmbeddings
 from langchain.embeddings.openai import OpenAIEmbeddings
 from gpt_index import GPTFaissIndex, LLMPredictor, ServiceContext
 from langchain.text_splitter import RecursiveCharacterTextSplitter, CharacterTextSplitter
@@ -128,7 +129,7 @@ def make_retriever(splits, retriever_type, embeddings, num_neighbors, llm, logge
         try:
             vectorstore = FAISS.from_texts(splits, embd)
         except ValueError:
-            print("`Error using OpenAI embeddings (disallowed TikToken token in the text). Using HuggingFace.`", icon="⚠️")
+            print("`Error using OpenAI embeddings (disallowed TikToken token in the text). Using HuggingFace.`")
             vectorstore = FAISS.from_texts(splits, HuggingFaceEmbeddings())
         retriever = vectorstore.as_retriever(k=num_neighbors)
     elif retriever_type == "SVM":
