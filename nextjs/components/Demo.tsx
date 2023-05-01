@@ -117,7 +117,8 @@ const Demo = ({ form }: { form: Form }) => {
     setLoading(true);
     setResults([]);
 
-    if (data.evalQuestionsCount !== evalQuestionsCount) {
+    const resetExpts = data.evalQuestionsCount !== evalQuestionsCount;
+    if (resetExpts) {
       setExperiments([]);
     }
 
@@ -219,9 +220,11 @@ const Demo = ({ form }: { form: Form }) => {
       avgAnswerScore,
       avgLatency,
       performance: avgAnswerScore / avgLatency,
-      id: experiments.length + 1,
+      id: resetExpts ? 1 : experiments.length + 1,
     };
-    setExperiments((experiments) => [...experiments, newExperiment]);
+    setExperiments((experiments) =>
+      resetExpts ? [newExperiment] : [...experiments, newExperiment]
+    );
   });
 
   const download = useCallback(
