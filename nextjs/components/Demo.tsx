@@ -22,7 +22,7 @@ import {
 import { IconAlertCircle } from "@tabler/icons-react";
 import { Experiment, Form, QAPair, Result } from "../utils/types";
 import { notifications } from "@mantine/notifications";
-import { API_URL } from "../utils/variables";
+import { API_URL, IS_DEV } from "../utils/variables";
 import { fetchEventSource } from "@microsoft/fetch-event-source";
 import { Parser } from "@json2csv/plainjs";
 import { isEmpty, isNil, orderBy } from "lodash";
@@ -34,6 +34,7 @@ import ExperimentSummaryTable from "./ExperimentSummaryTable";
 import FilesTable from "./tables/FilesTable";
 import ExperimentResultTable from "./tables/ExperimentResultTable";
 import sampleText from "../public/testData/karpathy-pod.json";
+import LogRocket from "logrocket";
 
 const Demo = ({ form }: { form: Form }) => {
   const { setValue, watch, getValues, handleSubmit } = form;
@@ -136,6 +137,19 @@ const Demo = ({ form }: { form: Form }) => {
     formData.append("grade_prompt", data.gradingPrompt);
     formData.append("num_neighbors", data.numNeighbors.toString());
     formData.append("test_dataset", JSON.stringify(testDataset));
+
+    if (!IS_DEV) {
+      LogRocket.track("DemoSubmission", {
+        numQuestions: data.evalQuestionsCount,
+        overlap: data.overlap,
+        split: data.splitMethod,
+        retriever: data.retriever,
+        embedding: data.embeddingAlgorithm,
+        model: data.model,
+        promptStyle: data.gradingPrompt,
+        numNeighbors: data.numNeighbors,
+      });
+    }
 
     setEvalQuestionsCount(data.evalQuestionsCount);
     setGradingPromptStyle(data.gradingPrompt);

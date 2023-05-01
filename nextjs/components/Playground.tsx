@@ -24,13 +24,14 @@ import { IconUpload, IconX, IconAlertCircle } from "@tabler/icons-react";
 import { Dropzone, MIME_TYPES } from "@mantine/dropzone";
 import { Experiment, Form, QAPair, Result } from "../utils/types";
 import { notifications } from "@mantine/notifications";
-import { API_URL } from "../utils/variables";
+import { API_URL, IS_DEV } from "../utils/variables";
 import { fetchEventSource } from "@microsoft/fetch-event-source";
 import { Parser } from "@json2csv/plainjs";
 import { IconFile } from "@tabler/icons-react";
 import { ResponsiveScatterPlot } from "@nivo/scatterplot";
 import { isEmpty, isNil, orderBy } from "lodash";
 import TestFileUploadZone from "./TestFileUploadZone";
+import LogRocket from "logrocket";
 
 const MAX_FILE_SIZE_MB = 50;
 
@@ -137,6 +138,22 @@ const Playground = ({ form }: { form: Form }) => {
     formData.append("grade_prompt", data.gradingPrompt);
     formData.append("num_neighbors", data.numNeighbors.toString());
     formData.append("test_dataset", JSON.stringify(testDataset));
+
+    if (!IS_DEV) {
+      LogRocket.track("PlaygroundSubmission", {
+        fileSizes: data.files.map((file) => file.size),
+        fileTypes: data.files.map((file) => file.type),
+        numQuestions: data.evalQuestionsCount,
+        overlap: data.overlap,
+        split: data.splitMethod,
+        retriever: data.retriever,
+        embedding: data.embeddingAlgorithm,
+        model: data.model,
+        promptStyle: data.gradingPrompt,
+        numNeighbors: data.numNeighbors,
+        uploadedTestDataset: !!testDataset.length,
+      });
+    }
 
     setEvalQuestionsCount(data.evalQuestionsCount);
     setGradingPromptStyle(data.gradingPrompt);
