@@ -100,7 +100,10 @@ The results from all experiments will be summarized in the table and chart.
 
 Run the backend from `api` folder:
 
-`uvicorn evaluator_app:app`
+```
+ pip install -r requirements.txt
+ uvicorn evaluator_app:app
+ ```
 
 Test the `api` locally:
 
@@ -119,7 +122,7 @@ yarn dev
 
 Front-end: 
 
-There is a file `.env.local` that contains the env variables needed to run the project. It will be auto ingested by Nextjs.
+`.env.local` contains the env variables needed to run the project. 
 
 Back-end:
 
@@ -132,10 +135,6 @@ ANTHROPIC_API_KEY=
 
 ## Deployment
 
-Front-end: 
-
 The front-end is deployed to [Vercel](https://vercel.com/).
-
-Back-end:
 
 The back-end is deployed to [Railway](https://railway.app/).
