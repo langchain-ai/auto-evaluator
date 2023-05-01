@@ -27,7 +27,6 @@ from sse_starlette.sse import EventSourceResponse
 from langchain.embeddings import CohereEmbeddings
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi import FastAPI, File, UploadFile, Form
-from langchain.embeddings import HuggingFaceInstructEmbeddings
 from langchain.embeddings.openai import OpenAIEmbeddings
 from gpt_index import GPTFaissIndex, LLMPredictor, ServiceContext
 from langchain.text_splitter import RecursiveCharacterTextSplitter, CharacterTextSplitter

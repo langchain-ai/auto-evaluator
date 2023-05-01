@@ -138,10 +138,6 @@ const Sidebar = ({ form }: { form: Form }) => {
                       label: "OpenAI",
                       value: "OpenAI",
                     },
-                    {
-                      label: "HuggingFace",
-                      value: "HuggingFace",
-                    },
                   ]}
                 />
               )}

@@ -37,7 +37,7 @@
     "overlap": 0,
     "splitMethod": "CharacterTextSplitter",
     "retriever": "similarity-search",
-    "embeddingAlgorithm": "HuggingFace",
+    "embeddingAlgorithm": "OpenAI",
     "model": "gpt-3.5-turbo",
     "gradingPrompt": "Descriptive",
     "numNeighbors": 3,
