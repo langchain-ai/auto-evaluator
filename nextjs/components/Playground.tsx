@@ -50,13 +50,6 @@ const Playground = ({ form }: { form: Form }) => {
   const [testFilesDropzoneDisabled, setTestFilesDropzoneDisabled] =
     useState(true);
 
-  const bestExperiment = useMemo(() => {
-    if (isEmpty(experiments) || experiments.length === 1) {
-      return null;
-    }
-    return orderBy(experiments, "performance", "desc")[0].id;
-  }, [experiments]);
-
   const initialProgress = {
     value: 15,
     color: "purple",
@@ -553,17 +546,6 @@ const Playground = ({ form }: { form: Form }) => {
                 ]}
               />
             </div>
-            <br />
-            {!isNil(bestExperiment) && (
-              <Alert
-                icon={<IconAlertCircle size="1rem" />}
-                title="Insight"
-                color="blue"
-              >
-                The experiment that performed the best was Experiment #
-                {bestExperiment} due to combination of accuracy and latency.
-              </Alert>
-            )}
           </Spoiler>
         </Card>
       )}
