@@ -121,16 +121,10 @@ def make_retriever(splits, retriever_type, embeddings, num_neighbors, llm, logge
     # Set embeddings
     if embeddings == "OpenAI":
         embd = OpenAIEmbeddings()
-    elif embeddings == "HuggingFace":
-        embd = HuggingFaceEmbeddings()
 
     # Select retriever
     if retriever_type == "similarity-search":
-        try:
-            vectorstore = FAISS.from_texts(splits, embd)
-        except ValueError:
-            print("`Error using OpenAI embeddings (disallowed TikToken token in the text). Using HuggingFace.`")
-            vectorstore = FAISS.from_texts(splits, HuggingFaceEmbeddings())
+        vectorstore = FAISS.from_texts(splits, embd)
         retriever = vectorstore.as_retriever(k=num_neighbors)
     elif retriever_type == "SVM":
         retriever = SVMRetriever.from_texts(splits, embd)
