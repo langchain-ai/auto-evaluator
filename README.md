@@ -64,7 +64,7 @@ The app can be used in two ways:
 - It shows the latency for retrieval and LLM answer summarization per question.
 - It shows the model grader output (the raw output of the grading prompt).
 
-![image](https://user-images.githubusercontent.com/122662504/234647319-ffb98df6-1d60-4e38-a804-cc3d20acf356.png)
+![image](https://user-images.githubusercontent.com/122662504/235396320-e392f912-977c-4871-b1d2-bd7a8be128a1.png)
 
 ## User inputs
 
@@ -86,8 +86,6 @@ The left panel of the app (shown in red in the above image) has several user-con
 
 `Grading prompt style` - The prompt choice for model-graded evaluation. As mentioned above, the prompts can be seen [here](https://github.com/dankolesnikov/evaluator-app/blob/main/api/text_utils.py). More prompts would be a welcome addition. For example, with the `Descriptive` prompt, you will see a more detailed output with model grade justification.
 
-![image](https://user-images.githubusercontent.com/122662504/233796875-9223d73f-31dd-47cc-815b-c14c4ceceda8.png)
-
 ## Logging experiments
 
 A user can select the desired configuration and then choose `Re-Run Experiment`.
@@ -96,7 +94,7 @@ This will run the new chain on the existing test set.
 
 The results from all experiments will be summarized in the table and chart.
 
-![image](https://user-images.githubusercontent.com/122662504/233794169-0bf36f04-546d-465c-ab3c-17d24742572e.png)
+![image](https://user-images.githubusercontent.com/122662504/235396398-5fbf2821-d47f-4496-b8c7-201c9b7e66bc.png)
 
 ## Contributing
 
@@ -112,18 +110,32 @@ curl -X POST -F "files=@Docs/0333_text.txt" -F "num_eval_questions=1" -F "chunk_
 
 Run the frontend from `nextjs` folder and view web app at specified URL (e.g., `http://localhost:3000/`):
 
-`yarn dev`
+```
+yarn install
+yarn dev
+```
 
 ### Environment Variables
 
-Front-end: there is a file `.env.local` that contains the env variables needed to run the project, it will be auto ingested by Nextjs.
-`OPENAI_API_KEY=` - used by backend.
+Front-end: 
+
+There is a file `.env.local` that contains the env variables needed to run the project. It will be auto ingested by Nextjs.
+
+Back-end:
+
+Specify the API keys for any models that you want to use.
+
+```
+OPENAI_API_KEY=
+ANTHROPIC_API_KEY=
+```
 
 ## Deployment
 
-Doppler auth:
+Front-end: 
 
-```
-doppler login // scope to dir
-doppler config // select evaluator-ui project, environment dev
-```
+The front-end is deployed to [Vercel](https://vercel.com/).
+
+Back-end:
+
+The back-end is deployed to [Railway](https://railway.app/).
