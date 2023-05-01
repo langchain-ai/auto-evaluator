@@ -110,18 +110,32 @@ curl -X POST -F "files=@Docs/0333_text.txt" -F "num_eval_questions=1" -F "chunk_
 
 Run the frontend from `nextjs` folder and view web app at specified URL (e.g., `http://localhost:3000/`):
 
-`yarn dev`
+```
+yarn install
+yarn dev
+```
 
 ### Environment Variables
 
-Front-end: there is a file `.env.local` that contains the env variables needed to run the project, it will be auto ingested by Nextjs.
-`OPENAI_API_KEY=` - used by backend.
+Front-end: 
+
+There is a file `.env.local` that contains the env variables needed to run the project. It will be auto ingested by Nextjs.
+
+Back-end:
+
+Specify the API keys for any models that you want to use.
+
+```
+OPENAI_API_KEY=
+ANTHROPIC_API_KEY=
+```
 
 ## Deployment
 
-Doppler auth:
+Front-end: 
 
-```
-doppler login // scope to dir
-doppler config // select evaluator-ui project, environment dev
-```
+The front-end is deployed to [Vercel](https://vercel.com/).
+
+Back-end:
+
+The back-end is deployed to [Railway](https://railway.app/).
