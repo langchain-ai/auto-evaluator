@@ -18,3 +18,4 @@ llama-index==0.4.35.post1
 sse_starlette==1.3.3
 gpt-index==0.5.16
 faiss-cpu==1.7.3
+python-dotenv==1.0.0
