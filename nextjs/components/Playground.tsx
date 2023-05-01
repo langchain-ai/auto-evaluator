@@ -302,9 +302,9 @@ const Playground = ({ form }: { form: Form }) => {
         title="Instructions"
         style={alertStyle}
       >
-        Upload your text file(s) and choose the parameters for your QA chain.
-        This evaluator will generate a test dataset of QA pairs and grade the
-        performance of the QA chain. You can experiment with different
+        Upload a text file (up to 50 MB) and choose the parameters for your QA
+        chain. This evaluator will generate a test dataset of QA pairs and grade
+        the performance of the QA chain. You can experiment with different
         parameters and evaluate the performance.
       </Alert>
       <Flex direction="row" gap="md">
@@ -377,7 +377,7 @@ const Playground = ({ form }: { form: Form }) => {
                 Upload Text for QA Eval
               </Text>
               <Text size="sm" color="dimmed" mt={7} align="center">
-                {"Attach files (.txt, .pdf, .doc, .docx)"}
+                {"Attach a file (.txt, .pdf, .doc, .docx)"}
               </Text>
             </div>
           </Stack>
