@@ -146,46 +146,56 @@ const Playground = ({ form }: { form: Form }) => {
 
     let localResults = [];
     let rowCount = 0;
-
-    await fetchEventSource(API_URL + "/evaluator-stream", {
-      method: "POST",
-      body: formData,
-      headers: {
-        Accept: "text/event-stream",
-      },
-      openWhenHidden: true,
-      signal: controller.signal,
-      onmessage(ev) {
-        try {
-          const row: Result = JSON.parse(ev.data)?.data;
-          setResults((results) => [...results, row]);
-          localResults = [...localResults, row];
-          rowCount += 1;
-          if (rowCount > testDataset.length) {
-            setTestDataset((testDataset) => [
-              ...testDataset,
-              {
-                question: row.question,
-                answer: row.answer,
-              },
-            ]);
+    try {
+      await fetchEventSource(API_URL + "/evaluator-stream", {
+        method: "POST",
+        body: formData,
+        headers: {
+          Accept: "text/event-stream",
+        },
+        openWhenHidden: true,
+        signal: controller.signal,
+        onmessage(ev) {
+          try {
+            const row: Result = JSON.parse(ev.data)?.data;
+            setResults((results) => [...results, row]);
+            localResults = [...localResults, row];
+            rowCount += 1;
+            if (rowCount > testDataset.length) {
+              setTestDataset((testDataset) => [
+                ...testDataset,
+                {
+                  question: row.question,
+                  answer: row.answer,
+                },
+              ]);
+            }
+            if (rowCount === data.evalQuestionsCount) {
+              controller.abort();
+            }
+          } catch (e) {
+            console.warn("Error parsing data", e);
           }
-          if (rowCount === data.evalQuestionsCount) {
-            controller.abort();
-          }
-        } catch (e) {
-          console.warn("Error parsing data", e);
-        }
-      },
-      onclose() {
-        console.log("Connection closed by the server");
-        setLoading(false);
-      },
-      onerror(err) {
-        console.log("There was an error from server", err);
-        throw new Error(err);
-      },
-    });
+        },
+        onclose() {
+          console.log("Connection closed by the server");
+          setLoading(false);
+        },
+        onerror(err) {
+          console.log("There was an error from server", err);
+          throw new Error(err);
+        },
+      });
+    } catch (e) {
+      notifications.show({
+        title: "Error",
+        message: "There was an error from the server.",
+        color: "red",
+      });
+      setShouldShowProgress(false);
+      setLoading(false);
+      return;
+    }
     setLoading(false);
     const avgAnswerScore =
       localResults.reduce((acc, curr) => acc + curr.answerScore.score, 0) /
