@@ -3,6 +3,9 @@ This is an API to support the LLM QA chain auto-evaluator.
 """
 
 import io
+import os
+from dotenv import load_dotenv
+import sentry_sdk
 import json
 import time
 import pypdf
@@ -31,7 +34,6 @@ from langchain.embeddings.openai import OpenAIEmbeddings
 from gpt_index import GPTFaissIndex, LLMPredictor, ServiceContext
 from langchain.text_splitter import RecursiveCharacterTextSplitter, CharacterTextSplitter
 from text_utils import GRADE_DOCS_PROMPT, GRADE_ANSWER_PROMPT, GRADE_DOCS_PROMPT_FAST, GRADE_ANSWER_PROMPT_FAST, GRADE_ANSWER_PROMPT_BIAS_CHECK, GRADE_ANSWER_PROMPT_OPENAI, QA_CHAIN_PROMPT
-
 
 def generate_eval(text, chunk, logger):
     """
@@ -275,6 +277,13 @@ def run_eval(chain, retriever, eval_qa_pair, grade_prompt, retriever_type, num_n
         gt_dataset, retrieved_docs, grade_prompt, logger)
     return graded_answers, graded_retrieval, latency, predictions
 
+load_dotenv()
+
+if os.environ.get("ENVIRONMENT") != "development":
+    sentry_sdk.init(
+    dsn="https://065aa152c4de4e14af9f9e7335c8eae4@o4505106202820608.ingest.sentry.io/4505106207735808",
+    traces_sample_rate=1.0,
+    )
 
 app = FastAPI()
 
