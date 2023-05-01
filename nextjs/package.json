@@ -18,6 +18,7 @@
     "@nivo/core": "^0.80.0",
     "@nivo/scatterplot": "^0.80.0",
     "@segment/snippet": "^4.15.3",
+    "@sentry/browser": "^7.50.0",
     "@tabler/icons-react": "^2.16.0",
     "@types/lodash": "^4.14.194",
     "@vercel/analytics": "^1.0.0",

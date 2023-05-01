@@ -8,8 +8,22 @@ import { useEffect } from "react";
 import { Notifications } from "@mantine/notifications";
 import { Analytics } from "@vercel/analytics/react";
 import LogRocket from "logrocket";
+import * as Sentry from "@sentry/browser";
+
+Sentry.init({
+  dsn: "https://065aa152c4de4e14af9f9e7335c8eae4@o4505106202820608.ingest.sentry.io/4505106207735808",
+  release: "evaluator@1.0.0",
+  integrations: [new Sentry.BrowserTracing()],
+  tracesSampleRate: 1.0,
+});
 
 LogRocket.init("dyuioj/auto-evaluator");
+
+LogRocket.getSessionURL((sessionURL) => {
+  Sentry.configureScope((scope) => {
+    scope.setExtra("sessionURL", sessionURL);
+  });
+});
 
 const renderSegmentSnippet = () => {
   const opts = {
