@@ -32,6 +32,13 @@ import { ResponsiveScatterPlot } from "@nivo/scatterplot";
 import { isEmpty, isNil, orderBy } from "lodash";
 import TestFileUploadZone from "./TestFileUploadZone";
 
+const MAX_FILE_SIZE_MB = 50;
+
+enum DropZoneErrorCode {
+  FileTooLarge = "file-too-large",
+  FileInvalidType = "file-invalid-type",
+}
+
 const Playground = ({ form }: { form: Form }) => {
   const { setValue, watch, getValues, handleSubmit } = form;
   const watchFiles = watch("files");
@@ -253,21 +260,34 @@ const Playground = ({ form }: { form: Form }) => {
             setShouldShowProgress(false);
             setTestFilesDropzoneDisabled(false);
           }}
+          maxFiles={1}
+          multiple={false}
+          maxSize={MAX_FILE_SIZE_MB * 1024 ** 2} // 50 MB
           accept={[
             MIME_TYPES.pdf,
             MIME_TYPES.docx,
             MIME_TYPES.doc,
             "text/plain",
           ]}
-          onReject={(files) =>
+          onReject={(files) => {
+            const errorCode = files?.[0]?.errors?.[0]?.code;
+            let message = files?.[0]?.errors?.[0]?.message;
+            switch (errorCode) {
+              case DropZoneErrorCode.FileTooLarge:
+                message = `File size too large. Max file size is ${MAX_FILE_SIZE_MB} MB.`;
+                break;
+              case DropZoneErrorCode.FileInvalidType:
+                message = "File type not supported";
+                break;
+              default:
+                break;
+            }
             notifications.show({
               title: "Error",
-              message: `File type(s) not supported ${files.map(
-                (file) => file.file.type
-              )}`,
+              message,
               color: "red",
-            })
-          }
+            });
+          }}
           // maxSize={3 * 1024 ** 2}
           style={{ width: "100%" }}
         >
@@ -315,14 +335,14 @@ const Playground = ({ form }: { form: Form }) => {
             <thead>
               <tr>
                 <th>File Name</th>
-                <th>Size (KB)</th>
+                <th>Size (MB)</th>
               </tr>
             </thead>
             <tbody>
               {watchFiles?.map((file, id) => (
                 <tr key={id}>
                   <td>{file?.name}</td>
-                  <td>{(file?.size / 1000).toFixed(1)}</td>
+                  <td>{(file?.size / 1024 ** 2).toFixed(1)}</td>
                 </tr>
               ))}
             </tbody>
