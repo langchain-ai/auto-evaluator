@@ -196,6 +196,9 @@ const Playground = ({ form }: { form: Form }) => {
         onclose() {
           console.log("Connection closed by the server");
           setLoading(false);
+          if (!rowCount) {
+            throw new Error("No results were returned from the server.");
+          }
         },
         onerror(err) {
           console.log("There was an error from server", err);
