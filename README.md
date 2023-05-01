@@ -13,7 +13,7 @@ The quality of QA systems can vary considerably; for example, [we have seen](htt
 
 This app aims to address the above limitations. Recent [work](https://arxiv.org/abs/2212.09251) from Anthropic has used model-written evaluation sets. OpenAI and others [have shown](https://github.com/openai/evals/blob/main/evals/registry/modelgraded/closedqa.yaml) that model-graded evaluation is an effective way to evaluate models. This app combines both of these ideas into a single workspace, auto-generating a QA test set and auto-grading the result of the specified QA chain.
 
-![image](https://user-images.githubusercontent.com/122662504/233764113-f0f55ffd-49cc-4b61-b371-1afb1c644a1f.png)
+![image](https://user-images.githubusercontent.com/122662504/235393525-be89ef39-2f72-4b61-b8ee-add6a14796b9.png)
 
 `Usage`
 
