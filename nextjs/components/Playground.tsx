@@ -19,6 +19,7 @@ import {
   Progress,
   Card,
   ScrollArea,
+  createStyles,
 } from "@mantine/core";
 import { IconUpload, IconX, IconAlertCircle } from "@tabler/icons-react";
 import { Dropzone, MIME_TYPES } from "@mantine/dropzone";
@@ -40,6 +41,27 @@ enum DropZoneErrorCode {
   FileInvalidType = "file-invalid-type",
 }
 
+const useStyles = createStyles((theme) => ({
+  disabled: {
+    backgroundColor:
+      theme.colorScheme === "dark"
+        ? theme.colors.dark[6]
+        : theme.colors.gray[0],
+    borderColor:
+      theme.colorScheme === "dark"
+        ? theme.colors.dark[5]
+        : theme.colors.gray[2],
+    cursor: "not-allowed",
+
+    "& *": {
+      color:
+        theme.colorScheme === "dark"
+          ? theme.colors.dark[3]
+          : theme.colors.gray[5],
+    },
+  },
+}));
+
 const Playground = ({ form }: { form: Form }) => {
   const { setValue, watch, getValues, handleSubmit } = form;
   const watchFiles = watch("files");
@@ -57,6 +79,9 @@ const Playground = ({ form }: { form: Form }) => {
   const testDatasetSpoilerRef = useRef<HTMLButtonElement>(null);
   const [testFilesDropzoneDisabled, setTestFilesDropzoneDisabled] =
     useState(true);
+  const [fileUploadDisabled, setFileUploadDisabled] = useState(false);
+
+  const { classes } = useStyles();
 
   const initialProgress = {
     value: 15,
@@ -284,12 +309,15 @@ const Playground = ({ form }: { form: Form }) => {
       </Alert>
       <Flex direction="row" gap="md">
         <Dropzone
+          disabled={fileUploadDisabled}
+          className={fileUploadDisabled ? classes.disabled : null}
           onDrop={(files) => {
             setValue("files", [...(getValues("files") ?? []), ...files]);
             setExperiments([]);
             setResults([]);
             setShouldShowProgress(false);
             setTestFilesDropzoneDisabled(false);
+            setFileUploadDisabled(true);
           }}
           maxFiles={1}
           multiple={false}
