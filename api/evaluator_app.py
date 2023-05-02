@@ -17,7 +17,7 @@ import pandas as pd
 from typing import Dict, List
 from json import JSONDecodeError
 from llama_index import Document
-from langchain.llms import Anthropic
+from langchain.chat_models import ChatAnthropic
 from langchain.vectorstores import FAISS
 from langchain.chains import RetrievalQA
 from llama_index import LangchainEmbedding
@@ -27,7 +27,6 @@ from langchain.retrievers import SVMRetriever
 from langchain.evaluation.qa import QAEvalChain
 from langchain.retrievers import TFIDFRetriever
 from sse_starlette.sse import EventSourceResponse
-from langchain.embeddings import CohereEmbeddings
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi import FastAPI, File, UploadFile, Form
 from langchain.embeddings.openai import OpenAIEmbeddings
@@ -102,7 +101,7 @@ def make_llm(model):
     if model in ("gpt-3.5-turbo", "gpt-4"):
         llm = ChatOpenAI(model_name=model, temperature=0)
     elif model == "anthropic":
-        llm = Anthropic(temperature=0)
+        llm = ChatAnthropic(temperature=0)
     return llm
 
 
