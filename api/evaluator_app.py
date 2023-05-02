@@ -4,6 +4,8 @@ This is an API to support the LLM QA chain auto-evaluator.
 
 import io
 import os
+import pako
+import magic
 from dotenv import load_dotenv
 import sentry_sdk
 import json
@@ -324,18 +326,27 @@ def run_evaluator(
 ):
 
     # Set up logging
+    print("*** Logging ***")
     logging.config.fileConfig('logging.conf', disable_existing_loggers=False)
     logger = logging.getLogger(__name__)
 
     # Read content of files
     texts = []
     fnames = []
+    mime = magic.Magic(mime=True)
     for file in files:
-        logger.info("Reading file: {}".format(file.filename))
-        contents = file.file.read()
+        logger.info("Uncompressing file")
+        print("*** Uncompress ***")
+        uncompressed_data = pako.inflate(file, to="binary") # Returns Uint8Array
+        print("*** File type ***")
+        file_type = mime.from_buffer(uncompressed_data) 
+        print("*** Decode ***")
+        #file_obj = io.BytesIO(uncompressed_data)
+        #contents = file_obj.read().decode("utf-8")
+        contents = uncompressed_data.decode("utf-8") # Uint8Array to a string
         # PDF file
-        if file.content_type == 'application/pdf':
-            logger.info("File {} is a PDF".format(file.filename))
+        if file_type == 'application/pdf':
+            logger.info("File is a PDF")
             pdf_reader = pypdf.PdfReader(io.BytesIO(contents))
             text = ""
             for page in pdf_reader.pages:
@@ -343,8 +354,8 @@ def run_evaluator(
             texts.append(text)
             fnames.append(file.filename)
         # Text file
-        elif file.content_type == 'text/plain':
-            logger.info("File {} is a TXT".format(file.filename))
+        elif file_type == 'text/plain':
+            logger.info("File is a TXT")
             texts.append(contents.decode())
             fnames.append(file.filename)
         else:
@@ -406,7 +417,7 @@ def run_evaluator(
 
 @app.post("/evaluator-stream")
 async def create_response(
-    files: List[UploadFile] = File(...),
+    files: List[bytes] = File(...),
     num_eval_questions: int = Form(5),
     chunk_chars: int = Form(1000),
     overlap: int = Form(100),
@@ -419,5 +430,6 @@ async def create_response(
     test_dataset: str = Form("[]"),
 ):
     test_dataset = json.loads(test_dataset)
+    logger.info("*** Run Evaluator ***")
     return EventSourceResponse(run_evaluator(files, num_eval_questions, chunk_chars,
                                              overlap, split_method, retriever_type, embeddings, model_version, grade_prompt, num_neighbors, test_dataset), headers={"Content-Type": "text/event-stream", "Connection": "keep-alive", "Cache-Control": "no-cache"})

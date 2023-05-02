@@ -33,6 +33,7 @@ import { ResponsiveScatterPlot } from "@nivo/scatterplot";
 import { isEmpty, isNil, orderBy } from "lodash";
 import TestFileUploadZone from "./TestFileUploadZone";
 import LogRocket from "logrocket";
+import pako from "pako";
 
 const MAX_FILE_SIZE_MB = 50;
 
@@ -149,9 +150,11 @@ const Playground = ({ form }: { form: Form }) => {
 
     setDidUploadTestDataset(false);
 
+    const encoder = new TextEncoder();
     const formData = new FormData();
     data.files.forEach((file) => {
-      formData.append("files", file);
+      // Convert the input to a Uint8Array and compress 
+      formData.append("files", pako.deflate(encoder.encode(file)));
     });
     formData.append("num_eval_questions", data.evalQuestionsCount.toString());
     formData.append("chunk_chars", data.chunkSize.toString());
