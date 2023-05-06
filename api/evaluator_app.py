@@ -17,6 +17,9 @@ import pandas as pd
 from typing import Dict, List
 from json import JSONDecodeError
 from langchain.llms import Anthropic
+from langchain.llms import LlamaCpp
+from langchain.callbacks.base import CallbackManager
+from langchain.callbacks.streaming_stdout import StreamingStdOutCallbackHandler
 from langchain.chat_models import ChatAnthropic
 from langchain.schema import BaseRetriever, Document
 from langchain.chains.question_answering import load_qa_chain
@@ -103,6 +106,13 @@ def make_llm(model):
         llm = Anthropic(temperature=0)
     elif model == "Anthropic-100k":
         llm = Anthropic(model="claude-v1-100k",temperature=0)
+        llm = ChatAnthropic(temperature=0)
+    elif model in ("vicuna-7b","vicuna-13b"):
+        callback_manager = CallbackManager([StreamingStdOutCallbackHandler()])
+        if model == "vicuna-7b":
+            llm = LlamaCpp(model_path="/Users/31treehaus/Desktop/AI/llama.cpp/models/vicuna_7B/ggml-vicuna-7b-q4_0.bin", callback_manager=callback_manager, n_threads=16, n_ctx=10000, verbose=True, temperature=0)
+        else:
+            llm = LlamaCpp(model_path="/Users/31treehaus/Desktop/AI/llama.cpp/models/vicuna_13B/ggml-vicuna-13b-4bit.bin", callback_manager=callback_manager, n_threads=16, n_ctx=10000, verbose=True, temperature=0)
     return llm
 
 
