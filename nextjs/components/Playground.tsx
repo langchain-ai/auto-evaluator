@@ -193,6 +193,7 @@ const Playground = ({ form }: { form: Form }) => {
         body: formData,
         headers: {
           Accept: "text/event-stream",
+          Connection: "keep-alive", // Add the keep-alive header
         },
         openWhenHidden: true,
         signal: controller.signal,

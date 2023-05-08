@@ -36,7 +36,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi import FastAPI, File, UploadFile, Form
 from langchain.embeddings.openai import OpenAIEmbeddings
 from langchain.text_splitter import RecursiveCharacterTextSplitter, CharacterTextSplitter
-from text_utils import GRADE_DOCS_PROMPT, GRADE_ANSWER_PROMPT, GRADE_DOCS_PROMPT_FAST, GRADE_ANSWER_PROMPT_FAST, GRADE_ANSWER_PROMPT_BIAS_CHECK, GRADE_ANSWER_PROMPT_OPENAI, QA_CHAIN_PROMPT
+from text_utils import GRADE_DOCS_PROMPT, GRADE_ANSWER_PROMPT, GRADE_DOCS_PROMPT_FAST, GRADE_ANSWER_PROMPT_FAST, GRADE_ANSWER_PROMPT_BIAS_CHECK, GRADE_ANSWER_PROMPT_OPENAI, QA_CHAIN_PROMPT, QA_CHAIN_PROMPT_LLAMA
 
 def generate_eval(text, chunk, logger):
     """
@@ -110,9 +110,21 @@ def make_llm(model):
     elif model in ("vicuna-7b","vicuna-13b"):
         callback_manager = CallbackManager([StreamingStdOutCallbackHandler()])
         if model == "vicuna-7b":
-            llm = LlamaCpp(model_path="/Users/31treehaus/Desktop/AI/llama.cpp/models/vicuna_7B/ggml-vicuna-7b-q4_0.bin", callback_manager=callback_manager, n_threads=16, n_ctx=10000, verbose=True, temperature=0)
+            llm = LlamaCpp(
+                model_path="/Users/31treehaus/Desktop/AI/llama.cpp/models/vicuna_7B/ggml-vicuna-7b-q4_0.bin",
+                callback_manager=callback_manager,
+                verbose=True,
+                n_threads=6,
+                n_ctx=2048,
+                use_mlock=True)
         else:
-            llm = LlamaCpp(model_path="/Users/31treehaus/Desktop/AI/llama.cpp/models/vicuna_13B/ggml-vicuna-13b-4bit.bin", callback_manager=callback_manager, n_threads=16, n_ctx=10000, verbose=True, temperature=0)
+            llm = LlamaCpp(
+                model_path="/Users/31treehaus/Desktop/AI/llama.cpp/models/vicuna_13B/ggml-vicuna-13b-4bit.bin",
+                callback_manager=callback_manager,
+                verbose=True,
+                n_threads=6,
+                n_ctx=2048,
+                use_mlock=True)
     return llm
 
 
@@ -145,7 +157,8 @@ def make_retriever(splits, retriever_type, embeddings, num_neighbors, llm, logge
          retriever = llm
     return retriever
 
-def make_chain(llm, retriever, retriever_type):
+def make_chain(llm, retriever, retriever_type, model):
+
     """
     Make retrieval chain
     @param llm: model
@@ -154,7 +167,11 @@ def make_chain(llm, retriever, retriever_type):
     @return: QA chain
     """
 
-    chain_type_kwargs = {"prompt": QA_CHAIN_PROMPT}
+    if model in ("vicuna-7b","vicuna-13b"):
+        chain_type_kwargs = {"prompt": QA_CHAIN_PROMPT_LLAMA}
+    else: 
+        chain_type_kwargs = {"prompt": QA_CHAIN_PROMPT}
+
     if retriever_type == "Anthropic-100k":
         qa_chain = load_qa_chain(llm,chain_type="stuff",prompt=QA_CHAIN_PROMPT)
     else:
@@ -369,7 +386,7 @@ def run_evaluator(
         splits, retriever_type, embeddings, num_neighbors, llm, logger)
 
     logger.info("Make chain")
-    qa_chain = make_chain(llm, retriever, retriever_type)
+    qa_chain = make_chain(llm, retriever, retriever_type, model_version)
 
     for i in range(num_eval_questions):
 
