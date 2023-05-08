@@ -111,6 +111,7 @@ def make_llm(model):
         callback_manager = CallbackManager([StreamingStdOutCallbackHandler()])
         if model == "vicuna-7b":
             llm = LlamaCpp(
+                ### *** update with your local path *** ###
                 model_path="/Users/31treehaus/Desktop/AI/llama.cpp/models/vicuna_7B/ggml-vicuna-7b-q4_0.bin",
                 callback_manager=callback_manager,
                 verbose=True,
@@ -119,6 +120,7 @@ def make_llm(model):
                 use_mlock=True)
         else:
             llm = LlamaCpp(
+                ### *** update with your local path *** ###
                 model_path="/Users/31treehaus/Desktop/AI/llama.cpp/models/vicuna_13B/ggml-vicuna-13b-4bit.bin",
                 callback_manager=callback_manager,
                 verbose=True,
