@@ -177,7 +177,8 @@ def run_evaluation(chain, retriever, eval_set, grade_prompt, retriever_type, num
             docs = retriever.get_relevant_documents(data["question"])
 
         elif retriever_type == "Pinecone w/ metadata filtering":
-            metadata_filter = {'doc_source':'place'}
+            ### Set metadata here ### 
+            metadata_filter = {'id':"0252"}
             docs = retriever.similarity_search(query=data["question"],k=num_neighbors,filter=metadata_filter)
 
         elif retriever_type == "Kor filtering":
