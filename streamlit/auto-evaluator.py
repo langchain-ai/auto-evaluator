@@ -1,3 +1,4 @@
+import os
 import json
 import time
 import pinecone
@@ -218,6 +219,7 @@ st.sidebar.image("img/diagnostic.jpg")
 with st.sidebar.form("user_input"):
 
     # Pinecone params 
+    oai_api_key = st.text_input("`OpenAI API Key:`", type="password").strip()
     pc_api_key = st.text_input("`Pinecone API Key:`", type="password").strip()
     pc_region = st.text_input("`Pinecone region:`", type="password").strip()
     pc_index = st.text_input("`Pinecone index:`", type="password").strip()
@@ -239,8 +241,7 @@ with st.sidebar.form("user_input"):
 
     model = st.radio("`Choose model`",
                      ("gpt-3.5-turbo",
-                      "gpt-4",
-                      "anthropic",),
+                      "gpt-4"),
                      index=0)
 
     grade_prompt = st.radio("`Grading style prompt`",
@@ -270,6 +271,9 @@ with st.form(key='file_inputs'):
 # Build an index from the supplied docs
 if uploaded_eval_set and pc_api_key and pc_region and pc_index:
     
+    # Set API key
+    os.environ["OPENAI_API_KEY"] = oai_api_key
+
     # Set embeddings (must match your Pinecone DB)
     if embeddings == "OpenAI":
         embedding = OpenAIEmbeddings()
