@@ -160,8 +160,8 @@ const Sidebar = ({ form }: { form: Form }) => {
                       label: "SVM",
                       value: "SVM",
                     },
-                    { label: "LlamaIndex", value: "Llama-Index" },
                     { label: "TF-IDF", value: "TF-IDF" },
+                    { label: "Anthropic-100k", value: "Anthropic-100k" },
                   ]}
                 />
               )}
