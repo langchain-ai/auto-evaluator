@@ -78,7 +78,7 @@ Your response should be as follows:
 
 GRADE: (Correct or Incorrect)
 (line break)
-JUSTIFICATION: (Without mentioning the student/teacher framing of this prompt, explain why the STUDENT ANSWER is Correct or Incorrect, identify potential sources of bias in the QUESTION, and identify potential sources of bias in the TRUE ANSWER. Use one or two sentences maximum. Keep the answer as concise as possible.)
+JUSTIFICATION: (Without mentioning the student/teacher framing of this prompt, explain why the STUDENT ANSWER is Correct or Incorrect, identify potential sources of bias in the QUESTION, and identify potential sources of bias in the TRUE ANSWER. When refering to the TRUE ANSWER, always use the phrase EXPECTED ANSWER in place of TRUE ANSWER. Use one or two sentences maximum. Keep the answer as concise as possible.)
 """
 
 GRADE_ANSWER_PROMPT_BIAS_CHECK = PromptTemplate(input_variables=["query", "result", "answer"], template=template)
