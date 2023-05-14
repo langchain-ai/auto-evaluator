@@ -584,6 +584,7 @@ const Playground = ({ form }: { form: Form }) => {
                 blendMode="multiply"
                 axisTop={null}
                 axisRight={null}
+                nodeSize={25}
                 axisBottom={{
                   tickSize: 5,
                   tickPadding: 5,

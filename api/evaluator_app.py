@@ -97,14 +97,12 @@ def make_llm(model):
     @return: LLM
     """
 
-    print("model!")
-    print(model)
     if model in ("gpt-3.5-turbo", "gpt-4"):
         llm = ChatOpenAI(model_name=model, temperature=0)
     elif model == "anthropic":
-        llm = ChatAnthropic(temperature=0)
+        llm = Anthropic(temperature=0)
     elif model == "Anthropic-100k":
-        llm = Anthropic(model="claude-v1-100k")
+        llm = Anthropic(model="claude-v1-100k",temperature=0)
     return llm
 
 
