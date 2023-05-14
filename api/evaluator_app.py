@@ -16,8 +16,10 @@ import faiss
 import pandas as pd
 from typing import Dict, List
 from json import JSONDecodeError
-from llama_index import Document
+from langchain.llms import Anthropic
 from langchain.chat_models import ChatAnthropic
+from langchain.schema import BaseRetriever, Document
+from langchain.chains.question_answering import load_qa_chain
 from langchain.vectorstores import FAISS
 from langchain.chains import RetrievalQA
 from llama_index import LangchainEmbedding
@@ -30,7 +32,6 @@ from sse_starlette.sse import EventSourceResponse
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi import FastAPI, File, UploadFile, Form
 from langchain.embeddings.openai import OpenAIEmbeddings
-from gpt_index import GPTFaissIndex, LLMPredictor, ServiceContext
 from langchain.text_splitter import RecursiveCharacterTextSplitter, CharacterTextSplitter
 from text_utils import GRADE_DOCS_PROMPT, GRADE_ANSWER_PROMPT, GRADE_DOCS_PROMPT_FAST, GRADE_ANSWER_PROMPT_FAST, GRADE_ANSWER_PROMPT_BIAS_CHECK, GRADE_ANSWER_PROMPT_OPENAI, QA_CHAIN_PROMPT
 
@@ -96,12 +97,12 @@ def make_llm(model):
     @return: LLM
     """
 
-    print("model!")
-    print(model)
     if model in ("gpt-3.5-turbo", "gpt-4"):
         llm = ChatOpenAI(model_name=model, temperature=0)
     elif model == "anthropic":
-        llm = ChatAnthropic(temperature=0)
+        llm = Anthropic(temperature=0)
+    elif model == "Anthropic-100k":
+        llm = Anthropic(model="claude-v1-100k",temperature=0)
     return llm
 
 
@@ -130,17 +131,9 @@ def make_retriever(splits, retriever_type, embeddings, num_neighbors, llm, logge
         retriever = SVMRetriever.from_texts(splits, embd)
     elif retriever_type == "TF-IDF":
         retriever = TFIDFRetriever.from_texts(splits)
-    elif retriever_type == "Llama-Index":
-        documents = [Document(t, LangchainEmbedding(embd)) for t in splits]
-        llm_predictor = LLMPredictor(llm)
-        context = ServiceContext.from_defaults(
-            chunk_size_limit=512, llm_predictor=llm_predictor)
-        dims = 1536
-        faiss_index = faiss.IndexFlatL2(dims)
-        retriever = GPTFaissIndex.from_documents(
-            documents, faiss_index=faiss_index, service_context=context)
+    elif retriever_type == "Anthropic-100k":
+         retriever = llm
     return retriever
-
 
 def make_chain(llm, retriever, retriever_type):
     """
@@ -148,19 +141,18 @@ def make_chain(llm, retriever, retriever_type):
     @param llm: model
     @param retriever: retriever
     @param retriever_type: retriever type
-    @return: QA chain or Llama-Index retriever, which enables QA
+    @return: QA chain
     """
 
     chain_type_kwargs = {"prompt": QA_CHAIN_PROMPT}
-    if retriever_type != "Llama-Index":
+    if retriever_type == "Anthropic-100k":
+        qa_chain = load_qa_chain(llm,chain_type="stuff",prompt=QA_CHAIN_PROMPT)
+    else:
         qa_chain = RetrievalQA.from_chain_type(llm,
                                                chain_type="stuff",
                                                retriever=retriever,
                                                chain_type_kwargs=chain_type_kwargs,
                                                input_key="question")
-    elif retriever_type == "Llama-Index":
-        qa_chain = retriever
-
     return qa_chain
 
 
@@ -217,7 +209,7 @@ def grade_model_retrieval(gt_dataset, predictions, grade_docs_prompt, logger):
     return graded_outputs
 
 
-def run_eval(chain, retriever, eval_qa_pair, grade_prompt, retriever_type, num_neighbors, logger):
+def run_eval(chain, retriever, eval_qa_pair, grade_prompt, retriever_type, num_neighbors, text, logger):
     """
     Runs evaluation on a model's performance on a given evaluation dataset.
     @param chain: Model chain used for answering questions
@@ -226,6 +218,7 @@ def run_eval(chain, retriever, eval_qa_pair, grade_prompt, retriever_type, num_n
     @param grade_prompt: String prompt used for grading model's performance
     @param retriever_type: String specifying the type of retriever used
     @param num_neighbors: Number of neighbors to retrieve using the retriever
+    @param text: full document text
     @return: A tuple of four items:
     - answers_grade: A dictionary containing scores for the model's answers.
     - retrieval_grade: A dictionary containing scores for the model's document retrieval.
@@ -241,13 +234,13 @@ def run_eval(chain, retriever, eval_qa_pair, grade_prompt, retriever_type, num_n
 
     # Get answer and log latency
     start_time = time.time()
-    if retriever_type != "Llama-Index":
-        predictions.append(chain(eval_qa_pair))
-    elif retriever_type == "Llama-Index":
-        answer = chain.query(
-            eval_qa_pair["question"], similarity_top_k=num_neighbors, response_mode="tree_summarize", use_async=True)
+    if retriever_type == "Anthropic-100k":
+        docs=[Document(page_content=text)]
+        answer = chain.run(input_documents=docs,question=eval_qa_pair["question"])
         predictions.append(
-            {"question": eval_qa_pair["question"], "answer": eval_qa_pair["answer"], "result": answer.response})
+            {"question": eval_qa_pair["question"], "answer": eval_qa_pair["answer"], "result": answer})
+    else :
+        predictions.append(chain(eval_qa_pair))
     gt_dataset.append(eval_qa_pair)
     end_time = time.time()
     elapsed_time = end_time - start_time
@@ -255,14 +248,13 @@ def run_eval(chain, retriever, eval_qa_pair, grade_prompt, retriever_type, num_n
 
     # Extract text from retrieved docs
     retrieved_doc_text = ""
-    if retriever_type != "Llama-Index":
+    if retriever_type == "Anthropic-100k":
+        retrieved_doc_text = "Doc %s: " % str(eval_qa_pair["answer"])
+    else:
         docs = retriever.get_relevant_documents(eval_qa_pair["question"])
         for i, doc in enumerate(docs):
             retrieved_doc_text += "Doc %s: " % str(i+1) + \
                 doc.page_content + " "
-    elif retriever_type == "Llama-Index":
-        for i, doc in enumerate(answer.source_nodes):
-            retrieved_doc_text += "Doc %s: " % str(i+1) + doc.node.text + " "
 
     # Log
     retrieved = {"question": eval_qa_pair["question"],
@@ -352,8 +344,12 @@ def run_evaluator(
                 "Unsupported file type for file: {}".format(file.filename))
     text = " ".join(texts)
 
-    logger.info("Splitting texts")
-    splits = split_texts(text, chunk_chars, overlap, split_method, logger)
+    if retriever_type == "Anthropic-100k":
+        splits = ""
+        model_version = "Anthropic-100k"
+    else:
+        logger.info("Splitting texts")
+        splits = split_texts(text, chunk_chars, overlap, split_method, logger)
 
     logger.info("Make LLM")
     llm = make_llm(model_version)
@@ -381,7 +377,7 @@ def run_evaluator(
 
         # Run eval
         graded_answers, graded_retrieval, latency, predictions = run_eval(
-            qa_chain, retriever, eval_pair, grade_prompt, retriever_type, num_neighbors, logger)
+            qa_chain, retriever, eval_pair, grade_prompt, retriever_type, num_neighbors, text, logger)
 
         # Assemble output
         d = pd.DataFrame(predictions)

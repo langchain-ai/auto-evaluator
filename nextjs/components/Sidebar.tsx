@@ -1,10 +1,10 @@
 import { ScrollArea, Select, Slider, Stack, Text } from "@mantine/core";
 import React from "react";
 import { Form } from "../utils/types";
-import { Controller } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 
 const Sidebar = ({ form }: { form: Form }) => {
-  const { control } = form;
+  const { control, setValue } = form;
 
   return (
     <>
@@ -151,6 +151,14 @@ const Sidebar = ({ form }: { form: Form }) => {
               render={({ field }) => (
                 <Select
                   {...field}
+                  onChange={(value) => {
+                    field.onChange(value);
+                    if (value === "Anthropic-100k") {
+                      setValue("model", "anthropic");
+                      setValue("splitMethod", "");
+                      setValue("embeddingAlgorithm", ""); 
+                    }
+                  }}
                   data={[
                     {
                       label: "Similarity Search",
@@ -160,8 +168,8 @@ const Sidebar = ({ form }: { form: Form }) => {
                       label: "SVM",
                       value: "SVM",
                     },
-                    { label: "LlamaIndex", value: "Llama-Index" },
                     { label: "TF-IDF", value: "TF-IDF" },
+                    { label: "Anthropic-100k", value: "Anthropic-100k" },
                   ]}
                 />
               )}
