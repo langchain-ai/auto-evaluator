@@ -17,15 +17,10 @@ import pandas as pd
 from typing import Dict, List
 from json import JSONDecodeError
 from langchain.llms import Anthropic
-from langchain.llms import LlamaCpp
-from langchain.callbacks.base import CallbackManager
-from langchain.callbacks.streaming_stdout import StreamingStdOutCallbackHandler
-from langchain.chat_models import ChatAnthropic
-from langchain.schema import BaseRetriever, Document
-from langchain.chains.question_answering import load_qa_chain
+from langchain.llms import Replicate
+from langchain.schema import Document
 from langchain.vectorstores import FAISS
 from langchain.chains import RetrievalQA
-from llama_index import LangchainEmbedding
 from langchain.chat_models import ChatOpenAI
 from langchain.chains import QAGenerationChain
 from langchain.retrievers import SVMRetriever
@@ -35,6 +30,7 @@ from sse_starlette.sse import EventSourceResponse
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi import FastAPI, File, UploadFile, Form
 from langchain.embeddings.openai import OpenAIEmbeddings
+from langchain.chains.question_answering import load_qa_chain
 from langchain.text_splitter import RecursiveCharacterTextSplitter, CharacterTextSplitter
 from text_utils import GRADE_DOCS_PROMPT, GRADE_ANSWER_PROMPT, GRADE_DOCS_PROMPT_FAST, GRADE_ANSWER_PROMPT_FAST, GRADE_ANSWER_PROMPT_BIAS_CHECK, GRADE_ANSWER_PROMPT_OPENAI, QA_CHAIN_PROMPT, QA_CHAIN_PROMPT_LLAMA
 
@@ -106,29 +102,9 @@ def make_llm(model):
         llm = Anthropic(temperature=0)
     elif model == "Anthropic-100k":
         llm = Anthropic(model="claude-v1-100k",temperature=0)
-        llm = ChatAnthropic(temperature=0)
-    elif model in ("vicuna-7b","vicuna-13b"):
-        callback_manager = CallbackManager([StreamingStdOutCallbackHandler()])
-        if model == "vicuna-7b":
-            llm = LlamaCpp(
-                ### *** update with your local path *** ###
-                model_path="/Users/31treehaus/Desktop/AI/llama.cpp/models/vicuna_7B/ggml-vicuna-7b-q4_0.bin",
-                callback_manager=callback_manager,
-                verbose=True,
-                n_threads=6,
-                n_ctx=2048,
-                use_mlock=True)
-        else:
-            llm = LlamaCpp(
-                ### *** update with your local path *** ###
-                model_path="/Users/31treehaus/Desktop/AI/llama.cpp/models/vicuna_13B/ggml-vicuna-13b-4bit.bin",
-                callback_manager=callback_manager,
-                verbose=True,
-                n_threads=6,
-                n_ctx=2048,
-                use_mlock=True)
+    elif model == "vicuna-13b":
+        llm = Replicate(model="replicate/vicuna-13b:e6d469c2b11008bb0e446c3e9629232f9674581224536851272c54871f84076e",temperature=0)
     return llm
-
 
 def make_retriever(splits, retriever_type, embeddings, num_neighbors, llm, logger):
     """
@@ -169,11 +145,13 @@ def make_chain(llm, retriever, retriever_type, model):
     @return: QA chain
     """
 
-    if model in ("vicuna-7b","vicuna-13b"):
+    # Select prompt 
+    if model == "vicuna-13b":
         chain_type_kwargs = {"prompt": QA_CHAIN_PROMPT_LLAMA}
     else: 
         chain_type_kwargs = {"prompt": QA_CHAIN_PROMPT}
 
+    # Select model 
     if retriever_type == "Anthropic-100k":
         qa_chain = load_qa_chain(llm,chain_type="stuff",prompt=QA_CHAIN_PROMPT)
     else:
