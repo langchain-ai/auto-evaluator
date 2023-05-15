@@ -303,7 +303,7 @@ const Playground = ({ form }: { form: Form }) => {
         title="Instructions"
         style={alertStyle}
       >
-        Upload up to 10 text files (up to 50 MB each) and choose the parameters for your QA
+        Upload a file (up to 50 MB) and choose the parameters for your QA
         chain. This evaluator will generate a test dataset of QA pairs and grade
         the performance of the QA chain. You can experiment with different
         parameters and evaluate the performance.
@@ -320,8 +320,8 @@ const Playground = ({ form }: { form: Form }) => {
             setTestFilesDropzoneDisabled(false);
             setFileUploadDisabled(true);
           }}
-          maxFiles={10}
-          multiple={true}
+          maxFiles={1}
+          multiple={false}
           maxSize={MAX_FILE_SIZE_MB * 1024 ** 2} // 50 MB
           accept={[
             MIME_TYPES.pdf,
