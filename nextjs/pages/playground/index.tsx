@@ -9,7 +9,7 @@ import Playground from "../../components/Playground";
 const PlaygroundPage = () => {
   const form = useForm<FormValues>({
     defaultValues: {
-      evalQuestionsCount: 5,
+      evalQuestionsCount: 1,
       chunkSize: 1000,
       overlap: 100,
       splitMethod: "RecursiveTextSplitter",
