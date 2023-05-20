@@ -320,8 +320,8 @@ const Playground = ({ form }: { form: Form }) => {
             setTestFilesDropzoneDisabled(false);
             setFileUploadDisabled(true);
           }}
-          maxFiles={1}
-          multiple={false}
+          maxFiles={10}
+          multiple={true}
           maxSize={MAX_FILE_SIZE_MB * 1024 ** 2} // 50 MB
           accept={[
             MIME_TYPES.pdf,

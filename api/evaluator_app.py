@@ -103,7 +103,8 @@ def make_llm(model):
     elif model == "Anthropic-100k":
         llm = Anthropic(model="claude-v1-100k",temperature=0)
     elif model == "vicuna-13b":
-        llm = Replicate(model="replicate/vicuna-13b:e6d469c2b11008bb0e446c3e9629232f9674581224536851272c54871f84076e",temperature=0)
+        llm = Replicate(model="replicate/vicuna-13b:e6d469c2b11008bb0e446c3e9629232f9674581224536851272c54871f84076e",
+                input={"temperature": 0.75, "max_length": 3000})
     return llm
 
 def make_retriever(splits, retriever_type, embeddings, num_neighbors, llm, logger):
@@ -147,7 +148,8 @@ def make_chain(llm, retriever, retriever_type, model):
 
     # Select prompt 
     if model == "vicuna-13b":
-        chain_type_kwargs = {"prompt": QA_CHAIN_PROMPT_LLAMA}
+        # chain_type_kwargs = {"prompt": QA_CHAIN_PROMPT_LLAMA}
+        chain_type_kwargs = {"prompt": QA_CHAIN_PROMPT}
     else: 
         chain_type_kwargs = {"prompt": QA_CHAIN_PROMPT}
 
@@ -183,7 +185,7 @@ def grade_model_answer(predicted_dataset, predictions, grade_answer_prompt, logg
     else:
         prompt = GRADE_ANSWER_PROMPT
 
-    eval_chain = QAEvalChain.from_llm(llm=ChatOpenAI(model_name="gpt-3.5-turbo", temperature=0),
+    eval_chain = QAEvalChain.from_llm(llm=ChatOpenAI(model_name="gpt-4", temperature=0),
                                       prompt=prompt)
     graded_outputs = eval_chain.evaluate(predicted_dataset,
                                          predictions,
@@ -207,7 +209,7 @@ def grade_model_retrieval(gt_dataset, predictions, grade_docs_prompt, logger):
     else:
         prompt = GRADE_DOCS_PROMPT
 
-    eval_chain = QAEvalChain.from_llm(llm=ChatOpenAI(model_name="gpt-3.5-turbo", temperature=0),
+    eval_chain = QAEvalChain.from_llm(llm=ChatOpenAI(model_name="gpt-4", temperature=0),
                                       prompt=prompt)
     graded_outputs = eval_chain.evaluate(gt_dataset,
                                          predictions,
