@@ -28,6 +28,7 @@ from langchain.evaluation.qa import QAEvalChain
 from langchain.retrievers import TFIDFRetriever
 from sse_starlette.sse import EventSourceResponse
 from fastapi.middleware.cors import CORSMiddleware
+from langchain.embeddings import LlamaCppEmbeddings
 from fastapi import FastAPI, File, UploadFile, Form
 from langchain.embeddings.openai import OpenAIEmbeddings
 from langchain.chains.question_answering import load_qa_chain
@@ -104,7 +105,7 @@ def make_llm(model):
         llm = Anthropic(model="claude-v1-100k",temperature=0)
     elif model == "vicuna-13b":
         llm = Replicate(model="replicate/vicuna-13b:e6d469c2b11008bb0e446c3e9629232f9674581224536851272c54871f84076e",
-                input={"temperature": 0.75, "max_length": 3000})
+                input={"temperature": 0.75, "max_length": 3000, "top_p":0.25})
     return llm
 
 def make_retriever(splits, retriever_type, embeddings, num_neighbors, llm, logger):
@@ -123,7 +124,8 @@ def make_retriever(splits, retriever_type, embeddings, num_neighbors, llm, logge
     # Set embeddings
     if embeddings == "OpenAI":
         embd = OpenAIEmbeddings()
-
+    if embeddings == "LlamaCppEmbeddings":
+        embd = LlamaCppEmbeddings(model="replicate/vicuna-13b:e6d469c2b11008bb0e446c3e9629232f9674581224536851272c54871f84076e")
     # Select retriever
     if retriever_type == "similarity-search":
         vectorstore = FAISS.from_texts(splits, embd)
@@ -148,8 +150,7 @@ def make_chain(llm, retriever, retriever_type, model):
 
     # Select prompt 
     if model == "vicuna-13b":
-        # chain_type_kwargs = {"prompt": QA_CHAIN_PROMPT_LLAMA}
-        chain_type_kwargs = {"prompt": QA_CHAIN_PROMPT}
+        chain_type_kwargs = {"prompt": QA_CHAIN_PROMPT_LLAMA}
     else: 
         chain_type_kwargs = {"prompt": QA_CHAIN_PROMPT}
 

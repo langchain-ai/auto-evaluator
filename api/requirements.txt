@@ -20,4 +20,4 @@ faiss-cpu==1.7.3
 python-dotenv==1.0.0
 sentry_sdk==1.21.1
 llama-cpp-python==0.1.43
-replicate==0.8.1
+replicate==0.8.3

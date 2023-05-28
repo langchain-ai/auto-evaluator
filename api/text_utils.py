@@ -144,10 +144,17 @@ Helpful Answer:"""
 
 QA_CHAIN_PROMPT = PromptTemplate(input_variables=["context", "question"],template=template,)
 
-template = """Use the following pieces of context to answer the question at the end. Use three sentences maximum. 
-{context}
-Question: {question}
-Answer: Think step by step """
+template = """
+### Human
+You are question+answering assistant tasked with answering questions based on the provided context. 
 
+Here is the question: \
+{question}
+
+Use the following pieces of context to answer the question at the end. Use three sentences maximum. \
+{context}
+
+### Assistant
+Answer: Think step by step """
 QA_CHAIN_PROMPT_LLAMA = PromptTemplate(input_variables=["context", "question"],template=template,)
 
