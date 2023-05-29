@@ -16,6 +16,7 @@ import faiss
 import pandas as pd
 from typing import Dict, List
 from json import JSONDecodeError
+from langchain.llms import MosaicML
 from langchain.llms import Anthropic
 from langchain.llms import Replicate
 from langchain.schema import Document
@@ -106,6 +107,8 @@ def make_llm(model):
     elif model == "vicuna-13b":
         llm = Replicate(model="replicate/vicuna-13b:e6d469c2b11008bb0e446c3e9629232f9674581224536851272c54871f84076e",
                 input={"temperature": 0.75, "max_length": 3000, "top_p":0.25})
+    elif model == "mosaic":
+        llm = MosaicML(inject_instruction_format=True, model_kwargs={'do_sample': False})
     return llm
 
 def make_retriever(splits, retriever_type, embeddings, num_neighbors, llm, logger):
