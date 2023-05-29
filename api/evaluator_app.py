@@ -109,7 +109,7 @@ def make_llm(model):
         llm = Replicate(model="replicate/vicuna-13b:e6d469c2b11008bb0e446c3e9629232f9674581224536851272c54871f84076e",
                 input={"temperature": 0.75, "max_length": 3000, "top_p":0.25})
     elif model == "mosaic":
-        llm = MosaicML(inject_instruction_format=True, model_kwargs={'do_sample': False})
+        llm = MosaicML(inject_instruction_format=True,model_kwargs={'do_sample': False, 'max_length': 3000})
     return llm
 
 def make_retriever(splits, retriever_type, embeddings, num_neighbors, llm, logger):
