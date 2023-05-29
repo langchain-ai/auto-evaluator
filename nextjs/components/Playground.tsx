@@ -193,6 +193,7 @@ const Playground = ({ form }: { form: Form }) => {
         body: formData,
         headers: {
           Accept: "text/event-stream",
+          Connection: "keep-alive", // Add the keep-alive header
         },
         openWhenHidden: true,
         signal: controller.signal,
@@ -302,7 +303,7 @@ const Playground = ({ form }: { form: Form }) => {
         title="Instructions"
         style={alertStyle}
       >
-        Upload a text file (up to 50 MB) and choose the parameters for your QA
+        Upload a file (up to 50 MB) and choose the parameters for your QA
         chain. This evaluator will generate a test dataset of QA pairs and grade
         the performance of the QA chain. You can experiment with different
         parameters and evaluate the performance.

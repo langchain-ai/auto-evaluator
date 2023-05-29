@@ -17,12 +17,10 @@ import pandas as pd
 from typing import Dict, List
 from json import JSONDecodeError
 from langchain.llms import Anthropic
-from langchain.chat_models import ChatAnthropic
-from langchain.schema import BaseRetriever, Document
-from langchain.chains.question_answering import load_qa_chain
+from langchain.llms import Replicate
+from langchain.schema import Document
 from langchain.vectorstores import FAISS
 from langchain.chains import RetrievalQA
-from llama_index import LangchainEmbedding
 from langchain.chat_models import ChatOpenAI
 from langchain.chains import QAGenerationChain
 from langchain.retrievers import SVMRetriever
@@ -30,10 +28,12 @@ from langchain.evaluation.qa import QAEvalChain
 from langchain.retrievers import TFIDFRetriever
 from sse_starlette.sse import EventSourceResponse
 from fastapi.middleware.cors import CORSMiddleware
+from langchain.embeddings import LlamaCppEmbeddings
 from fastapi import FastAPI, File, UploadFile, Form
 from langchain.embeddings.openai import OpenAIEmbeddings
+from langchain.chains.question_answering import load_qa_chain
 from langchain.text_splitter import RecursiveCharacterTextSplitter, CharacterTextSplitter
-from text_utils import GRADE_DOCS_PROMPT, GRADE_ANSWER_PROMPT, GRADE_DOCS_PROMPT_FAST, GRADE_ANSWER_PROMPT_FAST, GRADE_ANSWER_PROMPT_BIAS_CHECK, GRADE_ANSWER_PROMPT_OPENAI, QA_CHAIN_PROMPT
+from text_utils import GRADE_DOCS_PROMPT, GRADE_ANSWER_PROMPT, GRADE_DOCS_PROMPT_FAST, GRADE_ANSWER_PROMPT_FAST, GRADE_ANSWER_PROMPT_BIAS_CHECK, GRADE_ANSWER_PROMPT_OPENAI, QA_CHAIN_PROMPT, QA_CHAIN_PROMPT_LLAMA
 
 def generate_eval(text, chunk, logger):
     """
@@ -103,8 +103,10 @@ def make_llm(model):
         llm = Anthropic(temperature=0)
     elif model == "Anthropic-100k":
         llm = Anthropic(model="claude-v1-100k",temperature=0)
+    elif model == "vicuna-13b":
+        llm = Replicate(model="replicate/vicuna-13b:e6d469c2b11008bb0e446c3e9629232f9674581224536851272c54871f84076e",
+                input={"temperature": 0.75, "max_length": 3000, "top_p":0.25})
     return llm
-
 
 def make_retriever(splits, retriever_type, embeddings, num_neighbors, llm, logger):
     """
@@ -122,7 +124,9 @@ def make_retriever(splits, retriever_type, embeddings, num_neighbors, llm, logge
     # Set embeddings
     if embeddings == "OpenAI":
         embd = OpenAIEmbeddings()
-
+    # Note: Still WIP (can't be selected by user yet)
+    if embeddings == "LlamaCppEmbeddings":
+        embd = LlamaCppEmbeddings(model="replicate/vicuna-13b:e6d469c2b11008bb0e446c3e9629232f9674581224536851272c54871f84076e")
     # Select retriever
     if retriever_type == "similarity-search":
         vectorstore = FAISS.from_texts(splits, embd)
@@ -135,7 +139,8 @@ def make_retriever(splits, retriever_type, embeddings, num_neighbors, llm, logge
          retriever = llm
     return retriever
 
-def make_chain(llm, retriever, retriever_type):
+def make_chain(llm, retriever, retriever_type, model):
+
     """
     Make retrieval chain
     @param llm: model
@@ -144,7 +149,15 @@ def make_chain(llm, retriever, retriever_type):
     @return: QA chain
     """
 
-    chain_type_kwargs = {"prompt": QA_CHAIN_PROMPT}
+    # Select prompt 
+    if model == "vicuna-13b":
+        # Note: Better answer quality using default prompt 
+        # chain_type_kwargs = {"prompt": QA_CHAIN_PROMPT_LLAMA}
+        chain_type_kwargs = {"prompt": QA_CHAIN_PROMPT}
+    else: 
+        chain_type_kwargs = {"prompt": QA_CHAIN_PROMPT}
+
+    # Select model 
     if retriever_type == "Anthropic-100k":
         qa_chain = load_qa_chain(llm,chain_type="stuff",prompt=QA_CHAIN_PROMPT)
     else:
@@ -176,7 +189,8 @@ def grade_model_answer(predicted_dataset, predictions, grade_answer_prompt, logg
     else:
         prompt = GRADE_ANSWER_PROMPT
 
-    eval_chain = QAEvalChain.from_llm(llm=ChatOpenAI(model_name="gpt-3.5-turbo", temperature=0),
+    # Note: GPT-4 grader is advised by OAI 
+    eval_chain = QAEvalChain.from_llm(llm=ChatOpenAI(model_name="gpt-4", temperature=0),
                                       prompt=prompt)
     graded_outputs = eval_chain.evaluate(predicted_dataset,
                                          predictions,
@@ -200,7 +214,8 @@ def grade_model_retrieval(gt_dataset, predictions, grade_docs_prompt, logger):
     else:
         prompt = GRADE_DOCS_PROMPT
 
-    eval_chain = QAEvalChain.from_llm(llm=ChatOpenAI(model_name="gpt-3.5-turbo", temperature=0),
+    # Note: GPT-4 grader is advised by OAI
+    eval_chain = QAEvalChain.from_llm(llm=ChatOpenAI(model_name="gpt-4", temperature=0),
                                       prompt=prompt)
     graded_outputs = eval_chain.evaluate(gt_dataset,
                                          predictions,
@@ -359,7 +374,7 @@ def run_evaluator(
         splits, retriever_type, embeddings, num_neighbors, llm, logger)
 
     logger.info("Make chain")
-    qa_chain = make_chain(llm, retriever, retriever_type)
+    qa_chain = make_chain(llm, retriever, retriever_type, model_version)
 
     for i in range(num_eval_questions):
 

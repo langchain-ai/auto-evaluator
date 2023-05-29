@@ -98,6 +98,7 @@ const Sidebar = ({ form }: { form: Form }) => {
                     { label: "GPT 3.5 Turbo", value: "gpt-3.5-turbo" },
                     { label: "GPT 4", value: "gpt-4" },
                     { label: "Anthropic", value: "anthropic" },
+                    { label: "Vicuna 13B", value: "vicuna-13b" },
                   ]}
                 />
               )}
