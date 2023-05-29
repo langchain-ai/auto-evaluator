@@ -146,7 +146,7 @@ QA_CHAIN_PROMPT = PromptTemplate(input_variables=["context", "question"],templat
 
 template = """
 ### Human
-You are question+answering assistant tasked with answering questions based on the provided context. 
+You are question-answering assistant tasked with answering questions based on the provided context. 
 
 Here is the question: \
 {question}
@@ -155,6 +155,6 @@ Use the following pieces of context to answer the question at the end. Use three
 {context}
 
 ### Assistant
-Answer: Think step by step """
+Answer: Think step by step. """
 QA_CHAIN_PROMPT_LLAMA = PromptTemplate(input_variables=["context", "question"],template=template,)
 

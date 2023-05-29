@@ -150,7 +150,8 @@ def make_chain(llm, retriever, retriever_type, model):
 
     # Select prompt 
     if model == "vicuna-13b":
-        chain_type_kwargs = {"prompt": QA_CHAIN_PROMPT_LLAMA}
+        # chain_type_kwargs = {"prompt": QA_CHAIN_PROMPT_LLAMA}
+        chain_type_kwargs = {"prompt": QA_CHAIN_PROMPT}
     else: 
         chain_type_kwargs = {"prompt": QA_CHAIN_PROMPT}
 
