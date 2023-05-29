@@ -124,6 +124,7 @@ def make_retriever(splits, retriever_type, embeddings, num_neighbors, llm, logge
     # Set embeddings
     if embeddings == "OpenAI":
         embd = OpenAIEmbeddings()
+    # Note: Still WIP (can't be selected by user yet)
     if embeddings == "LlamaCppEmbeddings":
         embd = LlamaCppEmbeddings(model="replicate/vicuna-13b:e6d469c2b11008bb0e446c3e9629232f9674581224536851272c54871f84076e")
     # Select retriever
@@ -150,6 +151,7 @@ def make_chain(llm, retriever, retriever_type, model):
 
     # Select prompt 
     if model == "vicuna-13b":
+        # Note: Better answer quality using default prompt 
         # chain_type_kwargs = {"prompt": QA_CHAIN_PROMPT_LLAMA}
         chain_type_kwargs = {"prompt": QA_CHAIN_PROMPT}
     else: 
@@ -187,6 +189,7 @@ def grade_model_answer(predicted_dataset, predictions, grade_answer_prompt, logg
     else:
         prompt = GRADE_ANSWER_PROMPT
 
+    # Note: GPT-4 grader is advised by OAI 
     eval_chain = QAEvalChain.from_llm(llm=ChatOpenAI(model_name="gpt-4", temperature=0),
                                       prompt=prompt)
     graded_outputs = eval_chain.evaluate(predicted_dataset,
@@ -211,6 +214,7 @@ def grade_model_retrieval(gt_dataset, predictions, grade_docs_prompt, logger):
     else:
         prompt = GRADE_DOCS_PROMPT
 
+    # Note: GPT-4 grader is advised by OAI
     eval_chain = QAEvalChain.from_llm(llm=ChatOpenAI(model_name="gpt-4", temperature=0),
                                       prompt=prompt)
     graded_outputs = eval_chain.evaluate(gt_dataset,
