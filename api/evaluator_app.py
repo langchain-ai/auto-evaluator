@@ -16,6 +16,7 @@ import faiss
 import pandas as pd
 from typing import Dict, List
 from json import JSONDecodeError
+from langchain.llms import MosaicML
 from langchain.llms import Anthropic
 from langchain.llms import Replicate
 from langchain.schema import Document
@@ -29,6 +30,7 @@ from langchain.retrievers import TFIDFRetriever
 from sse_starlette.sse import EventSourceResponse
 from fastapi.middleware.cors import CORSMiddleware
 from langchain.embeddings import LlamaCppEmbeddings
+from langchain.embeddings import MosaicMLInstructorEmbeddings
 from fastapi import FastAPI, File, UploadFile, Form
 from langchain.embeddings.openai import OpenAIEmbeddings
 from langchain.chains.question_answering import load_qa_chain
@@ -106,6 +108,8 @@ def make_llm(model):
     elif model == "vicuna-13b":
         llm = Replicate(model="replicate/vicuna-13b:e6d469c2b11008bb0e446c3e9629232f9674581224536851272c54871f84076e",
                 input={"temperature": 0.75, "max_length": 3000, "top_p":0.25})
+    elif model == "mosaic":
+        llm = MosaicML(inject_instruction_format=True,model_kwargs={'do_sample': False, 'max_length': 3000})
     return llm
 
 def make_retriever(splits, retriever_type, embeddings, num_neighbors, llm, logger):
@@ -125,8 +129,12 @@ def make_retriever(splits, retriever_type, embeddings, num_neighbors, llm, logge
     if embeddings == "OpenAI":
         embd = OpenAIEmbeddings()
     # Note: Still WIP (can't be selected by user yet)
-    if embeddings == "LlamaCppEmbeddings":
+    elif embeddings == "LlamaCppEmbeddings":
         embd = LlamaCppEmbeddings(model="replicate/vicuna-13b:e6d469c2b11008bb0e446c3e9629232f9674581224536851272c54871f84076e")
+    # Note: Test
+    elif embeddings == "Mosaic":
+        embd = MosaicMLInstructorEmbeddings(query_instruction="Represent the query for retrieval: ")
+
     # Select retriever
     if retriever_type == "similarity-search":
         vectorstore = FAISS.from_texts(splits, embd)
