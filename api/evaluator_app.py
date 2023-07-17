@@ -3,39 +3,51 @@ This is an API to support the LLM QA chain auto-evaluator.
 """
 
 import io
-import os
-from dotenv import load_dotenv
-import sentry_sdk
-import json
-import time
-import pypdf
-import random
-import logging
 import itertools
-import faiss
-import pandas as pd
-from typing import Dict, List
+import json
+import logging
+import os
+import random
+import time
 from json import JSONDecodeError
-from langchain.llms import MosaicML
-from langchain.llms import Anthropic
-from langchain.llms import Replicate
-from langchain.schema import Document
-from langchain.vectorstores import FAISS
-from langchain.chains import RetrievalQA
-from langchain.chat_models import ChatOpenAI
-from langchain.chains import QAGenerationChain
-from langchain.retrievers import SVMRetriever
-from langchain.evaluation.qa import QAEvalChain
-from langchain.retrievers import TFIDFRetriever
-from sse_starlette.sse import EventSourceResponse
+from typing import Dict, List
+from uuid import uuid4
+
+import openai
+import pandas as pd
+import pinecone
+import pypdf
+import sentry_sdk
+from dotenv import load_dotenv
+
+from fastapi import FastAPI, File, Form, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
-from langchain.embeddings import LlamaCppEmbeddings
-from langchain.embeddings import MosaicMLInstructorEmbeddings
-from fastapi import FastAPI, File, UploadFile, Form
-from langchain.embeddings.openai import OpenAIEmbeddings
+
+from langchain.chains import QAGenerationChain, RetrievalQA
+from langchain.chains.query_constructor.ir import Comparator, Comparison
+from langchain.chains.query_constructor.schema import AttributeInfo
 from langchain.chains.question_answering import load_qa_chain
-from langchain.text_splitter import RecursiveCharacterTextSplitter, CharacterTextSplitter
-from text_utils import GRADE_DOCS_PROMPT, GRADE_ANSWER_PROMPT, GRADE_DOCS_PROMPT_FAST, GRADE_ANSWER_PROMPT_FAST, GRADE_ANSWER_PROMPT_BIAS_CHECK, GRADE_ANSWER_PROMPT_OPENAI, QA_CHAIN_PROMPT, QA_CHAIN_PROMPT_LLAMA
+from langchain.chat_models import AzureChatOpenAI
+from langchain.embeddings import (
+    LlamaCppEmbeddings,
+    MosaicMLInstructorEmbeddings)
+from langchain.embeddings.openai import OpenAIEmbeddings
+from langchain.evaluation.qa import QAEvalChain
+from langchain.llms import Anthropic, MosaicML, Replicate
+from langchain.retrievers import SVMRetriever, TFIDFRetriever
+from langchain.retrievers.self_query.base import SelfQueryRetriever
+from langchain.schema import Document
+from langchain.text_splitter import (
+    CharacterTextSplitter,
+    RecursiveCharacterTextSplitter)
+from langchain.vectorstores import Pinecone
+from sse_starlette.sse import EventSourceResponse
+
+from text_utils import (GRADE_ANSWER_PROMPT, GRADE_ANSWER_PROMPT_BIAS_CHECK,
+                        GRADE_ANSWER_PROMPT_FAST, GRADE_ANSWER_PROMPT_OPENAI,
+                        GRADE_DOCS_PROMPT, GRADE_DOCS_PROMPT_FAST,
+                        QA_CHAIN_PROMPT, QA_CHAIN_PROMPT_LLAMA)
+
 
 def generate_eval(text, chunk, logger):
     """
@@ -52,7 +64,15 @@ def generate_eval(text, chunk, logger):
     starting_index = random.randint(0, num_of_chars-chunk)
     sub_sequence = text[starting_index:starting_index+chunk]
     # Set up QAGenerationChain chain using GPT 3.5 as default
-    chain = QAGenerationChain.from_llm(ChatOpenAI(temperature=0))
+    chain = QAGenerationChain.from_llm(
+        AzureChatOpenAI(
+            openai_api_key=os.environ.get("AZURE_OPENAI_API_KEY"),
+            openai_api_base=os.environ.get("AZURE_OPENAI_API_BASE"),
+            openai_api_version=os.environ.get("AZURE_OPENAI_API_VERSION"),
+            temperature=0,
+            deployment_name="gpt-35-turbo"
+        )
+    )
     eval_set = []
     # Catch any QA generation errors and re-try until QA pair is generated
     awaiting_answer = True
@@ -65,16 +85,15 @@ def generate_eval(text, chunk, logger):
             logger.error("Error on question")
             starting_index = random.randint(0, num_of_chars-chunk)
             sub_sequence = text[starting_index:starting_index+chunk]
-    eval_pair = list(itertools.chain.from_iterable(eval_set))
-    return eval_pair
+    return list(itertools.chain.from_iterable(eval_set))
 
 
 def split_texts(text, chunk_size, overlap, split_method, logger):
     """
     Split text into chunks
     @param text: text to split
-    @param chunk_size: charecters per split
-    @param overlap: charecter overlap between splits
+    @param chunk_size: characters per split
+    @param overlap: character overlap between splits
     @param split_method: method used to split text
     @param logger: logger
     @return: list of str splits
@@ -82,15 +101,17 @@ def split_texts(text, chunk_size, overlap, split_method, logger):
 
     logger.info("`Splitting doc ...`")
     if split_method == "RecursiveTextSplitter":
-        text_splitter = RecursiveCharacterTextSplitter(chunk_size=chunk_size,
-                                                       chunk_overlap=overlap)
+        text_splitter = RecursiveCharacterTextSplitter(
+            chunk_size=chunk_size,
+            chunk_overlap=overlap
+    )
     elif split_method == "CharacterTextSplitter":
-        text_splitter = CharacterTextSplitter(separator=" ",
-                                              chunk_size=chunk_size,
-                                              chunk_overlap=overlap)
-    splits = text_splitter.split_text(text)
-    return splits
-
+        text_splitter = CharacterTextSplitter(
+            separator=" ",
+            chunk_size=chunk_size,
+            chunk_overlap=overlap
+    )
+    return text_splitter.split_text(text)
 
 def make_llm(model):
     """
@@ -99,8 +120,15 @@ def make_llm(model):
     @return: LLM
     """
 
-    if model in ("gpt-3.5-turbo", "gpt-4"):
-        llm = ChatOpenAI(model_name=model, temperature=0)
+    if model == "gpt-3.5-turbo":
+        llm = AzureChatOpenAI(
+            openai_api_key=os.environ.get("AZURE_OPENAI_API_KEY"),
+            openai_api_base=os.environ.get("AZURE_OPENAI_API_BASE"),
+            openai_api_version=os.environ.get("AZURE_OPENAI_API_VERSION"),
+            deployment_name="gpt-35-turbo",
+            temperature=0,)
+    if model == "gpt-4":
+        pass
     elif model == "anthropic":
         llm = Anthropic(temperature=0)
     elif model == "Anthropic-100k":
@@ -112,7 +140,95 @@ def make_llm(model):
         llm = MosaicML(inject_instruction_format=True,model_kwargs={'do_sample': False, 'max_length': 3000})
     return llm
 
-def make_retriever(splits, retriever_type, embeddings, num_neighbors, llm, logger):
+def insert_documents(splits, embedding, vector_store, logger):
+    """
+    Insert documents into vector store
+    @param splits: list of extracted strings
+    @param embedding: embedding algorithm
+    @param vector_store: vector store
+    @param logger: logger
+    @return: None
+    """
+
+    logger.info("`Inserting documents into vectorstore ...`")
+    if vector_store == "pinecone":
+        pinecone.init(
+            api_key=os.environ.get("PINECONE_API_KEY"),
+            environment=os.environ.get("PINECONE_ENVIRONMENT"),
+        )
+
+        index_name = os.environ.get("PINECONE_INDEX")
+        index = pinecone.Index(index_name)
+
+        ids = [str(uuid4()) for _ in range(len(splits))]
+
+        document_embeddings = embedding.embed_documents(splits)
+        source_id = f"auto_evaluator_{random.randint(0, 1000)}"
+        metadata = [
+            {
+                "id": id, 
+                "text": text, 
+                "source_id": source_id,
+                "author": "auto_evaluator",
+            } for id, text in zip(ids, splits)
+        ]
+        index.upsert(vectors=zip(ids, document_embeddings, metadata))
+        return source_id
+
+def make_embeddings(embeddings, logger):
+    """
+    Make embeddings
+    @param embedding_type: embedding type
+    @param logger: logger
+    @return: embeddings
+    """
+    
+    logger.info("`Making embeddings ...`")
+    if embeddings == "OpenAI":
+        openai_api_key = os.environ.get("AZURE_OPENAI_API_KEY")
+        openai_api_base = os.environ.get("AZURE_OPENAI_API_BASE")
+
+        embd = OpenAIEmbeddings(
+            deployment="text-embedding-ada-002",
+            openai_api_key=openai_api_key,
+            openai_api_type="azure",
+            openai_api_base=openai_api_base,
+            openai_api_version="2023-05-15",
+            chunk_size=1,
+        )
+    # Note: Still WIP (can't be selected by user yet)
+    elif embeddings == "LlamaCppEmbeddings":
+        embd = LlamaCppEmbeddings(model="replicate/vicuna-13b:e6d469c2b11008bb0e446c3e9629232f9674581224536851272c54871f84076e")
+    # Note: Test
+    elif embeddings == "Mosaic":
+        embd = MosaicMLInstructorEmbeddings(query_instruction="Represent the query for retrieval: ")
+    
+    return embd
+
+def generate_similarity_search_vectorstore(embeddings, eval_qa_pair):
+    """
+    Generate similarity search vectorstore
+    @param embeddings: embeddings
+    @param eval_qa_pair: evaluation question-answer pair
+    @return: vectorstore
+    """
+    index_name = os.environ.get("PINECONE_INDEX")
+    index = pinecone.Index(index_name)
+
+    vectorstore = Pinecone(index, embeddings.embed_query, text_key='text')
+    retriever = vectorstore.as_retriever()
+    
+    docs = retriever.get_relevant_documents(
+        query=eval_qa_pair["question"],
+        filter=Comparison(
+            comparator=Comparator.EQ, 
+            attribute="author", 
+            value="auto_evaluator"
+        )
+    )
+    return Pinecone.from_documents(docs, embeddings, index_name=index_name)
+
+def make_retriever(splits, retriever_type, embeddings, llm, eval_qa_pair, logger):
     """
     Make document retriever
     @param splits: list of str splits
@@ -125,26 +241,15 @@ def make_retriever(splits, retriever_type, embeddings, num_neighbors, llm, logge
     """
 
     logger.info("`Making retriever ...`")
-    # Set embeddings
-    if embeddings == "OpenAI":
-        embd = OpenAIEmbeddings()
-    # Note: Still WIP (can't be selected by user yet)
-    elif embeddings == "LlamaCppEmbeddings":
-        embd = LlamaCppEmbeddings(model="replicate/vicuna-13b:e6d469c2b11008bb0e446c3e9629232f9674581224536851272c54871f84076e")
-    # Note: Test
-    elif embeddings == "Mosaic":
-        embd = MosaicMLInstructorEmbeddings(query_instruction="Represent the query for retrieval: ")
-
-    # Select retriever
     if retriever_type == "similarity-search":
-        vectorstore = FAISS.from_texts(splits, embd)
-        retriever = vectorstore.as_retriever(k=num_neighbors)
+        docsearch = generate_similarity_search_vectorstore(embeddings, eval_qa_pair)
+        retriever = docsearch.as_retriever(search_type="similarity")
     elif retriever_type == "SVM":
-        retriever = SVMRetriever.from_texts(splits, embd)
+        retriever = SVMRetriever.from_texts(splits, embeddings)
     elif retriever_type == "TF-IDF":
         retriever = TFIDFRetriever.from_texts(splits)
     elif retriever_type == "Anthropic-100k":
-         retriever = llm
+        retriever = llm
     return retriever
 
 def make_chain(llm, retriever, retriever_type, model):
@@ -157,24 +262,20 @@ def make_chain(llm, retriever, retriever_type, model):
     @return: QA chain
     """
 
-    # Select prompt 
-    if model == "vicuna-13b":
-        # Note: Better answer quality using default prompt 
-        # chain_type_kwargs = {"prompt": QA_CHAIN_PROMPT_LLAMA}
-        chain_type_kwargs = {"prompt": QA_CHAIN_PROMPT}
-    else: 
-        chain_type_kwargs = {"prompt": QA_CHAIN_PROMPT}
-
-    # Select model 
-    if retriever_type == "Anthropic-100k":
-        qa_chain = load_qa_chain(llm,chain_type="stuff",prompt=QA_CHAIN_PROMPT)
-    else:
-        qa_chain = RetrievalQA.from_chain_type(llm,
-                                               chain_type="stuff",
-                                               retriever=retriever,
-                                               chain_type_kwargs=chain_type_kwargs,
-                                               input_key="question")
-    return qa_chain
+    # Note: Better answer quality using default prompt 
+    # chain_type_kwargs = {"prompt": QA_CHAIN_PROMPT_LLAMA}
+    chain_type_kwargs = {"prompt": QA_CHAIN_PROMPT}
+    return (
+        load_qa_chain(llm, chain_type="stuff", prompt=QA_CHAIN_PROMPT)
+        if retriever_type == "Anthropic-100k"
+        else RetrievalQA.from_chain_type(
+            llm,
+            chain_type="stuff",
+            retriever=retriever,
+            chain_type_kwargs=chain_type_kwargs,
+            input_key="question",
+        )
+    )
 
 
 def grade_model_answer(predicted_dataset, predictions, grade_answer_prompt, logger):
@@ -188,23 +289,32 @@ def grade_model_answer(predicted_dataset, predictions, grade_answer_prompt, logg
     """
 
     logger.info("`Grading model answer ...`")
-    if grade_answer_prompt == "Fast":
-        prompt = GRADE_ANSWER_PROMPT_FAST
-    elif grade_answer_prompt == "Descriptive w/ bias check":
+    if grade_answer_prompt == "Descriptive w/ bias check":
         prompt = GRADE_ANSWER_PROMPT_BIAS_CHECK
+    elif grade_answer_prompt == "Fast":
+        prompt = GRADE_ANSWER_PROMPT_FAST
     elif grade_answer_prompt == "OpenAI grading prompt":
         prompt = GRADE_ANSWER_PROMPT_OPENAI
     else:
         prompt = GRADE_ANSWER_PROMPT
 
     # Note: GPT-4 grader is advised by OAI 
-    eval_chain = QAEvalChain.from_llm(llm=ChatOpenAI(model_name="gpt-4", temperature=0),
-                                      prompt=prompt)
-    graded_outputs = eval_chain.evaluate(predicted_dataset,
-                                         predictions,
-                                         question_key="question",
-                                         prediction_key="result")
-    return graded_outputs
+    eval_chain = QAEvalChain.from_llm(
+        llm=AzureChatOpenAI(
+            deployment_name="gpt-4",
+            openai_api_version="2023-03-15-preview",
+            temperature=0,
+            openai_api_key=os.environ.get("GPT4_OPENAI_API_KEY"),
+            openai_api_base=os.environ.get("GPT4_OPENAI_API_BASE"),
+        ),
+        prompt=prompt
+    )
+    return eval_chain.evaluate(
+        predicted_dataset,
+        predictions,
+        question_key="question",
+        prediction_key="result",
+    )
 
 
 def grade_model_retrieval(gt_dataset, predictions, grade_docs_prompt, logger):
@@ -223,13 +333,22 @@ def grade_model_retrieval(gt_dataset, predictions, grade_docs_prompt, logger):
         prompt = GRADE_DOCS_PROMPT
 
     # Note: GPT-4 grader is advised by OAI
-    eval_chain = QAEvalChain.from_llm(llm=ChatOpenAI(model_name="gpt-4", temperature=0),
-                                      prompt=prompt)
-    graded_outputs = eval_chain.evaluate(gt_dataset,
-                                         predictions,
-                                         question_key="question",
-                                         prediction_key="result")
-    return graded_outputs
+    eval_chain = QAEvalChain.from_llm(
+        llm=AzureChatOpenAI(
+            deployment_name="gpt-4",
+            openai_api_version="2023-03-15-preview",
+            temperature=0,
+            openai_api_key=os.environ.get("GPT4_OPENAI_API_KEY"),
+            openai_api_base=os.environ.get("GPT4_OPENAI_API_BASE"),
+        ),
+        prompt=prompt
+    )
+    return eval_chain.evaluate(
+        gt_dataset,
+        predictions,
+        question_key="question",
+        prediction_key="result",
+    )
 
 
 def run_eval(chain, retriever, eval_qa_pair, grade_prompt, retriever_type, num_neighbors, text, logger):
@@ -251,45 +370,72 @@ def run_eval(chain, retriever, eval_qa_pair, grade_prompt, retriever_type, num_n
 
     logger.info("`Running eval ...`")
     predictions = []
-    retrieved_docs = []
-    gt_dataset = []
-    latency = []
 
     # Get answer and log latency
     start_time = time.time()
     if retriever_type == "Anthropic-100k":
         docs=[Document(page_content=text)]
-        answer = chain.run(input_documents=docs,question=eval_qa_pair["question"])
+        answer = chain.run(input_documents=docs, question=eval_qa_pair["question"])
         predictions.append(
-            {"question": eval_qa_pair["question"], "answer": eval_qa_pair["answer"], "result": answer})
-    else :
+            {
+                "question": eval_qa_pair["question"], 
+                "answer": eval_qa_pair["answer"], 
+                "result": answer
+            }
+        )
+    else:
         predictions.append(chain(eval_qa_pair))
-    gt_dataset.append(eval_qa_pair)
+    gt_dataset = [eval_qa_pair]
+
     end_time = time.time()
     elapsed_time = end_time - start_time
-    latency.append(elapsed_time)
+    latency = [elapsed_time]
 
     # Extract text from retrieved docs
     retrieved_doc_text = ""
     if retriever_type == "Anthropic-100k":
-        retrieved_doc_text = "Doc %s: " % str(eval_qa_pair["answer"])
+        retrieved_doc_text = f'Doc {str(eval_qa_pair["answer"])}: '
     else:
-        docs = retriever.get_relevant_documents(eval_qa_pair["question"])
+        docs = retriever.get_relevant_documents(
+            query=eval_qa_pair["question"],
+            filter=Comparison(
+                comparator=Comparator.EQ, 
+                attribute="author", 
+                value="auto_evaluator"
+            )
+        )
         for i, doc in enumerate(docs):
-            retrieved_doc_text += "Doc %s: " % str(i+1) + \
-                doc.page_content + " "
+            retrieved_doc_text += ((f"Doc {str(i + 1)}: " + doc.page_content) + " ")
 
     # Log
-    retrieved = {"question": eval_qa_pair["question"],
-                 "answer": eval_qa_pair["answer"], "result": retrieved_doc_text}
-    retrieved_docs.append(retrieved)
-
+    retrieved = {
+        "question": eval_qa_pair["question"],
+        "answer": eval_qa_pair["answer"], "result": retrieved_doc_text
+    }
+    retrieved_docs = [retrieved]
     # Grade
     graded_answers = grade_model_answer(
         gt_dataset, predictions, grade_prompt, logger)
     graded_retrieval = grade_model_retrieval(
         gt_dataset, retrieved_docs, grade_prompt, logger)
     return graded_answers, graded_retrieval, latency, predictions
+
+def delete_documents(id, retriever, logger):
+    """
+    Deletes all documents from the retriever.
+    @param retriever: Document retriever used for retrieving relevant documents
+    @return: None
+    """
+    logger.info("`Deleting documents ...`")
+    
+    if retriever == 'pinecone':
+        index_name = os.environ.get("PINECONE_INDEX")
+        index = pinecone.Index(index_name) 
+
+        index.delete(filter={
+            "author":"auto_evaluator",
+            "source_id": id
+        })
 
 load_dotenv()
 
@@ -346,25 +492,21 @@ def run_evaluator(
     texts = []
     fnames = []
     for file in files:
-        logger.info("Reading file: {}".format(file.filename))
+        logger.info(f"Reading file: {file.filename}")
         contents = file.file.read()
         # PDF file
         if file.content_type == 'application/pdf':
-            logger.info("File {} is a PDF".format(file.filename))
+            logger.info(f"File {file.filename} is a PDF")
             pdf_reader = pypdf.PdfReader(io.BytesIO(contents))
-            text = ""
-            for page in pdf_reader.pages:
-                text += page.extract_text()
+            text = "".join(page.extract_text() for page in pdf_reader.pages)
             texts.append(text)
             fnames.append(file.filename)
-        # Text file
         elif file.content_type == 'text/plain':
-            logger.info("File {} is a TXT".format(file.filename))
+            logger.info(f"File {file.filename} is a TXT")
             texts.append(contents.decode())
             fnames.append(file.filename)
         else:
-            logger.warning(
-                "Unsupported file type for file: {}".format(file.filename))
+            logger.warning(f"Unsupported file type for file: {file.filename}")
     text = " ".join(texts)
 
     if retriever_type == "Anthropic-100k":
@@ -377,12 +519,11 @@ def run_evaluator(
     logger.info("Make LLM")
     llm = make_llm(model_version)
 
-    logger.info("Make retriever")
-    retriever = make_retriever(
-        splits, retriever_type, embeddings, num_neighbors, llm, logger)
+    logger.info("Make Embeddings")
+    emb=make_embeddings(embeddings, logger)
 
-    logger.info("Make chain")
-    qa_chain = make_chain(llm, retriever, retriever_type, model_version)
+    if retriever_type == "similarity-search":
+        source_id = insert_documents(splits, emb, 'pinecone', logger)
 
     for i in range(num_eval_questions):
 
@@ -398,21 +539,37 @@ def run_evaluator(
                 # This returns a list, so we unpack to dict
                 eval_pair = eval_pair[0]
 
+        logger.info("Make retriever")
+        retriever = make_retriever(
+            splits, retriever_type, emb, llm, eval_pair, logger)
+
+        logger.info("Make chain")
+        qa_chain = make_chain(llm, retriever, retriever_type, model_version)
+
         # Run eval
         graded_answers, graded_retrieval, latency, predictions = run_eval(
             qa_chain, retriever, eval_pair, grade_prompt, retriever_type, num_neighbors, text, logger)
 
         # Assemble output
         d = pd.DataFrame(predictions)
-        d['answerScore'] = [g['text'] for g in graded_answers]
-        d['retrievalScore'] = [g['text'] for g in graded_retrieval]
+        d['answerScore'] = [g['results'] for g in graded_answers]
+        d['retrievalScore'] = [g['results'] for g in graded_retrieval]
         d['latency'] = latency
 
         # Summary statistics
-        d['answerScore'] = [{'score': 1 if "Incorrect" not in text else 0,
-                             'justification': text} for text in d['answerScore']]
-        d['retrievalScore'] = [{'score': 1 if "Incorrect" not in text else 0,
-                                'justification': text} for text in d['retrievalScore']]
+        d['answerScore'] = [
+            {
+                'score': 1 if "Incorrect" not in text else 0,
+                'justification': text
+            } for text in d['answerScore']
+        ]
+        d['retrievalScore'] = [
+            {
+                'score': 1 if "Incorrect" not in text else 0,
+                'justification': text
+            } 
+            for text in d['retrievalScore']
+        ]
 
         # Convert dataframe to dict
         d_dict = d.to_dict('records')
@@ -421,6 +578,10 @@ def run_evaluator(
         else:
             logger.warn(
                 "A QA pair was not evaluated correctly. Skipping this pair.")
+        
+        # Delete the document if it was inserted
+        if retriever_type == "similarity-search":
+            delete_documents(source_id, 'pinecone', logger)
 
 
 @app.post("/evaluator-stream")
@@ -438,5 +599,15 @@ async def create_response(
     test_dataset: str = Form("[]"),
 ):
     test_dataset = json.loads(test_dataset)
-    return EventSourceResponse(run_evaluator(files, num_eval_questions, chunk_chars,
-                                             overlap, split_method, retriever_type, embeddings, model_version, grade_prompt, num_neighbors, test_dataset), headers={"Content-Type": "text/event-stream", "Connection": "keep-alive", "Cache-Control": "no-cache"})
+    return EventSourceResponse(
+        run_evaluator(
+            files, num_eval_questions, chunk_chars, overlap, 
+            split_method, retriever_type, embeddings, 
+            model_version, grade_prompt, num_neighbors, test_dataset
+        ), 
+        headers={
+            "Content-Type": "text/event-stream",
+            "Connection": "keep-alive",
+            "Cache-Control": "no-cache"
+        }
+    )

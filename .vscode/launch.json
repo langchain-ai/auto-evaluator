@@ -1,0 +1,20 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+      {
+        "name": "Run evaluator_app",
+        "type": "python",
+        "request": "launch",
+        "module": "uvicorn",
+        "args": [
+          "evaluator_app:app"
+        ],
+        "console": "integratedTerminal",
+        "cwd": "${workspaceFolder}/api",
+        "env": {
+          "PATH": "${env:PATH}:${workspaceFolder}/api/venv-auto-evaluator/bin"
+        }
+      }
+    ]
+  }
+  
