@@ -237,7 +237,7 @@ def run_eval(chain, retriever, eval_qa_pair, grade_prompt, retriever_type, num_n
     Runs evaluation on a model's performance on a given evaluation dataset.
     @param chain: Model chain used for answering questions
     @param retriever:  Document retriever used for retrieving relevant documents
-    @param eval_set: List of dictionaries containing questions and corresponding ground truth answers
+    @param eval_qa_pair: List of dictionaries containing questions and corresponding ground truth answers
     @param grade_prompt: String prompt used for grading model's performance
     @param retriever_type: String specifying the type of retriever used
     @param num_neighbors: Number of neighbors to retrieve using the retriever
