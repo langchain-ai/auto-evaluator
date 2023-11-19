@@ -18,6 +18,7 @@ from typing import Dict, List
 from json import JSONDecodeError
 from langchain.llms import MosaicML
 from langchain.llms import Anthropic
+from langchain.llms import Cohere
 from langchain.llms import Replicate
 from langchain.schema import Document
 from langchain.vectorstores import FAISS
@@ -33,6 +34,7 @@ from langchain.embeddings import LlamaCppEmbeddings
 from langchain.embeddings import MosaicMLInstructorEmbeddings
 from fastapi import FastAPI, File, UploadFile, Form
 from langchain.embeddings.openai import OpenAIEmbeddings
+from langchain.embeddings.cohere import CohereEmbeddings
 from langchain.chains.question_answering import load_qa_chain
 from langchain.text_splitter import RecursiveCharacterTextSplitter, CharacterTextSplitter
 from text_utils import GRADE_DOCS_PROMPT, GRADE_ANSWER_PROMPT, GRADE_DOCS_PROMPT_FAST, GRADE_ANSWER_PROMPT_FAST, GRADE_ANSWER_PROMPT_BIAS_CHECK, GRADE_ANSWER_PROMPT_OPENAI, QA_CHAIN_PROMPT, QA_CHAIN_PROMPT_LLAMA
@@ -110,6 +112,8 @@ def make_llm(model):
                 input={"temperature": 0.75, "max_length": 3000, "top_p":0.25})
     elif model == "mosaic":
         llm = MosaicML(inject_instruction_format=True,model_kwargs={'do_sample': False, 'max_length': 3000})
+    elif model == "cohere":
+        llm = Cohere(model="command", temperature=0)
     return llm
 
 def make_retriever(splits, retriever_type, embeddings, num_neighbors, llm, logger):
@@ -128,6 +132,12 @@ def make_retriever(splits, retriever_type, embeddings, num_neighbors, llm, logge
     # Set embeddings
     if embeddings == "OpenAI":
         embd = OpenAIEmbeddings()
+    elif embeddings == "cohere-english-v2.0":
+        embd = CohereEmbeddings(model='embed-english-v2.0')
+    elif embeddings == "cohere-english-v3.0":
+        embd = CohereEmbeddings(model='embed-english-v3.0')
+    elif embeddings == "cohere-multilingual-v3.0":
+        embd = CohereEmbeddings(model='embed-multilingual-v3.0')
     # Note: Still WIP (can't be selected by user yet)
     elif embeddings == "LlamaCppEmbeddings":
         embd = LlamaCppEmbeddings(model="replicate/vicuna-13b:e6d469c2b11008bb0e446c3e9629232f9674581224536851272c54871f84076e")
@@ -342,6 +352,21 @@ def run_evaluator(
     logging.config.fileConfig('logging.conf', disable_existing_loggers=False)
     logger = logging.getLogger(__name__)
 
+    logger.info(
+        f"Calling evaluator with params:\n"
+        f"  files={[file.filename for file in files]},\n"
+        f"  num_eval_questions={num_eval_questions},\n"
+        f"  chunk_chars={chunk_chars},\n"
+        f"  overlap={overlap},\n"
+        f"  split_method={split_method},\n"
+        f"  retriever_type={retriever_type},\n"
+        f"  embeddings={embeddings},\n"
+        f"  model_version={model_version},\n"
+        f"  grade_prompt={grade_prompt},\n"
+        f"  num_neighbors={num_neighbors},\n"
+        f"  test_dataset={test_dataset},\n"
+    )
+
     # Read content of files
     texts = []
     fnames = []
@@ -404,8 +429,8 @@ def run_evaluator(
 
         # Assemble output
         d = pd.DataFrame(predictions)
-        d['answerScore'] = [g['text'] for g in graded_answers]
-        d['retrievalScore'] = [g['text'] for g in graded_retrieval]
+        d['answerScore'] = [g['results'] for g in graded_answers]
+        d['retrievalScore'] = [g['results'] for g in graded_retrieval]
         d['latency'] = latency
 
         # Summary statistics

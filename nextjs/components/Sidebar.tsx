@@ -98,6 +98,7 @@ const Sidebar = ({ form }: { form: Form }) => {
                     { label: "GPT 3.5 Turbo", value: "gpt-3.5-turbo" },
                     { label: "GPT 4", value: "gpt-4" },
                     { label: "Anthropic", value: "anthropic" },
+                    { label: "Cohere", value: "cohere" },
                     { label: "Vicuna 13B", value: "vicuna-13b" },
                     { label: "MPT-7B", value: "mosaic" },
                   ]}
@@ -139,6 +140,18 @@ const Sidebar = ({ form }: { form: Form }) => {
                     {
                       label: "OpenAI",
                       value: "OpenAI",
+                    },
+                    {
+                      label: "Cohere English v2.0",
+                      value: "cohere-english-v2.0",
+                    },
+                    {
+                      label: "Cohere English v3.0",
+                      value: "cohere-english-v3.0",
+                    },
+                    {
+                      label: "Cohere Multilingual v3.0",
+                      value: "cohere-multilingual-v3.0",
                     },
                   ]}
                 />
