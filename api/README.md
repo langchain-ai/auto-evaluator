@@ -10,6 +10,7 @@ Set API keys:
 ```
 export OPENAI_API_KEY=
 export ANTHROPIC_API_KEY=
+export COHERE_API_KEY=
 ```
 
 Start local server:
@@ -30,5 +31,4 @@ This API is deployed to [Railway](https://railway.app/).
  
 ```
 curl -X POST -F "files=@docs/karpathy-lex-pod/karpathy-pod.txt" -F "num_eval_questions=1" -F "chunk_chars=1000" -F "overlap=100" -F "split_method=RecursiveTextSplitter" -F "retriever_type=similarity-search" -F "embeddings=OpenAI" -F "model_version=gpt-3.5-turbo" -F "grade_prompt=Fast" -F "num_neighbors=3" https://auto-evaluator-production.up.railway.app/evaluator-stream
-
 ```

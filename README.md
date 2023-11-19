@@ -131,6 +131,7 @@ Specify the API keys for any models that you want to use.
 ```
 OPENAI_API_KEY=
 ANTHROPIC_API_KEY=
+COHERE_API_KEY=
 ```
 
 ## Deployment
