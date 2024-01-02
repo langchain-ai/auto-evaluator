@@ -70,7 +70,7 @@ The app can be used in two ways:
 
 The left panel of the app (shown in red in the above image) has several user-configurable parameters.
 
-`Number of eval questions` - This is the number of question-answer pairs to auto-generate for the given inputs documents. As mentioned above, question-answer pair auto-generation will use Langchain's `QAGenerationChain` with prompt specified [here](https://github.com/hwchase17/langchain/blob/master/langchain/chains/qa_generation/prompt.py).
+`Number of eval questions` - This is the number of question-answer pairs to auto-generate for the given inputs documents. As mentioned above, question-answer pair auto-generation will use Langchain's `QAGenerationChain` with prompt specified [here](https://github.com/langchain-ai/langchain/blob/master/libs/langchain/langchain/chains/qa_generation/prompt.py).
 
 `Chunk size` - Number of characters per chunk when the input documents are split. This [can impact answer quality](https://lancemartin.notion.site/lancemartin/Q-A-assistant-limitations-f576bf55b61c44e0970330ac3883315e). Retrievers often use text embedding similarity to select chunks related to the question. If the chunks are too large, each chunk may contain more information unrelated to the question, which may degrade the summarized answer quality. If chunks are too small, important context may be left out of the retrieved chunks.
 
